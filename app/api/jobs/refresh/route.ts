@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     const jobs = Array.isArray(data) ? data : (data.jobs || [])
 
     await JobCache.findOneAndUpdate(
-      { cacheKey: 'jobs_50____' },
+      { cacheKey: 'jobs_master' },
       { jobs, total: jobs.length, fetchedAt: new Date() },
       { upsert: true, new: true }
     )
@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
     cacheKey: { $regex: '^jobs_' },
   })
 
-  const lastCache = await JobCache.findOne({ cacheKey: 'jobs_50____' }).lean()
+  const lastCache = await JobCache.findOne({ cacheKey: 'jobs_master' }).lean()
 
   return NextResponse.json({
     hitsUsed: hitsThisMonth,
