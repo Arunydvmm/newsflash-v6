@@ -4,6 +4,7 @@ import { connectDB } from './lib/db'
 import Article from './models/Article'
 import { LoadingBar, WelcomePopup, HeroSlider, ArticleCard, CategoryButton } from './components/HomeClient'
 import DarkModeToggle from './components/DarkModeToggle'
+import PortalCards from './components/PortalCards'
 import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
 
@@ -202,27 +203,7 @@ export default async function HomePage({ searchParams }: any) {
               {!search && !category && slider.length > 0 && <HeroSlider articles={slider} />}
 
               {/* Portal Cards */}
-              {!search && !category && (
-                <div className="portal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 28 }}>
-                  {[
-                    { label: 'Cricket Live', icon: '🏏', desc: 'IPL scores · Points Table · Orange & Purple Cap', href: '/cricket', color: '#1B5E20', bg: 'linear-gradient(135deg,#1B5E20,#2E7D32)', light: '#E8F5E9' },
-                    { label: 'Sarkari Naukri', icon: '🏛', desc: 'Railway · SSC · UPSC · Bank · Police jobs 2026', href: '/sarkari', color: '#E65100', bg: 'linear-gradient(135deg,#E65100,#F57C00)', light: '#FFF3E0' },
-                  ].map(p => (
-                    <Link key={p.href} href={p.href} style={{ textDecoration: 'none' }}>
-                      <div style={{ background: p.bg, borderRadius: 12, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.12)', transition: 'all 0.25s', cursor: 'pointer', color: 'white' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 10px 32px rgba(0,0,0,0.2)' }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(0,0,0,0.12)' }}>
-                        <span style={{ fontSize: 38 }}>{p.icon}</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{p.label}</div>
-                          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>{p.desc}</div>
-                        </div>
-                        <span style={{ fontSize: 22, opacity: 0.8 }}>→</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              {!search && !category && <PortalCards />}
 
               {/* Featured Articles */}
               <div style={{ marginBottom: 8 }}>
