@@ -8,6 +8,7 @@ import PortalCards from './components/PortalCards'
 import ScrollReveal from './components/ScrollReveal'
 import CricketNewsWidget from './components/CricketNewsWidget'
 import LiveDashboard from './components/LiveDashboard'
+import NewsFeedWidget from './components/NewsFeedWidget'
 import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
 
@@ -251,6 +252,20 @@ export default async function HomePage({ searchParams }: any) {
 
               {/* Cricket News Widget */}
               {!search && !category && <CricketNewsWidget />}
+
+              {/* Education News Widget — major focus */}
+              {!search && !category && (
+                <ScrollReveal delay={50}>
+                  <NewsFeedWidget topic="education" limit={8} />
+                </ScrollReveal>
+              )}
+
+              {/* Sarkari News Widget */}
+              {!search && !category && (
+                <ScrollReveal delay={100}>
+                  <NewsFeedWidget topic="sarkari" limit={6} />
+                </ScrollReveal>
+              )}
 
               {/* More Stories */}
               {rest.length > 0 && (

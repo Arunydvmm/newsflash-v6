@@ -4,6 +4,7 @@ import SarkariJob from '../models/SarkariJob'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
+import NewsFeedWidget from '../components/NewsFeedWidget'
 
 export const revalidate = 300
 
@@ -193,6 +194,12 @@ export default async function SarkariPage({ searchParams }: any) {
           </div>
         )}
       </main>
+
+      {/* Sarkari News Feed */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px 32px' }}>
+        <NewsFeedWidget topic="sarkari" limit={10} />
+        <NewsFeedWidget topic="education" limit={6} />
+      </div>
 
       {/* Footer */}
       <footer style={{ background: '#1B5E20', color: 'rgba(255,255,255,0.6)', marginTop: 48, padding: '20px', textAlign: 'center', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>
