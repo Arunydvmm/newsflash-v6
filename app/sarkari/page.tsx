@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
 import NewsFeedWidget from '../components/NewsFeedWidget'
+import LiveJobsWidget from '../components/LiveJobsWidget'
 
 export const revalidate = 300
 
@@ -195,8 +196,9 @@ export default async function SarkariPage({ searchParams }: any) {
         )}
       </main>
 
-      {/* Sarkari News Feed */}
+      {/* Live Jobs + News Feed */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px 32px' }}>
+        <LiveJobsWidget limit={8} />
         <NewsFeedWidget topic="sarkari" limit={10} />
         <NewsFeedWidget topic="education" limit={6} />
       </div>
