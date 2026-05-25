@@ -3,21 +3,113 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 
-// ── Skeleton loader ──────────────────────────────────────────────
-export function SkeletonCard({ h = 200 }: { h?: number }) {
+// ── Theme ────────────────────────────────────────────────────────
+const T = {
+  red:    '#C62828',
+  navy:   '#0D1B2A',
+  gold:   '#D4A017',
+  dark:   '#1A1A1A',
+  light:  '#F4F4F0',
+  white:  '#FFFFFF',
+  muted:  '#6B7280',
+  border: '#E5E7EB',
+}
+
+// ── Category Config ──────────────────────────────────────────────
+export const CATEGORIES = [
+  { label: 'India',         icon: '🇮🇳', color: '#FF6B35',  bg: '#FFF3EE' },
+  { label: 'World',         icon: '🌍', color: '#1565C0',  bg: '#E3F2FD' },
+  { label: 'Business',      icon: '📈', color: '#2E7D32',  bg: '#E8F5E9' },
+  { label: 'Technology',    icon: '💻', color: '#6A1B9A',  bg: '#F3E5F5' },
+  { label: 'Sports',        icon: '⚽', color: '#00838F',  bg: '#E0F7FA' },
+  { label: 'Science',       icon: '🔬', color: '#1565C0',  bg: '#E8EAF6' },
+  { label: 'Health',        icon: '❤️', color: '#C62828',  bg: '#FFEBEE' },
+  { label: 'Entertainment', icon: '🎬', color: '#E65100',  bg: '#FFF3E0' },
+  { label: 'Opinion',       icon: '💬', color: '#4A148C',  bg: '#EDE7F6' },
+  { label: 'Cricket',       icon: '🏏', color: '#1B5E20',  bg: '#E8F5E9' },
+  { label: 'Sarkari',       icon: '🏛', color: '#BF360C',  bg: '#FBE9E7' },
+  { label: 'Education',     icon: '🎓', color: '#283593',  bg: '#E8EAF6' },
+]
+
+// ── Loading Bar ──────────────────────────────────────────────────
+export function LoadingBar() {
+  const [w, setW]   = useState(0)
+  const [vis, setVis] = useState(true)
+  useEffect(() => {
+    setW(20)
+    const t1 = setTimeout(() => setW(60),  300)
+    const t2 = setTimeout(() => setW(90),  800)
+    const t3 = setTimeout(() => { setW(100); setTimeout(() => setVis(false), 400) }, 1400)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [])
+  if (!vis) return null
   return (
-    <div style={{
-      borderRadius: 10, overflow: 'hidden', background: 'white',
-      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-    }}>
-      <div style={{
-        height: h, background: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)',
-        backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite',
-      }} />
-      <div style={{ padding: '14px 16px' }}>
-        <div style={{ height: 10, width: '40%', background: '#f0f0ec', borderRadius: 4, marginBottom: 10, animation: 'shimmer 1.4s infinite', backgroundSize: '200% 100%', backgroundImage: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)' }} />
-        <div style={{ height: 14, width: '90%', background: '#f0f0ec', borderRadius: 4, marginBottom: 8, animation: 'shimmer 1.4s infinite', backgroundSize: '200% 100%', backgroundImage: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)' }} />
-        <div style={{ height: 14, width: '70%', background: '#f0f0ec', borderRadius: 4, animation: 'shimmer 1.4s infinite', backgroundSize: '200% 100%', backgroundImage: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)' }} />
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999, height: 3, background: 'rgba(0,0,0,0.1)' }}>
+      <div style={{ height: '100%', background: `linear-gradient(90deg,${T.red},${T.gold},${T.red})`, backgroundSize: '200% 100%', width: `${w}%`, transition: 'width 0.5s ease', boxShadow: `0 0 10px ${T.red}80`, animation: 'shimmerBar 1.5s infinite' }} />
+    </div>
+  )
+}
+
+// ── Dark Mode Toggle ─────────────────────────────────────────────
+export function DarkModeToggle() {
+  const [dark, setDark] = useState(false)
+  useEffect(() => {
+    const saved = localStorage.getItem('nf_dark')
+    if (saved === '1') { setDark(true); document.documentElement.classList.add('dark') }
+  }, [])
+  function toggle() {
+    const next = !dark
+    setDark(next)
+    localStorage.setItem('nf_dark', next ? '1' : '0')
+    document.documentElement.classList.toggle('dark', next)
+    document.body.style.background = next ? '#0D1B2A' : '#F4F4F0'
+    document.body.style.color      = next ? '#E5E7EB' : '#1A1A1A'
+  }
+  return (
+    <button onClick={toggle} title={dark ? 'Light mode' : 'Dark mode'}
+      style={{ background: dark ? '#1B2B3A' : '#F0F0EC', border: `1px solid ${dark ? '#2C3E50' : '#E0DDD5'}`, borderRadius: 20, padding: '6px 12px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}>
+      {dark ? '☀️' : '🌙'}
+      <span style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', color: dark ? '#A0AEC0' : '#888' }}>{dark ? 'Light' : 'Dark'}</span>
+    </button>
+  )
+}
+
+// ── Welcome Popup ────────────────────────────────────────────────
+export function WelcomePopup() {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    if (!sessionStorage.getItem('nf_popup')) setTimeout(() => setShow(true), 2000)
+  }, [])
+  function close() { setShow(false); sessionStorage.setItem('nf_popup', '1') }
+  if (!show) return null
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={close}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', animation: 'fadeIn 0.3s ease' }} />
+      <div onClick={e => e.stopPropagation()}
+        style={{ position: 'relative', background: 'white', borderRadius: 20, padding: '44px 40px', maxWidth: 480, width: '100%', boxShadow: '0 32px 80px rgba(0,0,0,0.35)', animation: 'slideUp 0.4s ease', textAlign: 'center', overflow: 'hidden' }}>
+        {/* Gold top bar */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg,${T.red},${T.gold},${T.navy})` }} />
+        <button onClick={close} style={{ position: 'absolute', top: 14, right: 18, background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#ccc' }}>×</button>
+        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 34, fontWeight: 900, color: T.dark, marginBottom: 4 }}>
+          NEWS<span style={{ color: T.red }}>FLASH</span>
+        </div>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 3, color: '#aaa', textTransform: 'uppercase', marginBottom: 20 }}>India's Fastest News Platform</div>
+        <div style={{ width: 60, height: 3, background: `linear-gradient(90deg,${T.red},${T.gold})`, borderRadius: 2, margin: '0 auto 20px' }} />
+        <p style={{ fontSize: 14, color: '#555', lineHeight: 1.9, marginBottom: 28 }}>
+          Breaking news · IPL live scores · Sarkari Naukri · Cricket analytics · Education updates — all in one place, updated 24/7.
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={close} style={{ background: `linear-gradient(135deg,${T.red},#B71C1C)`, color: 'white', border: 'none', padding: '12px 28px', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 700, boxShadow: `0 4px 16px ${T.red}50` }}>
+            Start Reading →
+          </button>
+          <Link href="/cricket" onClick={close} style={{ background: '#E8F5E9', color: '#1B5E20', padding: '12px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', display: 'inline-block' }}>
+            🏏 Live Scores
+          </Link>
+          <Link href="/sarkari" onClick={close} style={{ background: '#FFF3E0', color: '#E65100', padding: '12px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', display: 'inline-block' }}>
+            🏛 Sarkari Jobs
+          </Link>
+        </div>
+        <div style={{ marginTop: 18, fontSize: 11, color: '#ddd', fontFamily: 'JetBrains Mono, monospace' }}>Click outside to close</div>
       </div>
     </div>
   )
@@ -25,151 +117,129 @@ export function SkeletonCard({ h = 200 }: { h?: number }) {
 
 // ── Hero Slider ──────────────────────────────────────────────────
 export function HeroSlider({ articles }: { articles: any[] }) {
-  const [current, setCurrent] = useState(0)
-  const [animating, setAnimating] = useState(false)
-  const timerRef = useRef<any>(null)
+  const [cur, setCur]   = useState(0)
+  const [fade, setFade] = useState(true)
+  const timer = useRef<any>(null)
 
   const go = useCallback((idx: number) => {
-    if (animating) return
-    setAnimating(true)
-    setTimeout(() => { setCurrent(idx); setAnimating(false) }, 350)
-  }, [animating])
+    setFade(false)
+    setTimeout(() => { setCur(idx); setFade(true) }, 300)
+    clearInterval(timer.current)
+    timer.current = setInterval(() => setCur(p => (p + 1) % articles.length), 5500)
+  }, [articles.length])
 
   useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setCurrent(p => (p + 1) % articles.length)
-    }, 5000)
-    return () => clearInterval(timerRef.current)
+    timer.current = setInterval(() => setCur(p => (p + 1) % articles.length), 5500)
+    return () => clearInterval(timer.current)
   }, [articles.length])
 
   if (!articles.length) return null
-  const a = articles[current]
+  const a = articles[cur]
 
   return (
-    <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.18)', marginBottom: 28 }}>
-      {/* Image */}
-      <div style={{ position: 'relative', aspectRatio: '16/7', background: '#1A1A1A', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', boxShadow: '0 12px 48px rgba(0,0,0,0.2)', marginBottom: 32 }}>
+      <div style={{ position: 'relative', aspectRatio: '16/7', background: T.dark, overflow: 'hidden' }}>
         {a.featuredImage
-          ? <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: animating ? 0 : 1, transition: 'opacity 0.35s ease', display: 'block' }} />
-          : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1A1A1A,#C62828)' }} />
+          ? <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: fade ? 1 : 0, transform: fade ? 'scale(1)' : 'scale(1.03)', transition: 'all 0.5s ease', display: 'block' }} />
+          : <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${T.navy},${T.red})` }} />
         }
-        {/* Gradient overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.25) 55%,transparent 100%)' }} />
+        {/* Breaking badge */}
+        {a.isBreaking && (
+          <div style={{ position: 'absolute', top: 16, left: 16, background: T.red, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 2, padding: '4px 12px', borderRadius: 4, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 6, height: 6, background: 'white', borderRadius: '50%', animation: 'pulse 1.5s infinite', display: 'inline-block' }} />
+            Breaking
+          </div>
+        )}
         {/* Content */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '28px 32px', opacity: animating ? 0 : 1, transform: animating ? 'translateY(10px)' : 'translateY(0)', transition: 'all 0.35s ease' }}>
-          <span style={{ background: '#C62828', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 2, marginBottom: 10, display: 'inline-block' }}>{a.category}</span>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '28px 32px', opacity: fade ? 1 : 0, transform: fade ? 'translateY(0)' : 'translateY(12px)', transition: 'all 0.4s ease' }}>
+          {(() => { const cat = CATEGORIES.find(c => c.label === a.category); return cat ? (
+            <span style={{ background: cat.color, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 4, marginBottom: 10, display: 'inline-block' }}>{cat.icon} {cat.label}</span>
+          ) : null })()}
           <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none' }}>
-            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(18px,3vw,30px)', fontWeight: 900, color: 'white', lineHeight: 1.25, marginBottom: 10, textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>{a.title}</h2>
+            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(18px,2.8vw,30px)', fontWeight: 900, color: 'white', lineHeight: 1.25, marginBottom: 10, textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>{a.title}</h2>
           </Link>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.summary}</p>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(255,255,255,0.55)' }}>
-            {a.author || 'NewsFlash'} · {a.readTime || 1} min read
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.summary}</p>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(255,255,255,0.5)', display: 'flex', gap: 12 }}>
+            <span>{a.author || 'NewsFlash'}</span><span>·</span><span>{a.readTime || 1} min read</span>
           </div>
         </div>
       </div>
       {/* Dots */}
-      <div style={{ position: 'absolute', bottom: 16, right: 20, display: 'flex', gap: 6 }}>
+      <div style={{ position: 'absolute', bottom: 18, right: 20, display: 'flex', gap: 6 }}>
         {articles.map((_, i) => (
-          <button key={i} onClick={() => go(i)} style={{ width: i === current ? 20 : 7, height: 7, borderRadius: 4, background: i === current ? '#C62828' : 'rgba(255,255,255,0.5)', border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', padding: 0 }} />
+          <button key={i} onClick={() => go(i)} style={{ width: i === cur ? 22 : 7, height: 7, borderRadius: 4, background: i === cur ? T.gold : 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} />
         ))}
       </div>
       {/* Arrows */}
-      <button onClick={() => go((current - 1 + articles.length) % articles.length)}
-        style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.4)', color: 'white', border: 'none', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>‹</button>
-      <button onClick={() => go((current + 1) % articles.length)}
-        style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.4)', color: 'white', border: 'none', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>›</button>
+      {[{ dir: '‹', pos: 'left' }, { dir: '›', pos: 'right' }].map(({ dir, pos }) => (
+        <button key={pos} onClick={() => go(pos === 'left' ? (cur - 1 + articles.length) % articles.length : (cur + 1) % articles.length)}
+          style={{ position: 'absolute', [pos]: 14, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.45)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', width: 40, height: 40, cursor: 'pointer', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(6px)', transition: 'all 0.2s' }}>
+          {dir}
+        </button>
+      ))}
     </div>
   )
 }
 
-// ── Welcome Popup ────────────────────────────────────────────────
-export function WelcomePopup() {
-  const [show, setShow] = useState(false)
-
-  useEffect(() => {
-    const seen = sessionStorage.getItem('nf_popup_seen')
-    if (!seen) {
-      const t = setTimeout(() => setShow(true), 1800)
-      return () => clearTimeout(t)
-    }
-  }, [])
-
-  function close() {
-    setShow(false)
-    sessionStorage.setItem('nf_popup_seen', '1')
-  }
-
-  if (!show) return null
-
+// ── Category Button ──────────────────────────────────────────────
+export function CategoryButton({ cat, active }: { cat: any; active: boolean }) {
+  const [hov, setHov] = useState(false)
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
-      onClick={close}>
-      {/* Backdrop */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', animation: 'fadeIn 0.3s ease' }} />
-      {/* Card */}
-      <div onClick={e => e.stopPropagation()}
-        style={{ position: 'relative', background: 'white', borderRadius: 16, padding: '40px 36px', maxWidth: 460, width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.3)', animation: 'slideUp 0.4s ease', textAlign: 'center' }}>
-        {/* Close */}
-        <button onClick={close} style={{ position: 'absolute', top: 14, right: 16, background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#aaa', lineHeight: 1 }}>×</button>
-        {/* Logo */}
-        <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 32, fontWeight: 900, color: '#1A1A1A', marginBottom: 6 }}>
-          NEWS<span style={{ color: '#C62828' }}>FLASH</span>
-        </div>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 2, color: '#aaa', textTransform: 'uppercase', marginBottom: 20 }}>
-          India's Fastest News Platform
-        </div>
-        <div style={{ width: 48, height: 3, background: 'linear-gradient(90deg,#C62828,#D4A017)', borderRadius: 2, margin: '0 auto 20px' }} />
-        <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 24 }}>
-          Get breaking news, IPL live scores, Sarkari Naukri updates and cricket analytics — all in one place.
-        </p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={close}
-            style={{ background: 'linear-gradient(135deg,#C62828,#B71C1C)', color: 'white', border: 'none', padding: '11px 28px', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 700, boxShadow: '0 4px 14px rgba(198,40,40,0.4)' }}>
-            Start Reading →
-          </button>
-          <Link href="/cricket" onClick={close}
-            style={{ background: '#E8F5E9', color: '#1B5E20', border: 'none', padding: '11px 20px', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600, textDecoration: 'none', display: 'inline-block' }}>
-            🏏 Live Scores
-          </Link>
-        </div>
-        <div style={{ marginTop: 16, fontSize: 11, color: '#ccc', fontFamily: 'JetBrains Mono, monospace' }}>
-          Click anywhere outside to close
-        </div>
+    <Link href={cat.href || `/?category=${cat.label}`} style={{ textDecoration: 'none', flexShrink: 0 }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
+        borderRadius: 24, border: `1.5px solid ${active ? cat.color : hov ? cat.color : T.border}`,
+        background: active ? cat.color : hov ? cat.bg : 'white',
+        color: active ? 'white' : hov ? cat.color : '#555',
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: active ? 700 : 500,
+        letterSpacing: 0.5, transition: 'all 0.2s ease', cursor: 'pointer',
+        boxShadow: active ? `0 4px 14px ${cat.color}40` : hov ? `0 2px 8px ${cat.color}25` : 'none',
+        transform: hov && !active ? 'translateY(-1px)' : 'translateY(0)',
+      }}>
+        <span style={{ fontSize: 14 }}>{cat.icon}</span>
+        {cat.label}
       </div>
-    </div>
+    </Link>
   )
 }
 
 // ── Article Card ─────────────────────────────────────────────────
-export function ArticleCard({ a, size = 'md' }: { a: any; size?: 'sm' | 'md' | 'lg' }) {
-  const [hovered, setHovered] = useState(false)
+export function ArticleCard({ a, size = 'md', horizontal = false }: { a: any; size?: 'sm'|'md'|'lg'; horizontal?: boolean }) {
+  const [hov, setHov] = useState(false)
+  const cat = CATEGORIES.find(c => c.label === a.category)
   const fmt = (d: any) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 
+  if (horizontal) return (
+    <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', gap: 12, padding: '12px 0', borderBottom: '1px solid #F0F0EC' }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <div style={{ width: 80, height: 60, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#E8E8E4' }}>
+        {a.featuredImage && <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.3s' }} loading="lazy" />}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: hov ? T.red : T.dark, lineHeight: 1.4, marginBottom: 4, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</div>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa' }}>{fmt(a.createdAt)} · {a.readTime || 1} min</div>
+      </div>
+    </Link>
+  )
+
   return (
-    <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div style={{
-        background: 'white', borderRadius: 10, overflow: 'hidden',
-        boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.12)' : '0 2px 12px rgba(0,0,0,0.06)',
-        transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
-        transition: 'all 0.25s ease', height: '100%',
-      }}>
-        <div style={{ aspectRatio: size === 'sm' ? '16/9' : '16/10', overflow: 'hidden', background: 'linear-gradient(135deg,#e8e4dc,#d4cfc6)', position: 'relative' }}>
+    <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', height: '100%', boxShadow: hov ? '0 10px 36px rgba(0,0,0,0.13)' : '0 2px 12px rgba(0,0,0,0.06)', transform: hov ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.25s ease', border: `1px solid ${T.border}` }}>
+        <div style={{ aspectRatio: size === 'sm' ? '16/9' : '16/10', overflow: 'hidden', background: '#E8E8E4', position: 'relative' }}>
           {a.featuredImage
-            ? <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hovered ? 'scale(1.04)' : 'scale(1)', transition: 'transform 0.4s ease' }} loading="lazy" />
-            : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#C62828,#1A1A1A)', opacity: 0.15 }} />
+            ? <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.4s ease' }} loading="lazy" />
+            : <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${cat?.color || T.red}22,${T.navy}22)` }} />
           }
-          {a.isBreaking && (
-            <div style={{ position: 'absolute', top: 10, left: 10, background: '#C62828', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: 2, padding: '3px 8px', borderRadius: 2, textTransform: 'uppercase' }}>⚡ Breaking</div>
-          )}
+          {a.isBreaking && <div style={{ position: 'absolute', top: 8, left: 8, background: T.red, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: 1.5, padding: '2px 8px', borderRadius: 3, textTransform: 'uppercase' }}>⚡ Breaking</div>}
         </div>
         <div style={{ padding: size === 'sm' ? '10px 12px' : '14px 16px' }}>
-          <span style={{ display: 'inline-block', background: '#FFF0F0', color: '#C62828', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: 1.5, textTransform: 'uppercase', padding: '2px 8px', borderRadius: 2, marginBottom: 8 }}>{a.category}</span>
-          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: size === 'sm' ? 14 : 16, fontWeight: 700, lineHeight: 1.35, color: hovered ? '#C62828' : '#1A1A1A', marginBottom: 8, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</h3>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <span>{fmt(a.createdAt)}</span>
-            <span>·</span>
-            <span>{a.readTime || 1} min</span>
+          {cat && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: cat.bg, color: cat.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, marginBottom: 8, fontWeight: 600 }}>{cat.icon} {cat.label}</span>}
+          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: size === 'sm' ? 14 : 16, fontWeight: 700, lineHeight: 1.35, color: hov ? T.red : T.dark, marginBottom: 8, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</h3>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <span>{fmt(a.createdAt)}</span><span>·</span><span>{a.readTime || 1} min</span>
             {a.views > 0 && <><span>·</span><span>{a.views.toLocaleString('en-IN')} views</span></>}
           </div>
         </div>
@@ -178,49 +248,17 @@ export function ArticleCard({ a, size = 'md' }: { a: any; size?: 'sm' | 'md' | '
   )
 }
 
-// ── Portal Cards ─────────────────────────────────────────────────
-export function PortalCards() {
-  const portals = [
-    { label: 'Cricket Live', icon: '🏏', desc: 'IPL scores & match updates', href: '/cricket', color: '#1B5E20', bg: '#E8F5E9' },
-    { label: 'Sarkari Naukri', icon: '🏛', desc: 'Latest government jobs', href: '/sarkari', color: '#E65100', bg: '#FFF3E0' },
-  ]
+// ── Skeleton ─────────────────────────────────────────────────────
+export function Skeleton({ h = 200 }: { h?: number }) {
+  const s = { backgroundImage: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite' }
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 28 }}>
-      {portals.map(p => (
-        <Link key={p.href} href={p.href} style={{ textDecoration: 'none' }}>
-          <div style={{ background: p.bg, borderRadius: 10, padding: '18px 20px', border: `1.5px solid ${p.color}20`, display: 'flex', alignItems: 'center', gap: 14, transition: 'all 0.2s', cursor: 'pointer' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = `0 6px 20px ${p.color}25` }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}>
-            <span style={{ fontSize: 32 }}>{p.icon}</span>
-            <div>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 700, color: p.color }}>{p.label}</div>
-              <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{p.desc}</div>
-            </div>
-            <span style={{ marginLeft: 'auto', color: p.color, fontSize: 18 }}>→</span>
-          </div>
-        </Link>
-      ))}
-    </div>
-  )
-}
-
-// ── Page Loading Bar ─────────────────────────────────────────────
-export function LoadingBar() {
-  const [width, setWidth] = useState(0)
-  const [visible, setVisible] = useState(true)
-
-  useEffect(() => {
-    setWidth(30)
-    const t1 = setTimeout(() => setWidth(70), 200)
-    const t2 = setTimeout(() => setWidth(95), 600)
-    const t3 = setTimeout(() => { setWidth(100); setTimeout(() => setVisible(false), 300) }, 1000)
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
-  }, [])
-
-  if (!visible) return null
-  return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999, height: 3 }}>
-      <div style={{ height: '100%', background: 'linear-gradient(90deg,#C62828,#D4A017)', width: `${width}%`, transition: 'width 0.4s ease', borderRadius: '0 2px 2px 0', boxShadow: '0 0 8px rgba(198,40,40,0.6)' }} />
+    <div style={{ borderRadius: 12, overflow: 'hidden', background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+      <div style={{ height: h, ...s }} />
+      <div style={{ padding: '14px 16px' }}>
+        <div style={{ height: 10, width: '35%', borderRadius: 4, marginBottom: 10, ...s }} />
+        <div style={{ height: 14, width: '92%', borderRadius: 4, marginBottom: 8, ...s }} />
+        <div style={{ height: 14, width: '68%', borderRadius: 4, ...s }} />
+      </div>
     </div>
   )
 }

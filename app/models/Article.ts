@@ -12,7 +12,7 @@ const ArticleSchema = new Schema({
   referenceLinks:   [{ sourceName: String, url: String }],
   category: {
     type: String, required: true,
-    enum: ['India','World','Business','Technology','Sports','Science','Health','Entertainment','Opinion','Cricket','Sarkari'],
+    enum: ['India','World','Business','Technology','Sports','Science','Health','Entertainment','Opinion','Cricket','Sarkari','Education'],
   },
   tags:     [String],
   status:   { type: String, enum: ['draft','published','pending_review'], default: 'draft' },
