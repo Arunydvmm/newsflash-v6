@@ -1,21 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken, AUTH_COOKIE } from './lib/auth'
+import { jwtVerify } from 'jose'
 
-export function middleware(req: NextRequest) {
+const SECRET       = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-change-in-production')
+const AUTH_COOKIE  = 'nf_token'
+const EMP_COOKIE   = 'nf_emp_token'
+
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Only protect /admin/* but NOT /admin (login page) or /api/auth/*
-  const isAdminPage = pathname.startsWith('/admin/')
-  if (!isAdminPage) return NextResponse.next()
+  // ── Super Admin panel (/admin/*)
+  if (pathname.startsWith('/admin/')) {
+    const token = req.cookies.get(AUTH_COOKIE)?.value
+    if (!token) return NextResponse.redirect(new URL('/admin', req.url))
+    try {
+      await jwtVerify(token, SECRET)
+      return NextResponse.next()
+    } catch {
+      return NextResponse.redirect(new URL('/admin', req.url))
+    }
+  }
 
-  const token = req.cookies.get(AUTH_COOKIE)?.value
-  if (!token || !verifyToken(token)) {
-    return NextResponse.redirect(new URL('/admin', req.url))
+  // ── Employee portal (/staff/*)
+  if (pathname.startsWith('/staff/')) {
+    const token = req.cookies.get(EMP_COOKIE)?.value
+    if (!token) return NextResponse.redirect(new URL('/staff', req.url))
+    try {
+      await jwtVerify(token, SECRET)
+      return NextResponse.next()
+    } catch {
+      return NextResponse.redirect(new URL('/staff', req.url))
+    }
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/admin/:path+'],
+  matcher: ['/admin/:path+', '/staff/:path+'],
 }

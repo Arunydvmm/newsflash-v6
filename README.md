@@ -1,149 +1,176 @@
-# NewsFlash — Complete Setup Guide
+# NewsFlash V6 — India's Premium News Platform
 
-## 🏗️ Project Structure
-Single Next.js app — frontend + backend + admin panel all on ONE domain. No CORS issues.
-
-```
-newsflash/
-├── app/
-│   ├── page.tsx                  ← Homepage (public)
-│   ├── article/[slug]/page.tsx   ← Article view (public)
-│   ├── admin/
-│   │   ├── page.tsx              ← Login page  →  /admin
-│   │   ├── dashboard/page.tsx    ← Dashboard   →  /admin/dashboard
-│   │   ├── articles/page.tsx     ← All articles→  /admin/articles
-│   │   ├── articles/new/page.tsx ← New article →  /admin/articles/new
-│   │   ├── articles/[id]/page.tsx← Edit article→  /admin/articles/:id
-│   │   ├── ads/page.tsx          ← Ad manager  →  /admin/ads
-│   │   └── settings/page.tsx     ← Settings    →  /admin/settings
-│   └── api/
-│       ├── articles/             ← GET list, POST create
-│       ├── articles/[id]/        ← GET, PATCH, DELETE
-│       ├── auth/login/           ← POST login
-│       ├── auth/logout/          ← POST logout
-│       ├── auth/change-password/ ← POST change password
-│       ├── upload/               ← POST image upload
-│       ├── ads/                  ← GET/PUT ad slots
-│       └── seed/                 ← GET seed database (one-time)
-├── components/admin/
-│   ├── AdminShell.tsx            ← Sidebar layout
-│   └── ArticleForm.tsx           ← Create/edit article form
-├── lib/         db.ts, auth.ts, cloudinary.ts, seed.js
-├── models/      Article.ts, Admin.ts, AdSlot.ts
-└── middleware.ts                 ← Protects /admin/* routes
-```
+A production-ready, full-stack news platform combining breaking news, IPL live scores, Sarkari Naukri portal, cricket analytics, and enterprise admin management.
 
 ---
 
-## 🚀 Deploy on Render (Single Service)
+## 🚀 Live URL
+**https://newsflash-v6.onrender.com**
 
-### Step 1 — Push to GitHub
+---
+
+## ✅ Features Built
+
+### Public Portals
+- **Homepage** — Breaking news, hero article, featured grid, trending sidebar, live ticker
+- **Article Pages** — Full SEO, JSON-LD schema, key highlights, video embed, share buttons, related articles
+- **Cricket Live** — Real-time scores via CricketData.org, 30s auto-refresh, scorecard, match detail
+- **Sarkari Naukri** — Government jobs portal with category/state filters, job detail pages, apply links
+
+### Admin Panel (`/admin`)
+- **Dashboard** — Stats, pending review queue, top articles, quick actions
+- **Articles** — Full CRUD, search/filter, quick publish/unpublish, status management
+- **Pending Review** — Approve/reject employee-submitted articles
+- **Sarkari Jobs** — Post/edit/delete government jobs with all fields
+- **Employees** — Create team members, assign roles, set permissions, suspend/delete
+- **Contact Inbox** — Read messages, reply via email, delete
+- **Ad Management** — Toggle ad slots, paste AdSense scripts
+- **Analytics** — Article stats, category breakdown, views chart, top articles
+- **Cricket** — Live match overview, API status
+- **Settings** — Change admin password
+
+### Staff Portal (`/staff`)
+- Separate login for employees
+- Write articles (submitted for review, not published directly)
+- Edit own articles
+- View article status
+
+### Backend
+- JWT authentication (admin + employee, separate cookies)
+- Role-based permissions system
+- Contact form with real Gmail SMTP email delivery + auto-reply
+- Cloudinary image upload
+- Cricket API proxy with 30s in-memory cache
+- Keep-alive ping every 10 minutes (prevents Render free tier sleep)
+- Auto-expire Sarkari jobs past last date
+- Full sitemap including articles + jobs
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Database | MongoDB Atlas (Mongoose) |
+| Auth | JWT + HTTP-only cookies |
+| Images | Cloudinary |
+| Email | Nodemailer + Gmail SMTP |
+| Cricket | CricketData.org API |
+| Styling | Tailwind CSS + inline styles |
+| Deployment | Render.com |
+
+---
+
+## ⚙️ Environment Variables
+
+Copy `.env.local.example` to `.env.local` for local dev.
+Add all variables in **Render Dashboard → Environment**.
+
+```env
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=your-32-char-secret
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+CRICKETDATA_API_KEY=...
+GMAIL_USER=65arunyadav65@gmail.com
+GMAIL_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx
+NEXT_PUBLIC_SITE_URL=https://newsflash-v6.onrender.com
+SEED_SECRET=your-seed-secret
+NODE_ENV=production
+```
+
+### Gmail App Password Setup
+1. Enable 2FA on Gmail: myaccount.google.com/security
+2. Go to: myaccount.google.com/apppasswords
+3. Generate App Password for "Mail"
+4. Use the 16-char password as `GMAIL_APP_PASSWORD`
+
+---
+
+## 🚀 Deployment on Render
+
+### 1. Push to GitHub
 ```bash
-git init
 git add .
-git commit -m "initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/newsflash.git
-git push -u origin main
+git commit -m "NewsFlash V6 — Full platform"
+git push origin main
 ```
 
-### Step 2 — Create Web Service on Render
-1. Go to https://render.com → New → Web Service
-2. Connect your GitHub repo
-3. Settings:
-   - **Name:** newsflash
-   - **Runtime:** Node
-   - **Build Command:** `npm install && npm run build`
-   - **Start Command:** `npm start`
+### 2. Create Render Web Service
+- Go to render.com → New → Web Service
+- Connect your GitHub repo
+- **Build Command:** `npm install && npm run build`
+- **Start Command:** `npm start`
+- **Node Version:** 20
 
-### Step 3 — Add Environment Variables on Render
-Go to your service → Environment → Add these:
+### 3. Add Environment Variables
+In Render Dashboard → Environment, add all variables from `.env.local.example`
 
-| Key | Value |
-|-----|-------|
-| `MONGODB_URI` | `mongodb+srv://user:pass@cluster.mongodb.net/newsflash` |
-| `JWT_SECRET` | any long random string (e.g. `xK9#mP2@qL5nR8vT3wY6`) |
-| `SEED_SECRET` | any secret word (e.g. `setup2026`) |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | from cloudinary.com |
-| `CLOUDINARY_API_KEY` | from cloudinary.com |
-| `CLOUDINARY_API_SECRET` | from cloudinary.com |
-| `NEXT_PUBLIC_SITE_URL` | `https://YOUR-APP.onrender.com` |
-| `NODE_ENV` | `production` |
+### 4. Deploy & Seed Database
+After first deploy, visit:
+```
+https://newsflash-v6.onrender.com/api/seed?key=YOUR_SEED_SECRET
+```
+This creates:
+- SuperAdmin account: `username=admin, password=Admin@123`
+- Default ad slots
 
-### Step 4 — Get a Free MongoDB Database
-1. Go to https://mongodb.com/atlas → Sign up free
-2. Create a free cluster (M0)
-3. Database Access → Add user with password
-4. Network Access → Allow from anywhere (0.0.0.0/0)
-5. Clusters → Connect → Drivers → copy the connection string
-6. Replace `<password>` with your password, paste as `MONGODB_URI`
-
-### Step 5 — Get Free Cloudinary (Image Uploads)
-1. Go to https://cloudinary.com → Sign up free
-2. Dashboard → copy Cloud Name, API Key, API Secret
-
-### Step 6 — Deploy & Seed Database
-1. Click **Deploy** on Render, wait ~3 minutes
-2. Once live, open your browser and visit:
-   ```
-   https://YOUR-APP.onrender.com/api/seed?key=setup2026
-   ```
-   (Replace `setup2026` with your SEED_SECRET value)
-3. You'll see: `"Admin created: username=admin password=Admin@123"`
+**⚠️ Change the admin password immediately at `/admin/settings`**
 
 ---
 
-## 🔐 Accessing Your Admin Panel
+## 📁 Project Structure
 
-After seeding, go to:
 ```
-https://YOUR-APP.onrender.com/admin
+newsflash-v6/
+├── app/
+│   ├── page.tsx                    # Homepage
+│   ├── layout.tsx                  # Root layout + keep-alive
+│   ├── article/[slug]/page.tsx     # Article detail
+│   ├── cricket/                    # Cricket portal
+│   ├── sarkari/                    # Sarkari Naukri portal
+│   ├── admin/                      # Super Admin panel
+│   ├── staff/                      # Employee portal
+│   ├── api/                        # All API routes
+│   ├── models/                     # Mongoose models
+│   ├── lib/                        # DB, auth, cloudinary utils
+│   └── components/                 # Shared components
+├── middleware.ts                   # JWT route protection
+├── tailwind.config.js
+├── next.config.js
+└── .env.local.example
 ```
-
-**Login credentials:**
-- Username: `admin`
-- Password: `Admin@123`
-
-⚠️ **IMPORTANT:** Change your password immediately after first login!
-Go to Admin Panel → Settings → Change Password
 
 ---
 
-## 📝 How to Publish Articles
+## 👤 Default Accounts
 
-1. Go to `/admin` and log in
-2. Click **New Article** in the sidebar
-3. Fill in: Title, Summary, Category, Article Body
-4. Optionally add: Featured Image, Video URL, Key Highlights, Reference Links
-5. Click **🚀 Publish** to make it live, or **Save Draft** to save privately
-6. Article is immediately visible at `/article/your-title-slug`
+After seeding:
 
----
-
-## 💰 Setting Up Google AdSense
-
-1. Sign up at https://adsense.google.com
-2. Once approved, get your ad unit code
-3. Go to Admin Panel → **Ad Management**
-4. Toggle the slot ON, paste your AdSense code, click Save
+| Portal | URL | Username | Password |
+|---|---|---|---|
+| Super Admin | `/admin` | `admin` | `Admin@123` |
+| Staff Portal | `/staff` | (create via admin) | (set via admin) |
 
 ---
 
-## 🔧 Local Development
+## 🔑 Key URLs
 
-```bash
-# 1. Copy env file
-cp .env.local.example .env.local
-# Fill in your MongoDB URI, JWT secret, Cloudinary keys
+| URL | Description |
+|---|---|
+| `/` | Homepage |
+| `/cricket` | Cricket live scores |
+| `/sarkari` | Government jobs |
+| `/admin` | Super Admin login |
+| `/staff` | Employee login |
+| `/api/ping` | Keep-alive endpoint |
+| `/api/seed?key=SECRET` | One-time DB setup |
+| `/sitemap.xml` | XML sitemap |
+| `/robots.txt` | Robots file |
 
-# 2. Install dependencies
-npm install
+---
 
-# 3. Seed database (first time only)
-npm run seed
-
-# 4. Run development server
-npm run dev
-
-# 5. Open http://localhost:3000
-# Admin panel: http://localhost:3000/admin
-```
+## 📧 Contact
+65arunyadav65@gmail.com

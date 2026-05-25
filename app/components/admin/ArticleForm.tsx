@@ -1,208 +1,230 @@
 'use client'
-import { useState } from 'react'
+// @ts-nocheck
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
-const CATEGORIES = ['India','World','Business','Technology','Sports','Science','Health','Entertainment','Opinion']
+const CATEGORIES = ['India','World','Business','Technology','Sports','Science','Health','Entertainment','Opinion','Cricket','Sarkari']
 
-const inp: React.CSSProperties = { width:'100%', padding:'10px 14px', border:'1.5px solid #E0DDD5', borderRadius:3, fontSize:15, outline:'none', fontFamily:'inherit', background:'white' }
-const lbl: React.CSSProperties = { display:'block', fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing:1.5, textTransform:'uppercase', color:'#6B6B6B', marginBottom:6 }
+const inp = {
+  width: '100%', padding: '9px 12px', border: '1px solid #E0DDD5', borderRadius: 4,
+  fontFamily: 'Inter, sans-serif', fontSize: 13, outline: 'none', background: 'white',
+}
+const lbl = { display: 'block', marginBottom: 5, fontSize: 12, fontWeight: 600, color: '#444', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' as const }
 
-export default function ArticleForm({ initial = null, articleId = null }: { initial?: any; articleId?: string | null }) {
-  const router = useRouter()
-  const [saving, setSaving] = useState(false)
-  const [msg, setMsg]       = useState('')
+export default function ArticleForm({ article = null, isEmployee = false }) {
+  const router  = useRouter()
+  const [loading, setLoading]   = useState(false)
+  const [imgUploading, setImgUploading] = useState(false)
+  const [error, setError]       = useState('')
+  const [success, setSuccess]   = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
 
-  const [title, setTitle]         = useState(initial?.title || '')
-  const [summary, setSummary]     = useState(initial?.summary || '')
-  const [content, setContent]     = useState(initial?.content || '')
-  const [category, setCategory]   = useState(initial?.category || 'India')
-  const [status, setStatus]       = useState(initial?.status || 'draft')
-  const [author, setAuthor]       = useState(initial?.author || '')
-  const [videoUrl, setVideoUrl]   = useState(initial?.videoUrl || '')
-  const [imageUrl, setImageUrl]   = useState(initial?.featuredImage || '')
-  const [tagsRaw, setTagsRaw]     = useState((initial?.tags || []).join(', '))
-  const [highlights, setHighlights] = useState((initial?.keyHighlights || []).join('\n'))
-  const [refs, setRefs]           = useState<{sourceName:string;url:string}[]>(initial?.referenceLinks || [{ sourceName:'', url:'' }])
-  const [uploading, setUploading] = useState(false)
+  const [form, setForm] = useState({
+    title:          article?.title          || '',
+    slug:           article?.slug           || '',
+    category:       article?.category       || 'India',
+    summary:        article?.summary        || '',
+    content:        article?.content        || '',
+    author:         article?.author         || '',
+    featuredImage:  article?.featuredImage  || '',
+    videoUrl:       article?.videoUrl       || '',
+    tags:           article?.tags?.join(', ') || '',
+    readTime:       article?.readTime       || 3,
+    status:         article?.status         || 'draft',
+    isBreaking:     article?.isBreaking     || false,
+    isFeatured:     article?.isFeatured     || false,
+    keyHighlights:  article?.keyHighlights?.join('\n') || '',
+  })
 
-  async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploading(true)
-    const fd = new FormData()
-    fd.append('image', file)
-    const res = await fetch('/api/upload', { method:'POST', body:fd, credentials:'include' })
-    const data = await res.json()
-    if (data.url) setImageUrl(data.url)
-    else setMsg('Image upload failed — check Cloudinary env vars')
-    setUploading(false)
+  const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+  const set = (e: any) => {
+    const { name, value, type, checked } = e.target
+    setForm(p => ({ ...p, [name]: type === 'checkbox' ? checked : value }))
   }
 
-  async function save(statusOverride?: string) {
-    setSaving(true); setMsg('')
+  const onTitleChange = (e: any) => {
+    const t = e.target.value
+    setForm(p => ({ ...p, title: t, slug: article ? p.slug : slug(t) }))
+  }
+
+  async function uploadImage(file: File) {
+    setImgUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' })
+      const data = await res.json()
+      if (data.url) setForm(p => ({ ...p, featuredImage: data.url }))
+      else setError('Image upload failed')
+    } catch {
+      setError('Image upload failed')
+    } finally {
+      setImgUploading(false)
+    }
+  }
+
+  async function handleSubmit(e: any, forceDraft = false) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
     const payload = {
-      title, summary, content, category,
-      status: statusOverride || status,
-      author,
-      videoUrl,
-      featuredImage: imageUrl,
-      tags: tagsRaw.split(',').map(t => t.trim()).filter(Boolean),
-      keyHighlights: highlights.split('\n').map(h => h.trim()).filter(Boolean),
-      referenceLinks: refs.filter(r => r.sourceName && r.url),
+      ...form,
+      tags:          form.tags.split(',').map((t: string) => t.trim()).filter(Boolean),
+      keyHighlights: form.keyHighlights.split('\n').map((t: string) => t.trim()).filter(Boolean),
+      status:        forceDraft ? 'draft' : isEmployee ? 'pending_review' : form.status,
     }
-    const url = articleId ? `/api/articles/${articleId}` : '/api/articles'
-    const method = articleId ? 'PATCH' : 'POST'
-    const res = await fetch(url, {
-      method, headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload), credentials:'include',
-    })
-    const data = await res.json()
-    if (res.ok) {
-      setMsg(statusOverride === 'published' ? '✓ Published!' : '✓ Saved!')
-      if (!articleId) router.push(`/admin/articles/${data._id}`)
-    } else {
-      setMsg(data.error || 'Save failed')
+
+    try {
+      const url    = article ? `/api/articles/${article._id}` : '/api/articles'
+      const method = article ? 'PATCH' : 'POST'
+      const res    = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        setError(d.error || 'Failed to save article')
+        return
+      }
+      setSuccess(article ? 'Article updated!' : 'Article saved!')
+      setTimeout(() => router.push(isEmployee ? '/staff/articles' : '/admin/articles'), 800)
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    setSaving(false)
   }
 
   return (
-    <div style={{ padding:28, maxWidth:900 }}>
-      {msg && (
-        <div style={{ background: msg.startsWith('✓') ? '#E8F5E9' : '#FFEBEE', borderLeft:`3px solid ${msg.startsWith('✓')?'#2E7D32':'#C62828'}`, padding:'10px 14px', fontFamily:'JetBrains Mono, monospace', fontSize:11, color: msg.startsWith('✓') ? '#2E7D32':'#C62828', marginBottom:20, borderRadius:'0 3px 3px 0' }}>
-          {msg}
-        </div>
-      )}
+    <form onSubmit={handleSubmit} style={{ background: 'white', padding: 28, borderRadius: 6 }}>
+      {error   && <div style={{ background: '#FFF3F3', border: '1px solid #FFCDD2', color: '#C62828', padding: '10px 14px', borderRadius: 4, marginBottom: 16, fontSize: 13 }}>{error}</div>}
+      {success && <div style={{ background: '#F1F8E9', border: '1px solid #C5E1A5', color: '#2E7D32', padding: '10px 14px', borderRadius: 4, marginBottom: 16, fontSize: 13 }}>{success}</div>}
 
       {/* Title */}
-      <div style={{ marginBottom:20 }}>
-        <label style={lbl}>Article Title *</label>
-        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter a compelling headline..."
-          style={{ ...inp, fontSize:20, fontFamily:'Playfair Display, serif', fontWeight:700 }} />
+      <div style={{ marginBottom: 18 }}>
+        <label style={lbl}>Title *</label>
+        <input name="title" value={form.title} onChange={onTitleChange} required placeholder="Article headline" style={inp} />
       </div>
 
-      {/* Summary */}
-      <div style={{ marginBottom:20 }}>
-        <label style={lbl}>Summary / Excerpt *</label>
-        <textarea value={summary} onChange={e => setSummary(e.target.value)} rows={3} placeholder="Brief summary shown on homepage and SEO..."
-          style={{ ...inp, resize:'vertical', lineHeight:1.7 }} />
+      {/* Slug */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={lbl}>URL Slug *</label>
+        <input name="slug" value={form.slug} onChange={set} required placeholder="article-url-slug" style={{ ...inp, fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }} />
       </div>
 
-      {/* Category + Status + Author */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16, marginBottom:20 }}>
+      {/* Category + Author */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 18 }}>
         <div>
           <label style={lbl}>Category *</label>
-          <select value={category} onChange={e => setCategory(e.target.value)} style={inp}>
+          <select name="category" value={form.category} onChange={set} required style={inp}>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
         <div>
-          <label style={lbl}>Status</label>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={inp}>
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
-        </div>
-        <div>
           <label style={lbl}>Author</label>
-          <input value={author} onChange={e => setAuthor(e.target.value)} placeholder="NewsFlash Desk" style={inp} />
+          <input name="author" value={form.author} onChange={set} placeholder="Author name" style={inp} />
         </div>
       </div>
 
-      {/* Featured Image */}
-      <div style={{ marginBottom:20 }}>
-        <label style={lbl}>Featured Image</label>
-        <input type="file" accept="image/*" onChange={uploadImage} style={{ display:'none' }} id="img-upload" />
-        <label htmlFor="img-upload"
-          style={{ display:'block', border:'2px dashed #E0DDD5', padding:24, textAlign:'center', cursor:'pointer', borderRadius:4, background:'#FAFAF8', fontFamily:'JetBrains Mono, monospace', fontSize:11, color:'#aaa', letterSpacing:1, textTransform:'uppercase' }}>
-          {uploading ? 'Uploading...' : imageUrl ? '✓ Image uploaded — click to replace' : '📁 Click to upload image (JPG, PNG, WebP)'}
-        </label>
-        {imageUrl && <img src={imageUrl} alt="preview" style={{ width:'100%', maxHeight:200, objectFit:'cover', borderRadius:3, marginTop:8 }} />}
-        <div style={{ marginTop:6 }}>
-          <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="Or paste image URL directly..."
-            style={{ ...inp, fontSize:13, color:'#aaa' }} />
-        </div>
+      {/* Summary */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={lbl}>Summary *</label>
+        <textarea name="summary" value={form.summary} onChange={set} required placeholder="Brief summary (shown in cards)" rows={3} style={{ ...inp, resize: 'vertical' }} />
       </div>
 
-      {/* Article Body */}
-      <div style={{ marginBottom:20 }}>
-        <label style={lbl}>Article Body * (HTML supported)</label>
-        <div style={{ border:'1.5px solid #E0DDD5', borderRadius:3, overflow:'hidden' }}>
-          <div style={{ background:'#F0EFE8', padding:'8px 10px', display:'flex', gap:6, flexWrap:'wrap', borderBottom:'1px solid #E0DDD5' }}>
-            {[
-              ['B', () => setContent(c => c + '<strong></strong>')],
-              ['I', () => setContent(c => c + '<em></em>')],
-              ['H2', () => setContent(c => c + '\n<h2></h2>\n')],
-              ['¶', () => setContent(c => c + '\n<p></p>\n')],
-              ['" "', () => setContent(c => c + '\n<blockquote></blockquote>\n')],
-              ['• List', () => setContent(c => c + '\n<ul>\n  <li></li>\n</ul>\n')],
-            ].map(([label, fn]: any) => (
-              <button key={label} onClick={fn}
-                style={{ background:'transparent', border:'none', padding:'4px 8px', fontSize:12, cursor:'pointer', color:'#6B6B6B', fontFamily:'JetBrains Mono, monospace', borderRadius:2 }}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <textarea value={content} onChange={e => setContent(e.target.value)} rows={14}
-            placeholder="Write article body here. Use HTML tags or just plain text. Example:&#10;<p>Your paragraph here.</p>&#10;<h2>Subheading</h2>&#10;<p>More content...</p>"
-            style={{ ...inp, border:'none', minHeight:280, lineHeight:1.7, fontFamily:'JetBrains Mono, monospace', fontSize:13 }} />
-        </div>
+      {/* Content */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={lbl}>Content * <span style={{ color: '#aaa', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(HTML supported)</span></label>
+        <textarea name="content" value={form.content} onChange={set} required placeholder="<p>Full article content...</p>" rows={16} style={{ ...inp, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, resize: 'vertical' }} />
       </div>
 
       {/* Key Highlights */}
-      <div style={{ marginBottom:20 }}>
-        <label style={lbl}>Key Highlights (one per line)</label>
-        <textarea value={highlights} onChange={e => setHighlights(e.target.value)} rows={4}
-          placeholder="Data protection board can impose fines up to ₹250 crore&#10;Citizens gain right to access and erase personal data&#10;Parental consent required for children's data"
-          style={{ ...inp, resize:'vertical', fontFamily:'JetBrains Mono, monospace', fontSize:13, lineHeight:1.7 }} />
+      <div style={{ marginBottom: 18 }}>
+        <label style={lbl}>Key Highlights <span style={{ color: '#aaa', fontWeight: 400, textTransform: 'none' }}>(one per line)</span></label>
+        <textarea name="keyHighlights" value={form.keyHighlights} onChange={set} placeholder="First highlight&#10;Second highlight&#10;Third highlight" rows={4} style={{ ...inp, resize: 'vertical' }} />
+      </div>
+
+      {/* Featured Image */}
+      <div style={{ marginBottom: 18 }}>
+        <label style={lbl}>Featured Image</label>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <input name="featuredImage" value={form.featuredImage} onChange={set} placeholder="https://... or upload below" style={{ ...inp, flex: 1 }} />
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={imgUploading}
+            style={{ background: '#0D1B2A', color: 'white', border: 'none', padding: '9px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap', opacity: imgUploading ? 0.6 : 1 }}>
+            {imgUploading ? 'Uploading...' : '⬆ Upload'}
+          </button>
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0])} />
+        {form.featuredImage && (
+          <img src={form.featuredImage} alt="preview" style={{ marginTop: 8, height: 80, borderRadius: 4, objectFit: 'cover', border: '1px solid #E0DDD5' }} />
+        )}
       </div>
 
       {/* Video URL */}
-      <div style={{ marginBottom:20 }}>
-        <label style={lbl}>Video URL (YouTube / Vimeo — Optional)</label>
-        <input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." style={inp} />
+      <div style={{ marginBottom: 18 }}>
+        <label style={lbl}>YouTube Video URL</label>
+        <input name="videoUrl" value={form.videoUrl} onChange={set} placeholder="https://youtube.com/watch?v=..." style={inp} />
       </div>
 
-      {/* Tags */}
-      <div style={{ marginBottom:20 }}>
-        <label style={lbl}>Tags (comma separated)</label>
-        <input value={tagsRaw} onChange={e => setTagsRaw(e.target.value)} placeholder="parliament, data privacy, technology, india" style={inp} />
+      {/* Tags + Read Time */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px', gap: 16, marginBottom: 18 }}>
+        <div>
+          <label style={lbl}>Tags (comma-separated)</label>
+          <input name="tags" value={form.tags} onChange={set} placeholder="India, economy, markets" style={inp} />
+        </div>
+        <div>
+          <label style={lbl}>Read Time (min)</label>
+          <input name="readTime" type="number" value={form.readTime} onChange={set} min={1} style={inp} />
+        </div>
       </div>
 
-      {/* Reference Links */}
-      <div style={{ marginBottom:28 }}>
-        <label style={lbl}>Sources & Reference Links</label>
-        {refs.map((r, i) => (
-          <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 2fr auto', gap:8, marginBottom:8 }}>
-            <input value={r.sourceName} onChange={e => { const n=[...refs]; n[i].sourceName=e.target.value; setRefs(n) }}
-              placeholder="Source name (e.g. Reuters)" style={inp} />
-            <input value={r.url} onChange={e => { const n=[...refs]; n[i].url=e.target.value; setRefs(n) }}
-              placeholder="https://..." style={inp} />
-            <button onClick={() => setRefs(refs.filter((_,j)=>j!==i))}
-              style={{ border:'1.5px solid #E0DDD5', background:'transparent', width:36, cursor:'pointer', color:'#ccc', borderRadius:2, fontSize:16 }}>×</button>
+      {/* Status + Flags — SuperAdmin only */}
+      {!isEmployee && (
+        <div style={{ marginBottom: 18, padding: 16, background: '#F8F8F6', borderRadius: 4, border: '1px solid #E0DDD5' }}>
+          <label style={{ ...lbl, marginBottom: 12 }}>Publish Settings</label>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div>
+              <label style={{ ...lbl, marginBottom: 4 }}>Status</label>
+              <select name="status" value={form.status} onChange={set} style={{ ...inp, width: 'auto' }}>
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="pending_review">Pending Review</option>
+              </select>
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
+              <input type="checkbox" name="isBreaking" checked={form.isBreaking} onChange={set} />
+              ⚡ Breaking News
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13 }}>
+              <input type="checkbox" name="isFeatured" checked={form.isFeatured} onChange={set} />
+              ⭐ Featured
+            </label>
           </div>
-        ))}
-        <button onClick={() => setRefs([...refs, { sourceName:'', url:'' }])}
-          style={{ border:'1.5px dashed #E0DDD5', background:'transparent', padding:'8px 16px', fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing:1, textTransform:'uppercase', cursor:'pointer', color:'#6B6B6B', borderRadius:2, marginTop:4 }}>
-          + Add Source
-        </button>
-      </div>
+        </div>
+      )}
 
-      {/* Actions */}
-      <div style={{ display:'flex', gap:10, paddingTop:20, borderTop:'1px solid #E0DDD5' }}>
-        <button onClick={() => save('published')} disabled={saving}
-          style={{ background:'#C62828', color:'white', border:'none', padding:'12px 24px', fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:1.5, textTransform:'uppercase', cursor:'pointer', borderRadius:2 }}>
-          {saving ? 'Saving...' : '🚀 Publish'}
+      {/* Buttons */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <button type="submit" disabled={loading}
+          style={{ background: '#C62828', color: 'white', padding: '11px 24px', border: 'none', borderRadius: 4, cursor: loading ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600, opacity: loading ? 0.7 : 1 }}>
+          {loading ? 'Saving...' : isEmployee ? 'Submit for Review' : article ? 'Update Article' : 'Publish Article'}
         </button>
-        <button onClick={() => save('draft')} disabled={saving}
-          style={{ background:'#1A1A1A', color:'white', border:'none', padding:'12px 24px', fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:1.5, textTransform:'uppercase', cursor:'pointer', borderRadius:2 }}>
-          Save Draft
-        </button>
-        <a href="/admin/articles"
-          style={{ border:'1.5px solid #E0DDD5', background:'transparent', padding:'11px 24px', fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:1.5, textTransform:'uppercase', cursor:'pointer', borderRadius:2, color:'#6B6B6B', textDecoration:'none' }}>
+        {!isEmployee && (
+          <button type="button" disabled={loading} onClick={(e) => handleSubmit(e, true)}
+            style={{ background: 'white', color: '#444', padding: '11px 20px', border: '1px solid #E0DDD5', borderRadius: 4, cursor: 'pointer', fontSize: 13 }}>
+            Save as Draft
+          </button>
+        )}
+        <button type="button" onClick={() => router.back()}
+          style={{ background: 'white', color: '#888', padding: '11px 20px', border: '1px solid #E0DDD5', borderRadius: 4, cursor: 'pointer', fontSize: 13 }}>
           Cancel
-        </a>
+        </button>
       </div>
-    </div>
+    </form>
   )
 }
