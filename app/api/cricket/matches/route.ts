@@ -6,7 +6,7 @@ const BASE_URL = 'https://api.cricapi.com/v1'
 
 // Simple in-memory cache (30s TTL for Render free tier)
 let cache: { data: any; ts: number } | null = null
-const CACHE_TTL = 30_000
+const CACHE_TTL = 15 * 60 * 1000 // 15 minutes — ~96 hits/day, safe for 100/day free tier
 
 export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get('type') || 'currentMatches'

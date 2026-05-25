@@ -19,6 +19,7 @@ const NAV_GROUPS = [
     items: [
       { label: 'Sarkari Naukri', href: '/admin/sarkari',         icon: '🏛' },
       { label: 'Cricket',        href: '/admin/cricket',         icon: '🏏' },
+      { label: 'Jobs API Quota', href: '/admin/jobs-quota',      icon: '💼' },
     ],
   },
   {
