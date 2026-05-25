@@ -4,11 +4,21 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 const JOB_TYPE_COLORS: Record<string, string> = {
-  'Full Time':  '#1B5E20',
-  'Part Time':  '#E65100',
-  'Contract':   '#1565C0',
-  'Internship': '#6A1B9A',
-  'Fresher':    '#00838F',
+  'Full Time':       '#1B5E20',
+  'Full Time Work':  '#1B5E20',
+  'Part Time':       '#E65100',
+  'Part Time Work':  '#E65100',
+  'Contract':        '#1565C0',
+  'Internship':      '#6A1B9A',
+  'Fresher':         '#00838F',
+  'Entry Level':     '#00838F',
+  'Remote':          '#283593',
+}
+
+function getJobTypeColor(type: string): string {
+  if (!type) return '#888'
+  const key = Object.keys(JOB_TYPE_COLORS).find(k => type.toLowerCase().includes(k.toLowerCase()))
+  return key ? JOB_TYPE_COLORS[key] : '#888'
 }
 
 export default function LiveJobsWidget({ limit = 6, location = '', title = '' }: { limit?: number; location?: string; title?: string }) {
@@ -36,7 +46,8 @@ export default function LiveJobsWidget({ limit = 6, location = '', title = '' }:
       })
   }, [limit, location, title])
 
-  if (!loading && jobs.length === 0) return null // Only hide if truly no data and no error
+  // Don't hide — show error state so we can debug
+  // if (!loading && jobs.length === 0) return null
 
   const shimmer = {
     backgroundImage: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)',
@@ -84,7 +95,7 @@ export default function LiveJobsWidget({ limit = 6, location = '', title = '' }:
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {job.title || job.job_title}
+                  {(job.title || job.job_title || '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'")}
                 </div>
                 <div style={{ fontSize: 12, color: '#666', marginBottom: 6 }}>{job.company}</div>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -99,7 +110,7 @@ export default function LiveJobsWidget({ limit = 6, location = '', title = '' }:
                     </span>
                   )}
                   {job.job_type && (
-                    <span style={{ background: (JOB_TYPE_COLORS[job.job_type] || '#888') + '15', color: JOB_TYPE_COLORS[job.job_type] || '#888', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '2px 8px', borderRadius: 3, fontWeight: 600 }}>
+                    <span style={{ background: getJobTypeColor(job.job_type) + '20', color: getJobTypeColor(job.job_type), fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '2px 8px', borderRadius: 3, fontWeight: 600 }}>
                       {job.job_type}
                     </span>
                   )}
