@@ -1,6 +1,7 @@
 // @ts-nocheck
 import type { Metadata } from 'next'
 import './globals.css'
+import MobileNav from './components/MobileNav'
 
 const SITE_URL  = 'https://newsflash-v6.onrender.com'
 const SITE_NAME = 'NewsFlash'
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ margin: 0, background: '#FAFAF8', color: '#1A1A1A' }}>
         {children}
+        <MobileNav />
       </body>
     </html>
   )

@@ -5,6 +5,9 @@ import Article from './models/Article'
 import { LoadingBar, WelcomePopup, HeroSlider, ArticleCard, CategoryButton } from './components/HomeClient'
 import DarkModeToggle from './components/DarkModeToggle'
 import PortalCards from './components/PortalCards'
+import ScrollReveal from './components/ScrollReveal'
+import CricketNewsWidget from './components/CricketNewsWidget'
+import LiveDashboard from './components/LiveDashboard'
 import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
 
@@ -104,8 +107,6 @@ export default async function HomePage({ searchParams }: any) {
                 <button type="submit" style={{ background: '#0D1B2A', color: 'white', border: 'none', padding: '8px 14px', cursor: 'pointer', fontSize: 14 }}>🔍</button>
               </form>
               <DarkModeToggle />
-              <Link href="/staff" style={{ background: '#EEF2FF', color: '#3730A3', padding: '8px 14px', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 1, textDecoration: 'none', borderRadius: 8, textTransform: 'uppercase', whiteSpace: 'nowrap', border: '1px solid #C7D2FE', fontWeight: 600 }}>Staff</Link>
-              <Link href="/admin" style={{ background: 'linear-gradient(135deg,#C62828,#B71C1C)', color: 'white', padding: '8px 14px', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 1, textDecoration: 'none', borderRadius: 8, textTransform: 'uppercase', whiteSpace: 'nowrap', boxShadow: '0 2px 10px rgba(198,40,40,0.35)', fontWeight: 600 }}>⚙ Admin</Link>
             </div>
           </div>
         </div>
@@ -151,6 +152,9 @@ export default async function HomePage({ searchParams }: any) {
           </div>
         </div>
       </div>
+
+      {/* ── LIVE DASHBOARD BAR ── */}
+      <LiveDashboard />
 
       {/* ── SEARCH RESULT HEADER ── */}
       {(search || category) && (
@@ -212,9 +216,14 @@ export default async function HomePage({ searchParams }: any) {
                   {category ? `${category} News` : search ? 'Search Results' : 'Latest News'}
                 </h2>
               </div>
-              <div className="feat-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 32 }}>
-                {featured.map((a: any) => <ArticleCard key={String(a._id)} a={a} />)}
-              </div>
+              <ScrollReveal>
+                <div className="feat-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 32 }}>
+                  {featured.map((a: any) => <ArticleCard key={String(a._id)} a={a} />)}
+                </div>
+              </ScrollReveal>
+
+              {/* Cricket News Widget */}
+              {!search && !category && <CricketNewsWidget />}
 
               {/* More Stories */}
               {rest.length > 0 && (
@@ -223,28 +232,32 @@ export default async function HomePage({ searchParams }: any) {
                     <span style={{ width: 4, height: 20, background: 'linear-gradient(180deg,#0D1B2A,#1B2B3A)', borderRadius: 2, display: 'inline-block', flexShrink: 0 }} />
                     More Stories
                   </h2>
-                  <div className="rest-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 40 }}>
-                    {rest.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
-                  </div>
+                  <ScrollReveal delay={100}>
+                    <div className="rest-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 40 }}>
+                      {rest.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
+                    </div>
+                  </ScrollReveal>
                 </>
               )}
 
               {/* Category Sections */}
-              {!search && !category && catSections.map(({ cat, articles: catArts }) => {
+              {!search && !category && catSections.map(({ cat, articles: catArts }, si) => {
                 const catData = CATEGORIES.find(c => c.label === cat)
                 return (
-                  <div key={cat} style={{ marginBottom: 40 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                      <h2 className="sec-title" style={{ margin: 0, flex: 1 }}>
-                        <span style={{ width: 4, height: 20, background: catData?.color || '#888', borderRadius: 2, display: 'inline-block', flexShrink: 0 }} />
-                        {catData?.icon} {cat}
-                      </h2>
-                      <Link href={`/?category=${cat}`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: catData?.color || '#888', textDecoration: 'none', letterSpacing: 1, flexShrink: 0, marginLeft: 12 }}>View All →</Link>
+                  <ScrollReveal key={cat} delay={si * 80}>
+                    <div style={{ marginBottom: 40 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                        <h2 className="sec-title" style={{ margin: 0, flex: 1 }}>
+                          <span style={{ width: 4, height: 20, background: catData?.color || '#888', borderRadius: 2, display: 'inline-block', flexShrink: 0 }} />
+                          {catData?.icon} {cat}
+                        </h2>
+                        <Link href={`/?category=${cat}`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: catData?.color || '#888', textDecoration: 'none', letterSpacing: 1, flexShrink: 0, marginLeft: 12 }}>View All →</Link>
+                      </div>
+                      <div className="cat-sec-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+                        {catArts.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
+                      </div>
                     </div>
-                    <div className="cat-sec-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
-                      {catArts.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
-                    </div>
-                  </div>
+                  </ScrollReveal>
                 )
               })}
             </div>
@@ -321,8 +334,6 @@ export default async function HomePage({ searchParams }: any) {
               <Link href="/cricket" className="footer-link">🏏 Cricket Live</Link>
               <Link href="/sarkari" className="footer-link">🏛 Sarkari Naukri</Link>
               <Link href="/?category=Education" className="footer-link">🎓 Education</Link>
-              <Link href="/staff" className="footer-link">👥 Staff Login</Link>
-              <Link href="/admin" className="footer-link">⚙ Admin Panel</Link>
               <Link href="/sitemap.xml" className="footer-link">🗺 Sitemap</Link>
             </div>
             <div>
