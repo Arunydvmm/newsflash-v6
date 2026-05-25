@@ -150,7 +150,7 @@ export default function CricketPage() {
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
             {[1,2,3,4].map(i => (
-              <div key={i} style={{ background: 'white', borderRadius: 8, padding: 16, border: '1px solid #E8E8E4', height: 140, background: 'linear-gradient(90deg, #f0f0ec 25%, #e8e8e4 50%, #f0f0ec 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+              <div key={i} style={{ borderRadius: 8, padding: 16, border: '1px solid #E8E8E4', height: 140, background: 'linear-gradient(90deg, #f0f0ec 25%, #e8e8e4 50%, #f0f0ec 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
             ))}
           </div>
         ) : error ? (
