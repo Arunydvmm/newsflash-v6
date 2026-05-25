@@ -2,7 +2,8 @@
 import Link from 'next/link'
 import { connectDB } from './lib/db'
 import Article from './models/Article'
-import { LoadingBar, WelcomePopup, HeroSlider, ArticleCard, CategoryButton, Skeleton, CATEGORIES, DarkModeToggle } from './components/HomeClient'
+import { LoadingBar, WelcomePopup, HeroSlider, ArticleCard, CategoryButton, CATEGORIES } from './components/HomeClient'
+import DarkModeToggle from './components/DarkModeToggle'
 import { format } from 'date-fns'
 
 export const revalidate = 60
