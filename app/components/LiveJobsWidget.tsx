@@ -24,11 +24,16 @@ export default function LiveJobsWidget({ limit = 6, location = '', title = '' }:
     fetch(`/api/jobs?${params}`)
       .then(r => r.json())
       .then(d => {
-        if (d.error && d.jobs?.length === 0) setError(d.error)
+        console.log('[LiveJobsWidget] API response:', d)
         setJobs(d.jobs || [])
+        if (d.error) setError(d.error)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(e => {
+        console.error('[LiveJobsWidget] fetch error:', e)
+        setError('Failed to load jobs')
+        setLoading(false)
+      })
   }, [limit, location, title])
 
   if (!loading && jobs.length === 0) return null // Only hide if truly no data and no error

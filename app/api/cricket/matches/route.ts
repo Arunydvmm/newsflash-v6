@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
       default: endpoint = `${BASE_URL}/currentMatches?apikey=${API_KEY}&offset=0`
     }
 
-    const res = await fetch(endpoint, { next: { revalidate: 30 } })
+    const res = await fetch(endpoint, { cache: 'no-store' })
     if (!res.ok) throw new Error(`Cricket API error: ${res.status}`)
     const data = await res.json()
 
