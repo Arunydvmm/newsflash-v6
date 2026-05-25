@@ -63,14 +63,17 @@ export default async function HomePage({ searchParams }: any) {
         .footer-link:hover{color:#D4A017}
         .sec-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#0D1B2A;display:flex;align-items:center;gap:10px;margin-bottom:16px}
         .sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#E5E7EB,transparent)}
-        @media(max-width:900px){
+        .topbar-desktop{display:flex}
+        @media(max-width:768px){
+          .topbar-desktop{display:none!important}
           .main-grid{grid-template-columns:1fr!important}
           .sidebar{display:none!important}
           .feat-grid{grid-template-columns:1fr 1fr!important}
           .rest-grid{grid-template-columns:1fr 1fr!important}
           .cat-sec-grid{grid-template-columns:1fr 1fr!important}
           .footer-grid{grid-template-columns:1fr 1fr!important;gap:24px!important}
-          .logo{font-size:26px!important}
+          .logo{font-size:24px!important}
+          .sec-title{font-size:16px!important}
         }
         @media(max-width:540px){
           .feat-grid{grid-template-columns:1fr!important}
@@ -81,8 +84,8 @@ export default async function HomePage({ searchParams }: any) {
         }
       `}</style>
 
-      {/* ── TOP BAR ── */}
-      <div style={{ background: '#0D1B2A', color: '#4A6080', fontSize: 11, padding: '6px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'JetBrains Mono, monospace' }}>
+      {/* ── TOP BAR — desktop only ── */}
+      <div style={{ background: '#0D1B2A', color: '#4A6080', fontSize: 11, padding: '6px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'JetBrains Mono, monospace' }} className="topbar-desktop">
         <span style={{ color: '#6A8099' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · IST</span>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           {['India','World','Business','Tech','Sports'].map(c => (
@@ -115,26 +118,50 @@ export default async function HomePage({ searchParams }: any) {
       {/* ── CATEGORY BUTTONS NAV ── */}
       <div style={{ background: 'white', borderBottom: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '10px 20px', display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', alignItems: 'center' }}>
-          {/* All button */}
+          {/* All */}
           <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 24, border: `1.5px solid ${!category ? '#0D1B2A' : '#E5E7EB'}`, background: !category ? '#0D1B2A' : 'white', color: !category ? 'white' : '#555', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: !category ? 700 : 500, transition: 'all 0.2s', boxShadow: !category ? '0 4px 14px rgba(13,27,42,0.3)' : 'none', cursor: 'pointer' }}>
-              📰 All
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 24, border: `2px solid ${!category ? '#0D1B2A' : '#E5E7EB'}`, background: !category ? '#0D1B2A' : 'white', color: !category ? 'white' : '#555', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, transition: 'all 0.2s', boxShadow: !category ? '0 4px 14px rgba(13,27,42,0.25)' : 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              📰 All News
             </div>
           </Link>
-          {CATEGORIES.map(cat => (
-            <CategoryButton key={cat.label} cat={cat} active={category === cat.label} />
-          ))}
-          {/* Special portals */}
+
+          {/* Cricket Live — prominent */}
           <Link href="/cricket" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 24, border: '1.5px solid #1B5E20', background: '#E8F5E9', color: '#1B5E20', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 18px', borderRadius: 24, border: '2px solid #1B5E20', background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(27,94,32,0.35)' }}>
               🏏 Cricket Live
+              <span style={{ background: 'rgba(255,255,255,0.25)', padding: '1px 6px', borderRadius: 8, fontSize: 8, letterSpacing: 1 }}>LIVE</span>
             </div>
           </Link>
+
+          {/* Sarkari Naukri — prominent */}
           <Link href="/sarkari" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 24, border: '1.5px solid #E65100', background: '#FFF3E0', color: '#E65100', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 18px', borderRadius: 24, border: '2px solid #E65100', background: 'linear-gradient(135deg,#E65100,#F57C00)', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(230,81,0,0.35)' }}>
               🏛 Sarkari Naukri
             </div>
           </Link>
+
+          {/* Education — prominent */}
+          <Link href="/?category=Education" style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 18px', borderRadius: 24, border: `2px solid ${category === 'Education' ? '#283593' : '#E8EAF6'}`, background: category === 'Education' ? 'linear-gradient(135deg,#283593,#3949AB)' : '#E8EAF6', color: category === 'Education' ? 'white' : '#283593', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: category === 'Education' ? '0 4px 14px rgba(40,53,147,0.35)' : 'none' }}>
+              🎓 Education
+            </div>
+          </Link>
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 28, background: '#E5E7EB', flexShrink: 0, margin: '0 4px' }} />
+
+          {/* Secondary categories — smaller */}
+          {['India','World','Business','Technology','Sports','Health'].map(cat => {
+            const catData = CATEGORIES.find(c => c.label === cat)
+            const isActive = category === cat
+            return (
+              <Link key={cat} href={`/?category=${cat}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 20, border: `1.5px solid ${isActive ? catData?.color : '#E5E7EB'}`, background: isActive ? catData?.bg : 'white', color: isActive ? catData?.color : '#6B7280', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fontWeight: isActive ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+                  {catData?.icon} {cat}
+                </div>
+              </Link>
+            )
+          })}
         </div>
       </div>
 
