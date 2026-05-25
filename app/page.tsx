@@ -51,39 +51,6 @@ export default async function HomePage({ searchParams }: any) {
     <div style={{ fontFamily: "'Inter', sans-serif", background: '#F4F4F0', minHeight: '100vh' }}>
       <LoadingBar />
       <WelcomePopup />
-      <style>{`
-        *{box-sizing:border-box;margin:0;padding:0}
-        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-        @keyframes shimmerBar{0%{background-position:0% 50%}100%{background-position:200% 50%}}
-        @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        @keyframes justIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
-        .footer-link{font-size:12px;padding-bottom:8px;color:#6A8099;text-decoration:none;display:block;transition:color 0.2s}
-        .footer-link:hover{color:#D4A017}
-        .sec-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#0D1B2A;display:flex;align-items:center;gap:10px;margin-bottom:16px}
-        .sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#E5E7EB,transparent)}
-        .topbar-desktop{display:flex}
-        @media(max-width:768px){
-          .topbar-desktop{display:none!important}
-          .main-grid{grid-template-columns:1fr!important}
-          .sidebar{display:none!important}
-          .feat-grid{grid-template-columns:1fr 1fr!important}
-          .rest-grid{grid-template-columns:1fr 1fr!important}
-          .cat-sec-grid{grid-template-columns:1fr 1fr!important}
-          .footer-grid{grid-template-columns:1fr 1fr!important;gap:24px!important}
-          .logo{font-size:24px!important}
-          .sec-title{font-size:16px!important}
-        }
-        @media(max-width:540px){
-          .feat-grid{grid-template-columns:1fr!important}
-          .rest-grid{grid-template-columns:1fr!important}
-          .cat-sec-grid{grid-template-columns:1fr!important}
-          .footer-grid{grid-template-columns:1fr!important}
-          .portal-grid{grid-template-columns:1fr!important}
-        }
-      `}</style>
 
       {/* ── TOP BAR — desktop only ── */}
       <div style={{ background: '#0D1B2A', color: '#4A6080', fontSize: 11, padding: '6px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'JetBrains Mono, monospace' }} className="topbar-desktop">
@@ -202,7 +169,7 @@ export default async function HomePage({ searchParams }: any) {
             <Link href="/" style={{ background: '#C62828', color: 'white', padding: '10px 24px', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>← Back to Home</Link>
           </div>
         ) : (
-          <div className="main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 28 }}>
+          <div className="main-grid" style={{ paddingTop: 4 }}>
 
             {/* ── LEFT ── */}
             <div>
@@ -245,7 +212,7 @@ export default async function HomePage({ searchParams }: any) {
                 </h2>
               </div>
               <ScrollReveal>
-                <div className="feat-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 32 }}>
+                <div className="feat-grid">
                   {featured.map((a: any) => <ArticleCard key={String(a._id)} a={a} />)}
                 </div>
               </ScrollReveal>
@@ -275,7 +242,7 @@ export default async function HomePage({ searchParams }: any) {
                     More Stories
                   </h2>
                   <ScrollReveal delay={100}>
-                    <div className="rest-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 40 }}>
+                    <div className="rest-grid">
                       {rest.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
                     </div>
                   </ScrollReveal>
@@ -295,7 +262,7 @@ export default async function HomePage({ searchParams }: any) {
                         </h2>
                         <Link href={`/?category=${cat}`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: catData?.color || '#888', textDecoration: 'none', letterSpacing: 1, flexShrink: 0, marginLeft: 12 }}>View All →</Link>
                       </div>
-                      <div className="cat-sec-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+                      <div className="cat-sec-grid">
                         {catArts.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
                       </div>
                     </div>
@@ -355,7 +322,7 @@ export default async function HomePage({ searchParams }: any) {
         {/* Gold top line */}
         <div style={{ height: 3, background: 'linear-gradient(90deg,#C62828,#D4A017,#0D1B2A)' }} />
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '44px 20px 32px' }}>
-          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 36 }}>
+          <div className="footer-grid" style={{ gap: 36 }}>
             <div>
               <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 30, fontWeight: 900, color: 'white', marginBottom: 6 }}>
                 NEWS<span style={{ color: '#C62828' }}>FLASH</span><span style={{ width: 6, height: 6, background: '#D4A017', borderRadius: '50%', display: 'inline-block', marginLeft: 3, marginBottom: 4 }} />

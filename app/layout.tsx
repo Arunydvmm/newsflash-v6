@@ -52,14 +52,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23C62828'/><text y='.9em' font-size='70' font-family='serif' font-weight='900' fill='white'>N</text></svg>" />
         <meta name="theme-color" content="#C62828" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* Keep-alive: ping every 10 minutes to prevent Render free tier sleep */}
+        {/* Keep-alive: ping every 4 minutes as browser-side backup
+            Primary keep-alive should be UptimeRobot pinging /api/ping every 5 min */}
         <script dangerouslySetInnerHTML={{
           __html: `
             (function() {
               function ping() {
-                fetch('/api/ping').catch(function(){});
+                fetch('/api/ping', { method: 'GET', cache: 'no-store' })
+                  .then(function(r){ console.log('[NewsFlash] Keep-alive ping:', r.status) })
+                  .catch(function(e){ console.warn('[NewsFlash] Ping failed:', e.message) });
               }
-              setInterval(ping, 10 * 60 * 1000);
+              // Ping immediately on load
+              ping();
+              // Then every 4 minutes
+              setInterval(ping, 4 * 60 * 1000);
+              // Also ping when tab becomes visible again
+              document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') ping();
+              });
             })();
           `
         }} />

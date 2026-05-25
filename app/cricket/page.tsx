@@ -244,7 +244,7 @@ export default function CricketPage() {
   const [matches, setMatches]     = useState<any[]>([])
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState('')
-  const [tab, setTab]             = useState<'live'|'upcoming'|'completed'|'points'|'orange'|'purple'>('live')
+  const [tab, setTab]             = useState<'live'|'upcoming'|'completed'|'points'|'orange'|'purple'>('completed')
   const [lastUpdated, setLastUpdated] = useState<Date|null>(null)
   const [seriesId, setSeriesId]   = useState('')
 
@@ -252,7 +252,15 @@ export default function CricketPage() {
     try {
       const res  = await fetch('/api/cricket/matches?type=currentMatches')
       const data = await res.json()
-      if (data.data) { setMatches(data.data); setLastUpdated(new Date()); setError('') }
+      if (data.data) {
+        setMatches(data.data)
+        setLastUpdated(new Date())
+        setError('')
+        // Auto-switch to best available tab
+        const liveCount    = data.data.filter((m: any) => m.matchStarted && !m.matchEnded).length
+        const upcomingCount = data.data.filter((m: any) => !m.matchStarted).length
+        setTab(liveCount > 0 ? 'live' : upcomingCount > 0 ? 'upcoming' : 'completed')
+      }
       else if (data.error) setError(data.error)
     } catch { setError('Failed to load') }
     finally { setLoading(false) }
@@ -269,9 +277,9 @@ export default function CricketPage() {
   const completed = matches.filter(m => m.matchEnded)
 
   const TABS = [
-    { key: 'live',      label: `🔴 Live (${live.length})` },
-    { key: 'upcoming',  label: `📅 Upcoming (${upcoming.length})` },
-    { key: 'completed', label: `✅ Completed` },
+    { key: 'live',      label: `🔴 Live (${live.length})`,           highlight: live.length > 0 },
+    { key: 'upcoming',  label: `📅 Upcoming (${upcoming.length})`,   highlight: false },
+    { key: 'completed', label: `✅ Recent (${completed.length})`,    highlight: live.length === 0 },
     { key: 'points',    label: `🏆 Points Table` },
     { key: 'orange',    label: `🧡 Orange Cap` },
     { key: 'purple',    label: `💜 Purple Cap` },
