@@ -1,6 +1,6 @@
 'use client'
 // @ts-nocheck
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import SaveStatusPopup, { SaveStatus } from '../SaveStatusPopup'
 
@@ -11,12 +11,76 @@ const QUALIFICATIONS = ['10th Pass','12th Pass','ITI','Diploma','Graduate','Post
 const inp = { width: '100%', padding: '9px 12px', border: '1px solid #E0DDD5', borderRadius: 4, fontFamily: 'Inter, sans-serif', fontSize: 13, outline: 'none', background: 'white' }
 const lbl = { display: 'block', marginBottom: 5, fontSize: 11, fontWeight: 600, color: '#444', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' as const }
 
+// ── HTML Import Parser ──────────────────────────────────────────────
+function parseHTMLJob(html: string) {
+  const parser = new DOMParser()
+  const doc    = parser.parseFromString(html, 'text/html')
+
+  // Extract title
+  const h1    = doc.querySelector('h1')
+  const title = h1?.textContent?.trim() || doc.title?.replace(/\s*[-|–]\s*.*$/, '').trim() || ''
+
+  // Remove nav, header, footer, script, style, ads
+  const removeSelectors = [
+    'nav','header','footer','script','style','aside',
+    '.breadcrumb','[class*="breadcrumb"]',
+    '[class*="nav"]','[class*="footer"]','[class*="header"]',
+    '[class*="sidebar"]','[class*="advertisement"]','[class*="ad-"]',
+    '[class*="ads"]','[id*="ad"]','[id*="ads"]',
+  ]
+  removeSelectors.forEach(sel => {
+    doc.querySelectorAll(sel).forEach(el => el.remove())
+  })
+  doc.querySelectorAll('h1').forEach(el => el.remove())
+
+  // Main content
+  const contentEl = doc.querySelector('article') || doc.querySelector('main') || doc.querySelector('[class*="article"]') || doc.querySelector('[class*="content"]') || doc.body
+  let content = contentEl?.innerHTML?.trim() || ''
+
+  content = content
+    .replace(/<div[^>]*class="[^"]*(?:wrapper|container|row|col|grid|flex|layout)[^"]*"[^>]*>\s*<\/div>/gi, '')
+    .replace(/\s+on\w+="[^"]*"/gi, '')
+    .replace(/\s+data-(?:track|analytics|ga)[^=]*="[^"]*"/gi, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+  // Extract description (first meaningful paragraph or table)
+  let description = ''
+  const paras = doc.querySelectorAll('p')
+  for (const p of paras) {
+    const text = p.textContent?.trim() || ''
+    if (text.length > 50) { description = text.slice(0, 500); break }
+  }
+
+  // Extract organization from title or content
+  const titleLower = title.toLowerCase()
+  let organization = ''
+  if (titleLower.includes('ssc')) organization = 'Staff Selection Commission'
+  else if (titleLower.includes('upsc')) organization = 'Union Public Service Commission'
+  else if (titleLower.includes('railway')) organization = 'Indian Railways'
+  else if (titleLower.includes('bank')) organization = 'Banking Sector'
+  else if (titleLower.includes('police')) organization = 'Police Department'
+
+  // Guess category
+  let category = 'SSC'
+  if (titleLower.includes('railway')) category = 'Railway'
+  else if (titleLower.includes('upsc')) category = 'UPSC'
+  else if (titleLower.includes('police')) category = 'Police'
+  else if (titleLower.includes('bank')) category = 'Bank'
+  else if (titleLower.includes('defence')) category = 'Defence'
+
+  return { title, organization, description, category, content }
+}
+
 export default function SarkariJobForm({ job = null }) {
   const router  = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveMessage, setSaveMessage] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importMsg, setImportMsg] = useState('')
+  const importRef  = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     title:           job?.title           || '',
     organization:    job?.organization    || '',
@@ -53,6 +117,35 @@ export default function SarkariJobForm({ job = null }) {
       ...p,
       qualification: p.qualification.includes(q) ? p.qualification.filter((x: string) => x !== q) : [...p.qualification, q],
     }))
+  }
+
+  function handleHTMLImport(e: any) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    setImportMsg('')
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const html = ev.target?.result as string
+        const parsed = parseHTMLJob(html)
+        setForm(p => ({
+          ...p,
+          title:        parsed.title        || p.title,
+          organization: parsed.organization || p.organization,
+          description:  parsed.description  || p.description,
+          category:     parsed.category     || p.category,
+          eligibility:  parsed.content      || p.eligibility,
+        }))
+        setImportMsg(`✓ Imported: "${parsed.title.slice(0, 60)}${parsed.title.length > 60 ? '...' : ''}"`)
+      } catch (err) {
+        setImportMsg('✗ Failed to parse HTML file')
+      } finally {
+        setImporting(false)
+        if (importRef.current) importRef.current.value = ''
+      }
+    }
+    reader.readAsText(file)
   }
 
   async function submit(e: any) {
@@ -114,6 +207,28 @@ export default function SarkariJobForm({ job = null }) {
     <form onSubmit={submit} style={{ background: 'white', padding: 28, borderRadius: 6 }}>
       <SaveStatusPopup status={saveStatus} message={saveMessage} onClose={() => setSaveStatus('idle')} />
       {error && <div style={{ background: '#FFEBEE', color: '#C62828', padding: '10px 14px', borderRadius: 4, marginBottom: 16, fontSize: 13 }}>{error}</div>}
+
+      {/* ── HTML IMPORT ── */}
+      <div style={{ marginBottom: 24, padding: '14px 18px', background: 'linear-gradient(135deg,#F0F4FF,#EEF2FF)', border: '1.5px dashed #6366F1', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, color: '#4338CA', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 3 }}>
+            📥 Import from HTML
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#6366F1' }}>
+            Upload an .html file — title, organization, description & category auto-filled
+          </div>
+          {importMsg && (
+            <div style={{ marginTop: 6, fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: importMsg.startsWith('✓') ? '#2E7D32' : '#C62828', fontWeight: 600 }}>
+              {importMsg}
+            </div>
+          )}
+        </div>
+        <button type="button" onClick={() => importRef.current?.click()} disabled={importing}
+          style={{ background: '#4338CA', color: 'white', border: 'none', padding: '9px 18px', borderRadius: 6, cursor: importing ? 'not-allowed' : 'pointer', fontSize: 12, fontFamily: 'JetBrains Mono, monospace', fontWeight: 600, letterSpacing: 0.5, opacity: importing ? 0.7 : 1, whiteSpace: 'nowrap' }}>
+          {importing ? '⏳ Importing...' : '📂 Choose HTML File'}
+        </button>
+        <input ref={importRef} type="file" accept=".html,.htm" style={{ display: 'none' }} onChange={handleHTMLImport} />
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
         <div><label style={lbl}>Job Title *</label><input name="title" value={form.title} onChange={set} required style={inp} /></div>

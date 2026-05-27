@@ -346,17 +346,21 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
       {/* Featured Image */}
       <div style={{ marginBottom: 18 }}>
         <label style={lbl}>Featured Image</label>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <input name="featuredImage" value={form.featuredImage} onChange={set} placeholder="https://... or upload below" style={{ ...inp, flex: 1 }} />
-          <button type="button" onClick={() => fileRef.current?.click()} disabled={imgUploading}
-            style={{ background: '#0D1B2A', color: 'white', border: 'none', padding: '9px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap', opacity: imgUploading ? 0.6 : 1 }}>
-            {imgUploading ? 'Uploading...' : '⬆ Upload'}
-          </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <div style={{ flex: 1 }}>
+            <input name="featuredImage" value={form.featuredImage} onChange={set} placeholder="https://... or upload below" style={{ ...inp, flex: 1, marginBottom: 8 }} />
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={imgUploading}
+              style={{ background: '#0D1B2A', color: 'white', border: 'none', padding: '9px 14px', borderRadius: 4, cursor: 'pointer', fontSize: 12, whiteSpace: 'nowrap', opacity: imgUploading ? 0.6 : 1 }}>
+              {imgUploading ? 'Uploading...' : '⬆ Upload'}
+            </button>
+          </div>
+          {form.featuredImage && (
+            <div style={{ width: 120, height: 90, borderRadius: 4, overflow: 'hidden', border: '1px solid #E0DDD5', flexShrink: 0 }}>
+              <img src={form.featuredImage} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          )}
         </div>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0])} />
-        {form.featuredImage && (
-          <img src={form.featuredImage} alt="preview" style={{ marginTop: 8, height: 80, borderRadius: 4, objectFit: 'cover', border: '1px solid #E0DDD5' }} />
-        )}
       </div>
 
       {/* Video URL */}

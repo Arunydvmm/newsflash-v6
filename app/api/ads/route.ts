@@ -3,8 +3,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '../../lib/db'
 import AdSlot from '../../models/AdSlot'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   await connectDB()
+  
+  // Check if fetching a single slot by query param
+  const slotId = req.nextUrl.searchParams.get('slotId')
+  
+  if (slotId) {
+    const slot = await AdSlot.findOne({ slotId }).lean()
+    if (slot) {
+      return NextResponse.json(slot)
+    }
+    return NextResponse.json({ error: 'Slot not found' }, { status: 404 })
+  }
+  
+  // Fetch all slots
   const slots = await AdSlot.find().lean()
 
   // Auto-add any missing slots (for existing installs)

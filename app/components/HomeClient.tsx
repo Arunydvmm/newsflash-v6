@@ -150,22 +150,26 @@ export function HeroSlider({ articles }: { articles: any[] }) {
 export function CategoryButton({ cat, active }: { cat: any; active: boolean }) {
   const [hov, setHov] = useState(false)
   return (
-    <Link href={cat.href || `/?category=${cat.label}`} style={{ textDecoration: 'none', flexShrink: 0 }}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
-        borderRadius: 24, border: `1.5px solid ${active ? cat.color : hov ? cat.color : T.border}`,
-        background: active ? cat.color : hov ? cat.bg : 'white',
-        color: active ? 'white' : hov ? cat.color : '#555',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: active ? 700 : 500,
-        letterSpacing: 0.5, transition: 'all 0.2s ease', cursor: 'pointer',
-        boxShadow: active ? `0 4px 14px ${cat.color}40` : hov ? `0 2px 8px ${cat.color}25` : 'none',
-        transform: hov && !active ? 'translateY(-1px)' : 'translateY(0)',
-      }}>
-        <span style={{ fontSize: 14 }}>{cat.icon}</span>
-        {cat.label}
-      </div>
-    </Link>
+    <div
+      onMouseEnter={() => setHov(true)} 
+      onMouseLeave={() => setHov(false)}
+      style={{ flexShrink: 0 }}>
+      <Link href={cat.href || `/?category=${cat.label}`} style={{ textDecoration: 'none' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
+          borderRadius: 24, border: `1.5px solid ${active ? cat.color : hov ? cat.color : T.border}`,
+          background: active ? cat.color : hov ? cat.bg : 'white',
+          color: active ? 'white' : hov ? cat.color : '#555',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: active ? 700 : 500,
+          letterSpacing: 0.5, transition: 'all 0.2s ease', cursor: 'pointer',
+          boxShadow: active ? `0 4px 14px ${cat.color}40` : hov ? `0 2px 8px ${cat.color}25` : 'none',
+          transform: hov && !active ? 'translateY(-1px)' : 'translateY(0)',
+        }}>
+          <span style={{ fontSize: 14 }}>{cat.icon}</span>
+          {cat.label}
+        </div>
+      </Link>
+    </div>
   )
 }
 
@@ -176,39 +180,46 @@ export function ArticleCard({ a, size = 'md', horizontal = false }: { a: any; si
   const fmt = (d: any) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 
   if (horizontal) return (
-    <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', gap: 12, padding: '12px 0', borderBottom: '1px solid #F0F0EC' }}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-      <div style={{ width: 80, height: 60, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#E8E8E4' }}>
-        {a.featuredImage && <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.3s' }} loading="lazy" />}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: hov ? T.red : T.dark, lineHeight: 1.4, marginBottom: 4, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</div>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa' }}>{fmt(a.createdAt)} · {a.readTime || 1} min</div>
-      </div>
-    </Link>
+    <div
+      onMouseEnter={() => setHov(true)} 
+      onMouseLeave={() => setHov(false)}>
+      <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', gap: 12, padding: '12px 0', borderBottom: '1px solid #F0F0EC' }}>
+        <div style={{ width: 80, height: 60, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#E8E8E4' }}>
+          {a.featuredImage && <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.3s' }} loading="lazy" />}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: hov ? T.red : T.dark, lineHeight: 1.4, marginBottom: 4, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa' }}>{fmt(a.createdAt)} · {a.readTime || 1} min</div>
+        </div>
+      </Link>
+    </div>
   )
 
   return (
-    <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}
-      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
-      <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', height: '100%', boxShadow: hov ? '0 10px 36px rgba(0,0,0,0.13)' : '0 2px 12px rgba(0,0,0,0.06)', transform: hov ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.25s ease', border: `1px solid ${T.border}` }}>
-        <div style={{ aspectRatio: size === 'sm' ? '16/9' : '16/10', overflow: 'hidden', background: '#E8E8E4', position: 'relative' }}>
-          {a.featuredImage
-            ? <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.4s ease' }} loading="lazy" />
-            : <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${cat?.color || T.red}22,${T.navy}22)` }} />
-          }
-          {a.isBreaking && <div style={{ position: 'absolute', top: 8, left: 8, background: T.red, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: 1.5, padding: '2px 8px', borderRadius: 3, textTransform: 'uppercase' }}>⚡ Breaking</div>}
-        </div>
-        <div style={{ padding: size === 'sm' ? '10px 12px' : '14px 16px' }}>
-          {cat && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: cat.bg, color: cat.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, marginBottom: 8, fontWeight: 600 }}>{cat.icon} {cat.label}</span>}
-          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: size === 'sm' ? 14 : 16, fontWeight: 700, lineHeight: 1.35, color: hov ? T.red : T.dark, marginBottom: 8, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</h3>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <span>{fmt(a.createdAt)}</span><span>·</span><span>{a.readTime || 1} min</span>
-            {a.views > 0 && <><span>·</span><span>{a.views.toLocaleString('en-IN')} views</span></>}
+    <div
+      onMouseEnter={() => setHov(true)} 
+      onMouseLeave={() => setHov(false)}
+      style={{ height: '100%' }}>
+      <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
+        <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', height: '100%', boxShadow: hov ? '0 10px 36px rgba(0,0,0,0.13)' : '0 2px 12px rgba(0,0,0,0.06)', transform: hov ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.25s ease', border: `1px solid ${T.border}` }}>
+          <div style={{ aspectRatio: size === 'sm' ? '16/9' : '16/10', overflow: 'hidden', background: '#E8E8E4', position: 'relative' }}>
+            {a.featuredImage
+              ? <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.4s ease' }} loading="lazy" />
+              : <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${cat?.color || T.red}22,${T.navy}22)` }} />
+            }
+            {a.isBreaking && <div style={{ position: 'absolute', top: 8, left: 8, background: T.red, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: 1.5, padding: '2px 8px', borderRadius: 3, textTransform: 'uppercase' }}>⚡ Breaking</div>}
+          </div>
+          <div style={{ padding: size === 'sm' ? '10px 12px' : '14px 16px' }}>
+            {cat && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: cat.bg, color: cat.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, marginBottom: 8, fontWeight: 600 }}>{cat.icon} {cat.label}</span>}
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: size === 'sm' ? 14 : 16, fontWeight: 700, lineHeight: 1.35, color: hov ? T.red : T.dark, marginBottom: 8, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</h3>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <span>{fmt(a.createdAt)}</span><span>·</span><span>{a.readTime || 1} min</span>
+              {a.views > 0 && <><span>·</span><span>{a.views.toLocaleString('en-IN')} views</span></>}
+            </div>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   )
 }
 

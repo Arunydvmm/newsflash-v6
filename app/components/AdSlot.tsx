@@ -1,21 +1,52 @@
 'use client'
 // @ts-nocheck
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface AdSlotProps {
   slotId: string
-  script: string
-  enabled: boolean
+  script?: string
+  enabled?: boolean
   size?: string
   className?: string
   style?: React.CSSProperties
 }
 
-export default function AdSlot({ slotId, script, enabled, size, className, style }: AdSlotProps) {
+export default function AdSlot({ slotId, script: initialScript, enabled: initialEnabled, size, className, style }: AdSlotProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const [script, setScript] = useState(initialScript || '')
+  const [enabled, setEnabled] = useState(initialEnabled !== false)
+  const [loaded, setLoaded] = useState(false)
 
+  // Fetch ad script from API if not provided
   useEffect(() => {
-    if (!enabled || !script || !ref.current) return
+    if (initialScript) {
+      setScript(initialScript)
+      setLoaded(true)
+      return
+    }
+
+    const fetchAd = async () => {
+      try {
+        const res = await fetch(`/api/ads?slotId=${slotId}`)
+        if (!res.ok) return
+        const data = await res.json()
+        const slot = Array.isArray(data) ? data.find((s: any) => s.slotId === slotId) : data
+        if (slot && slot.enabled && slot.script) {
+          setScript(slot.script)
+          setEnabled(true)
+        }
+      } catch (err) {
+        console.warn(`[AdSlot] Failed to fetch ${slotId}:`, err)
+      }
+      setLoaded(true)
+    }
+
+    fetchAd()
+  }, [slotId, initialScript])
+
+  // Inject script when it changes
+  useEffect(() => {
+    if (!enabled || !script || !ref.current || !loaded) return
 
     // Clear previous content
     ref.current.innerHTML = ''
@@ -45,9 +76,9 @@ export default function AdSlot({ slotId, script, enabled, size, className, style
       }
       ref.current!.appendChild(newScript)
     })
-  }, [enabled, script])
+  }, [enabled, script, loaded])
 
-  if (!enabled || !script) return null
+  if (!enabled || !script || !loaded) return null
 
   return (
     <div
