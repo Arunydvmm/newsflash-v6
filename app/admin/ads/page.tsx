@@ -83,7 +83,7 @@ export default function AdsPage() {
   }
 
   // Sort: popunder first, then native, then rest
-  const ORDER = ['popunder','native-banner','header-leaderboard','sidebar-rectangle','mid-article','mobile-sticky','cricket-sidebar','sarkari-sidebar']
+  const ORDER = ['popunder','native-banner','header-leaderboard','sidebar-rectangle','sidebar-rectangle-2','mid-article','mobile-sticky','cricket-sidebar','sarkari-sidebar']
   const sorted = [...slots].sort((a, b) => ORDER.indexOf(a.slotId) - ORDER.indexOf(b.slotId))
 
   return (

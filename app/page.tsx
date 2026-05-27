@@ -298,7 +298,7 @@ export default async function HomePage({ searchParams }: any) {
               </div>
 
               {/* Sidebar Ad 2 */}
-              <AdSlotServer slotId="sidebar-rectangle" style={{ marginTop: 8 }} />
+              <AdSlotServer slotId="sidebar-rectangle-2" style={{ marginTop: 8 }} />
             </aside>
           </div>
         )}
