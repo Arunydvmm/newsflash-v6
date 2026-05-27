@@ -28,9 +28,22 @@ const ArticleSchema = new Schema({
   isBreaking:    { type: Boolean, default: false },
 }, { timestamps: true })
 
-ArticleSchema.pre('validate', function (next) {
+ArticleSchema.pre('validate', async function (next) {
   if (this.isModified('title') && this.title) {
-    this.slug = this.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    let baseSlug = this.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    let slug = baseSlug
+    let counter = 1
+    
+    // Check for duplicate slugs and append counter if needed
+    while (true) {
+      const existing = await mongoose.models.Article?.findOne({ slug, _id: { $ne: this._id } })
+      if (!existing) {
+        this.slug = slug
+        break
+      }
+      slug = `${baseSlug}-${counter}`
+      counter++
+    }
   }
   if (this.isModified('content') && this.content) {
     const words = this.content.replace(/<[^>]+>/g, '').split(/\s+/).length

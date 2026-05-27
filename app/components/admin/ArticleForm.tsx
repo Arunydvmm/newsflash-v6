@@ -17,12 +17,23 @@ function parseHTMLArticle(html: string) {
   const parser = new DOMParser()
   const doc    = parser.parseFromString(html, 'text/html')
 
-  // Title — try h1 first, then <title>
-  const h1    = doc.querySelector('h1')
-  const title = h1?.textContent?.trim() || doc.title?.replace(/\s*[-|–]\s*.*$/, '').trim() || ''
+  // Extract SEO metadata
+  const getMetaContent = (name: string) => {
+    const meta = doc.querySelector(`meta[name="${name}"], meta[property="${name}"]`)
+    return meta?.getAttribute('content') || ''
+  }
 
-  // Remove nav, header, footer, script, style, aside, .breadcrumb elements
-  const removeSelectors = ['nav','header','footer','script','style','aside','.breadcrumb','[class*="breadcrumb"]','[class*="nav"]','[class*="footer"]','[class*="header"]','[class*="topbar"]','[class*="mobile-nav"]','[class*="logo"]']
+  const seoTitle = getMetaContent('og:title') || getMetaContent('twitter:title') || doc.querySelector('meta[name="title"]')?.getAttribute('content') || ''
+  const seoDescription = getMetaContent('og:description') || getMetaContent('twitter:description') || getMetaContent('description') || ''
+  const seoImage = getMetaContent('og:image') || getMetaContent('twitter:image') || ''
+  const seoKeywords = getMetaContent('keywords') || ''
+
+  // Title — try h1 first, then SEO title, then <title>
+  const h1    = doc.querySelector('h1')
+  const title = h1?.textContent?.trim() || seoTitle || doc.title?.replace(/\s*[-|–]\s*.*$/, '').trim() || ''
+
+  // Remove nav, header, footer, script, style, aside, breadcrumb elements
+  const removeSelectors = ['nav','header','footer','script','style','aside','.breadcrumb','[class*="breadcrumb"]','[class*="nav"]','[class*="footer"]','[class*="header"]','[class*="topbar"]','[class*="mobile-nav"]','[class*="logo"]','[class*="sidebar"]','[class*="advertisement"]','[class*="ad-"]']
   removeSelectors.forEach(sel => {
     doc.querySelectorAll(sel).forEach(el => el.remove())
   })
@@ -33,23 +44,53 @@ function parseHTMLArticle(html: string) {
   const contentEl = doc.querySelector('article') || doc.querySelector('main') || doc.querySelector('[class*="article"]') || doc.querySelector('[class*="content"]') || doc.body
   let content = contentEl?.innerHTML?.trim() || ''
 
-  // Clean up content — remove empty divs, excessive whitespace
+  // Preserve structure: keep h2, h3, p, ul, ol, li, table, blockquote, img, strong, em, etc.
+  // But clean up unnecessary divs and classes
   content = content
-    .replace(/<div[^>]*>\s*<\/div>/gi, '')
-    .replace(/\n{3,}/g, '\n\n')
+    .replace(/<div[^>]*>/gi, '') // Remove div opening tags
+    .replace(/<\/div>/gi, '') // Remove div closing tags
+    .replace(/\s+class="[^"]*"/gi, '') // Remove class attributes
+    .replace(/\s+id="[^"]*"/gi, '') // Remove id attributes
+    .replace(/\s+style="[^"]*"/gi, '') // Remove inline styles
+    .replace(/<br\s*\/?>/gi, '') // Remove br tags
+    .replace(/\n{3,}/g, '\n\n') // Clean excessive whitespace
     .trim()
 
-  // Summary — first <p> with meaningful text (>50 chars)
-  let summary = ''
-  const paras = doc.querySelectorAll('p')
-  for (const p of paras) {
-    const text = p.textContent?.trim() || ''
-    if (text.length > 50) { summary = text.slice(0, 300); break }
+  // Convert relative image URLs to absolute (if base URL is available)
+  // This preserves images in the content
+  content = content.replace(/src="(?!http|\/\/|data:)([^"]*)"/gi, (match, url) => {
+    // Keep relative URLs as-is; they'll be handled by the frontend
+    return `src="${url}"`
+  })
+
+  // Summary — use SEO description first, then first meaningful <p>
+  let summary = seoDescription || ''
+  if (!summary) {
+    const paras = doc.querySelectorAll('p')
+    for (const p of paras) {
+      const text = p.textContent?.trim() || ''
+      if (text.length > 50) { summary = text.slice(0, 300); break }
+    }
   }
 
-  // Tags — look for tag elements
-  const tagEls = doc.querySelectorAll('[class*="tag"], [class*="label"], [class*="badge"]')
-  const tags = Array.from(tagEls).map(el => el.textContent?.trim()).filter(Boolean).join(', ')
+  // Featured Image — try SEO image first, then first img in content
+  let featuredImage = seoImage || ''
+  if (!featuredImage) {
+    const firstImg = doc.querySelector('img')
+    if (firstImg) {
+      const src = firstImg.getAttribute('src') || ''
+      if (src.startsWith('http') || src.startsWith('//')) {
+        featuredImage = src
+      }
+    }
+  }
+
+  // Tags — from SEO keywords or tag elements
+  let tags = seoKeywords
+  if (!tags) {
+    const tagEls = doc.querySelectorAll('[class*="tag"], [class*="label"], [class*="badge"]')
+    tags = Array.from(tagEls).map(el => el.textContent?.trim()).filter(Boolean).join(', ')
+  }
 
   // Category — guess from content/title
   const titleLower = title.toLowerCase()
@@ -76,7 +117,7 @@ function parseHTMLArticle(html: string) {
   // Slug from title
   const slugVal = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80)
 
-  return { title, slug: slugVal, content, summary, tags, category, author, readTime }
+  return { title, slug: slugVal, content, summary, tags, category, author, readTime, featuredImage }
 }
 
 export default function ArticleForm({ article = null, isEmployee = false }) {
@@ -149,14 +190,15 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
         const parsed = parseHTMLArticle(html)
         setForm(p => ({
           ...p,
-          title:    parsed.title    || p.title,
-          slug:     parsed.slug     || p.slug,
-          content:  parsed.content  || p.content,
-          summary:  parsed.summary  || p.summary,
-          tags:     parsed.tags     || p.tags,
-          category: parsed.category || p.category,
-          author:   parsed.author   || p.author,
-          readTime: parsed.readTime || p.readTime,
+          title:         parsed.title         || p.title,
+          slug:          parsed.slug          || p.slug,
+          content:       parsed.content       || p.content,
+          summary:       parsed.summary       || p.summary,
+          tags:          parsed.tags          || p.tags,
+          category:      parsed.category      || p.category,
+          author:        parsed.author        || p.author,
+          readTime:      parsed.readTime      || p.readTime,
+          featuredImage: parsed.featuredImage || p.featuredImage,
         }))
         setImportMsg(`✓ Imported: "${parsed.title.slice(0, 60)}${parsed.title.length > 60 ? '...' : ''}"`)
       } catch (err) {
