@@ -8,6 +8,31 @@ const CACHE_TTL     = 15 * 60 * 1000 // 15 minutes
 
 let cache: { data: any; ts: number } | null = null
 
+// Returns today's date in YYYYMMDD format (IST)
+function getTodayDate(): string {
+  const now = new Date()
+  // IST = UTC+5:30
+  const ist = new Date(now.getTime() + (5.5 * 60 * 60 * 1000))
+  const y = ist.getUTCFullYear()
+  const m = String(ist.getUTCMonth() + 1).padStart(2, '0')
+  const d = String(ist.getUTCDate()).padStart(2, '0')
+  return `${y}${m}${d}`
+}
+
+// Cricket-related keywords to validate stages/competitions
+const CRICKET_KEYWORDS = [
+  'cricket', 'ipl', 'test', 't20', 'odi', 'bbl', 'psl', 'cpl', 'sa20',
+  'wpl', 'icc', 'ranji', 'duleep', 'vijay', 'syed mushtaq', 'nca',
+  'india', 'england', 'australia', 'pakistan', 'sri lanka', 'bangladesh',
+  'new zealand', 'south africa', 'west indies', 'zimbabwe', 'afghanistan',
+]
+
+function isCricketStage(stage: any): boolean {
+  const name = (stage?.Cnm || stage?.Snm || '').toLowerCase()
+  if (!name) return false
+  return CRICKET_KEYWORDS.some(kw => name.includes(kw))
+}
+
 export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get('type') || 'matches'
 
@@ -25,15 +50,16 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // LiveScore6 cricket endpoints
     let url = ''
     switch (type) {
       case 'news':
         url = `https://${RAPIDAPI_HOST}/news/list?category=cricket`
         break
       case 'matches':
+      case 'currentMatches':
       default:
-        url = `https://${RAPIDAPI_HOST}/matches/v2/list-live?category=cricket&timezone=-5`
+        // Use list-by-date for today's cricket matches (more reliable than list-live)
+        url = `https://${RAPIDAPI_HOST}/matches/v2/list-by-date?category=cricket&timezone=5.5&date=${getTodayDate()}`
         break
     }
 
@@ -41,7 +67,7 @@ export async function GET(req: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'x-rapidapi-host': RAPIDAPI_HOST,
-        'x-rapidapi-key': API_KEY, // Never reaches browser
+        'x-rapidapi-key': API_KEY,
       },
       cache: 'no-store',
     })
@@ -53,8 +79,6 @@ export async function GET(req: NextRequest) {
     }
 
     const raw = await res.json()
-
-    // Normalize LiveScore6 response to our match format
     const normalized = normalizeLiveScore6(raw, type)
     cache = { data: normalized, ts: Date.now() }
 
@@ -70,26 +94,26 @@ export async function GET(req: NextRequest) {
 
 function normalizeLiveScore6(raw: any, type: string) {
   if (type === 'news') {
-    // News list format
     const articles = raw?.Stages || raw?.articles || raw?.data || []
     return {
       data: articles.map((a: any) => ({
-        id:     a.Eid || a.id || Math.random().toString(36),
-        name:   a.Snm || a.title || '',
-        status: a.Eps || a.status || '',
+        id:           a.Eid || a.id || Math.random().toString(36),
+        name:         a.Snm || a.title || '',
+        status:       a.Eps || a.status || '',
         matchStarted: true,
         matchEnded:   false,
-        teams:  [],
-        score:  [],
-        venue:  '',
-        isNews: true,
-        link:   a.Url || a.url || '',
+        teams:        [],
+        score:        [],
+        venue:        '',
+        isNews:       true,
+        link:         a.Url || a.url || '',
       })),
     }
   }
 
-  // Match list format — LiveScore6 uses Stages > Events structure
-  const stages = raw?.Stages || []
+  // Match list — LiveScore6 uses Stages > Events structure
+  // Filter stages to only include cricket competitions
+  const stages = (raw?.Stages || []).filter(isCricketStage)
   const matches: any[] = []
 
   for (const stage of stages) {
@@ -97,14 +121,14 @@ function normalizeLiveScore6(raw: any, type: string) {
     for (const ev of events) {
       const t1 = ev?.T1?.[0] || {}
       const t2 = ev?.T2?.[0] || {}
-      const isLive      = ev?.Eps === 'Live' || ev?.Eps === 'HT'
-      const isCompleted = ev?.Eps === 'Fin' || ev?.Eps === 'FT'
+      const isLive      = ev?.Eps === 'Live' || ev?.Eps === 'HT' || ev?.Eps === 'In Progress'
+      const isCompleted = ev?.Eps === 'Fin'  || ev?.Eps === 'FT' || ev?.Eps === 'Ended'
       const isUpcoming  = !isLive && !isCompleted
 
       matches.push({
         id:           ev?.Eid || ev?.id,
         name:         `${t1?.Nm || 'Team 1'} vs ${t2?.Nm || 'Team 2'}`,
-        status:       ev?.Eps === 'Live' ? `${t1?.Nm} vs ${t2?.Nm} - Live` : ev?.Eps || '',
+        status:       isLive ? 'Live' : isCompleted ? 'Completed' : ev?.Eps || 'Upcoming',
         matchStarted: isLive || isCompleted,
         matchEnded:   isCompleted,
         teams:        [t1?.Nm || 'Team 1', t2?.Nm || 'Team 2'],
@@ -112,9 +136,9 @@ function normalizeLiveScore6(raw: any, type: string) {
           { r: t1?.Sc || t1?.Scr || 0, w: t1?.Wkts || 0, o: t1?.Ovs || 0 },
           { r: t2?.Sc || t2?.Scr || 0, w: t2?.Wkts || 0, o: t2?.Ovs || 0 },
         ],
-        venue:        stage?.Snm || ev?.Vnm || '',
-        matchType:    'T20',
-        series:       stage?.Cnm || '',
+        venue:     stage?.Snm || ev?.Vnm || '',
+        matchType: 'Cricket',
+        series:    stage?.Cnm || '',
       })
     }
   }

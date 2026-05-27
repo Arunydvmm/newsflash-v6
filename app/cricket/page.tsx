@@ -319,11 +319,11 @@ export default function CricketPage() {
       </header>
 
       {/* Tabs */}
-      <div style={{ background: '#0D1B2A', borderBottom: '1px solid rgba(255,255,255,0.08)', overflowX: 'auto' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 0 }}>
+      <div style={{ background: '#0D1B2A', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', display: 'flex', gap: 0 }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
-              style={{ padding: '12px 16px', background: 'none', border: 'none', color: tab === t.key ? 'white' : 'rgba(255,255,255,0.45)', cursor: 'pointer', fontSize: 12, fontFamily: 'JetBrains Mono, monospace', borderBottom: tab === t.key ? '3px solid #C62828' : '3px solid transparent', whiteSpace: 'nowrap', transition: 'all 0.15s' }}>
+              style={{ padding: '12px 16px', background: 'none', border: 'none', color: tab === t.key ? 'white' : 'rgba(255,255,255,0.45)', cursor: 'pointer', fontSize: 12, fontFamily: 'JetBrains Mono, monospace', borderBottom: tab === t.key ? '3px solid #C62828' : '3px solid transparent', whiteSpace: 'nowrap', transition: 'all 0.15s', flexShrink: 0 }}>
               {t.label}
             </button>
           ))}

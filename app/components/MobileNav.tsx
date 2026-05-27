@@ -7,7 +7,7 @@ const TABS = [
   { label: 'Home',     href: '/',          icon: '🏠' },
   { label: 'Cricket',  href: '/cricket',   icon: '🏏' },
   { label: 'Sarkari',  href: '/sarkari',   icon: '🏛' },
-  { label: 'Education',href: '/?category=Education', icon: '🎓' },
+  { label: 'Education',href: '/feed/education', icon: '🎓' },
 ]
 
 export default function MobileNav() {

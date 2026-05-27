@@ -32,7 +32,7 @@ export default async function SarkariPage({ searchParams }: any) {
   const search   = searchParams?.search   || ''
 
   const q: any = { isActive: true, isExpired: false }
-  if (category) q.category = category
+  if (category) q.category = { $regex: new RegExp(`^${category}$`, 'i') }
   if (state && state !== 'All India') q.state = { $in: [state, 'All India'] }
   if (search) q.$text = { $search: search }
 
