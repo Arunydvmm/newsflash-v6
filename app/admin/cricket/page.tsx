@@ -30,7 +30,7 @@ export default function AdminCricketPage() {
         <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Cricket Management</h1>
-            <p style={{ color: '#888', fontSize: 12, marginTop: 4, fontFamily: 'JetBrains Mono, monospace' }}>Live scores via CricketData.org API · Auto-refresh 30s</p>
+            <p style={{ color: '#888', fontSize: 12, marginTop: 4, fontFamily: 'JetBrains Mono, monospace' }}>Live scores via LiveScore6 RapidAPI · Auto-refresh 15min</p>
           </div>
           <Link href="/cricket" target="_blank" style={{ background: '#1B5E20', color: 'white', padding: '9px 18px', borderRadius: 4, textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>
             🏏 View Cricket Portal →
@@ -53,7 +53,7 @@ export default function AdminCricketPage() {
 
         {/* API Status */}
         <div style={{ background: error ? '#FFEBEE' : '#E8F5E9', border: `1px solid ${error ? '#FFCDD2' : '#C5E1A5'}`, borderRadius: 6, padding: '12px 16px', marginBottom: 20, fontSize: 13, color: error ? '#C62828' : '#1B5E20', fontFamily: 'JetBrains Mono, monospace' }}>
-          {error ? `⚠ API Error: ${error} — Check CRICKETDATA_API_KEY in environment variables` : `✓ CricketData.org API connected — ${matches.length} matches loaded`}
+          {error ? `⚠ API Error: ${error} — Check RAPIDAPI_KEY in environment variables` : `✓ LiveScore6 RapidAPI connected — ${matches.length} matches loaded`}
         </div>
 
         {/* Live Matches */}

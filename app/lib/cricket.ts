@@ -1,61 +1,50 @@
 // @ts-nocheck
-const API_KEY  = process.env.CRICKETDATA_API_KEY || ''
-const BASE_URL = 'https://api.cricapi.com/v1'
+// Cricket utility lib — migrated to LiveScore6 RapidAPI
+// All cricket API calls now go through /api/cricket/* route handlers
+// which use RAPIDAPI_KEY (LiveScore6) instead of CRICKETDATA_API_KEY (CricAPI)
 
-// Simple in-memory cache to avoid hammering the API
+const RAPIDAPI_HOST = 'livescore6.p.rapidapi.com'
+
+// Simple in-memory cache
 const cache: Record<string, { data: any; ts: number }> = {}
-const TTL = 30_000 // 30 seconds
+const TTL = 15 * 60 * 1000 // 15 minutes
 
-async function fetchCricket(endpoint: string, params: Record<string, string> = {}) {
-  const cacheKey = endpoint + JSON.stringify(params)
-  const now = Date.now()
+async function fetchLiveScore6(path: string, params: Record<string, string> = {}) {
+  const API_KEY = process.env.RAPIDAPI_KEY || ''
+  if (!API_KEY) return null
 
-  if (cache[cacheKey] && now - cache[cacheKey].ts < TTL) {
-    return cache[cacheKey].data
-  }
-
-  const url = new URL(`${BASE_URL}/${endpoint}`)
-  url.searchParams.set('apikey', API_KEY)
-  url.searchParams.set('offset', '0')
+  const url = new URL(`https://${RAPIDAPI_HOST}/${path}`)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
+
+  const cacheKey = url.toString()
+  const now = Date.now()
+  if (cache[cacheKey] && now - cache[cacheKey].ts < TTL) return cache[cacheKey].data
 
   try {
     const res = await fetch(url.toString(), {
-      next: { revalidate: 30 },
-      headers: { 'Accept': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-rapidapi-host': RAPIDAPI_HOST,
+        'x-rapidapi-key': API_KEY,
+      },
+      cache: 'no-store',
     })
-    if (!res.ok) throw new Error(`Cricket API error: ${res.status}`)
+    if (!res.ok) throw new Error(`LiveScore6 API error: ${res.status}`)
     const json = await res.json()
     cache[cacheKey] = { data: json, ts: now }
     return json
   } catch (err) {
-    console.error('[Cricket API]', err)
+    console.error('[LiveScore6 Cricket]', err)
     return null
   }
 }
 
-export async function getCurrentMatches() {
-  return fetchCricket('currentMatches', { per_page: '10' })
+export async function getLiveMatches() {
+  return fetchLiveScore6('matches/v2/list-live', { category: 'cricket', timezone: '5.5' })
 }
 
-export async function getMatchInfo(matchId: string) {
-  return fetchCricket('match_info', { id: matchId })
-}
-
-export async function getMatchScorecard(matchId: string) {
-  return fetchCricket('match_scorecard', { id: matchId })
-}
-
-export async function getSeriesList() {
-  return fetchCricket('series', { per_page: '10' })
-}
-
-export async function getSeriesInfo(seriesId: string) {
-  return fetchCricket('series_info', { id: seriesId })
-}
-
-export async function getPlayerInfo(playerId: string) {
-  return fetchCricket('players_info', { id: playerId })
+export async function getMatchDetail(eid: string) {
+  return fetchLiveScore6('matches/v2/get-detail', { Eid: eid, Category: 'cricket' })
 }
 
 // Format match status for display
@@ -66,12 +55,8 @@ export function formatMatchStatus(match: any): string {
   return 'Upcoming'
 }
 
-// Get team score string
-export function getTeamScore(scoreArr: any[], teamName: string): string {
-  if (!scoreArr?.length) return '—'
-  const innings = scoreArr.filter((s: any) =>
-    s.inning?.toLowerCase().includes(teamName?.toLowerCase())
-  )
-  if (!innings.length) return '—'
-  return innings.map((i: any) => `${i.r}/${i.w} (${i.o} ov)`).join(' & ')
+// Get team score string from normalized match data
+export function getTeamScore(score: { r: number; w: number; o: string | number } | undefined): string {
+  if (!score || (!score.r && !score.w)) return '—'
+  return `${score.r}/${score.w}${score.o ? ` (${score.o} ov)` : ''}`
 }

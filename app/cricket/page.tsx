@@ -309,7 +309,7 @@ export default function CricketPage() {
             </div>
             <div style={{ textAlign: 'right' }}>
               {lastUpdated && <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>Updated: {lastUpdated.toLocaleTimeString('en-IN')}</div>}
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>Auto-refresh every 30s</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>Auto-refresh every 15 min</div>
               <button onClick={fetchMatches} style={{ marginTop: 8, background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '5px 12px', borderRadius: 4, cursor: 'pointer', fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }}>
                 ↻ Refresh
               </button>
