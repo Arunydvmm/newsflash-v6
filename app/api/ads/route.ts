@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '../../lib/db'
 import AdSlot from '../../models/AdSlot'
-import { getAuth } from '../../lib/auth'
 
 export async function GET() {
   await connectDB()
@@ -31,8 +30,13 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const auth = getAuth(req)
+  // Auth check — reads cookie directly from request (works in Route Handlers)
+  const token = req.cookies.get('nf_token')?.value
+  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { verifyToken } = await import('../../lib/auth')
+  const auth = verifyToken(token)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   await connectDB()
   const slots = await req.json()
   const updates = await Promise.all(
