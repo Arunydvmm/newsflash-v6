@@ -9,6 +9,7 @@ import ScrollReveal from './components/ScrollReveal'
 import CricketNewsWidget from './components/CricketNewsWidget'
 import LiveDashboard from './components/LiveDashboard'
 import NewsFeedWidget from './components/NewsFeedWidget'
+import ISTClock from './components/ISTClock'
 import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
 
@@ -54,10 +55,10 @@ export default async function HomePage({ searchParams }: any) {
 
       {/* ── TOP BAR — desktop only ── */}
       <div style={{ background: '#0D1B2A', color: '#4A6080', fontSize: 11, padding: '6px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'JetBrains Mono, monospace' }} className="topbar-desktop">
-        <span style={{ color: '#6A8099' }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · IST</span>
+        <ISTClock />
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
           {['India','World','Business','Tech','Sports'].map(c => (
-            <Link key={c} href={`/?category=${c}`} style={{ color: '#4A6080', textDecoration: 'none', fontSize: 11, transition: 'color 0.2s' }}>{c}</Link>
+            <Link key={c} href={`/feed/${c.toLowerCase()}`} style={{ color: '#4A6080', textDecoration: 'none', fontSize: 11, transition: 'color 0.2s' }}>{c}</Link>
           ))}
         </div>
       </div>
@@ -83,53 +84,25 @@ export default async function HomePage({ searchParams }: any) {
         </div>
       </header>
 
-      {/* ── CATEGORY BUTTONS NAV ── */}
+      {/* ── CATEGORY BUTTONS NAV — 3 portals only ── */}
       <div style={{ background: 'white', borderBottom: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '10px 20px', display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', alignItems: 'center' }}>
-          {/* All */}
-          <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 24, border: `2px solid ${!category ? '#0D1B2A' : '#E5E7EB'}`, background: !category ? '#0D1B2A' : 'white', color: !category ? 'white' : '#555', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, transition: 'all 0.2s', boxShadow: !category ? '0 4px 14px rgba(13,27,42,0.25)' : 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              📰 All News
-            </div>
-          </Link>
-
-          {/* Cricket Live — prominent */}
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '10px 20px', display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', alignItems: 'center' }}>
           <Link href="/cricket" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 18px', borderRadius: 24, border: '2px solid #1B5E20', background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(27,94,32,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(27,94,32,0.35)' }}>
               🏏 Cricket Live
-              <span style={{ background: 'rgba(255,255,255,0.25)', padding: '1px 6px', borderRadius: 8, fontSize: 8, letterSpacing: 1 }}>LIVE</span>
+              <span style={{ background: 'rgba(255,255,255,0.25)', padding: '1px 7px', borderRadius: 8, fontSize: 9, letterSpacing: 1, fontFamily: 'JetBrains Mono, monospace' }}>LIVE</span>
             </div>
           </Link>
-
-          {/* Sarkari Naukri — prominent */}
           <Link href="/sarkari" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 18px', borderRadius: 24, border: '2px solid #E65100', background: 'linear-gradient(135deg,#E65100,#F57C00)', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(230,81,0,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#E65100,#F57C00)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(230,81,0,0.35)' }}>
               🏛 Sarkari Naukri
             </div>
           </Link>
-
-          {/* Education — prominent */}
-          <Link href="/?category=Education" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 18px', borderRadius: 24, border: `2px solid ${category === 'Education' ? '#283593' : '#E8EAF6'}`, background: category === 'Education' ? 'linear-gradient(135deg,#283593,#3949AB)' : '#E8EAF6', color: category === 'Education' ? 'white' : '#283593', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: category === 'Education' ? '0 4px 14px rgba(40,53,147,0.35)' : 'none' }}>
+          <Link href="/feed/education" style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#283593,#3949AB)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(40,53,147,0.35)' }}>
               🎓 Education
             </div>
           </Link>
-
-          {/* Divider */}
-          <div style={{ width: 1, height: 28, background: '#E5E7EB', flexShrink: 0, margin: '0 4px' }} />
-
-          {/* Secondary categories — smaller */}
-          {['India','World','Business','Technology','Sports','Health'].map(cat => {
-            const catData = CATEGORIES.find(c => c.label === cat)
-            const isActive = category === cat
-            return (
-              <Link key={cat} href={`/?category=${cat}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 20, border: `1.5px solid ${isActive ? catData?.color : '#E5E7EB'}`, background: isActive ? catData?.bg : 'white', color: isActive ? catData?.color : '#6B7280', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fontWeight: isActive ? 700 : 400, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
-                  {catData?.icon} {cat}
-                </div>
-              </Link>
-            )
-          })}
         </div>
       </div>
 
@@ -173,23 +146,33 @@ export default async function HomePage({ searchParams }: any) {
 
             {/* ── LEFT ── */}
             <div>
-              {/* Just In */}
+              {/* ── PREMIUM JUST IN ── */}
               {!search && !category && justIn.length > 0 && (
-                <div style={{ background: 'white', borderRadius: 12, padding: '14px 18px', marginBottom: 24, border: '1px solid #E5E7EB', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                    <span style={{ width: 8, height: 8, background: '#C62828', borderRadius: '50%', animation: 'pulse 1.5s infinite', display: 'inline-block' }} />
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#C62828', fontWeight: 700 }}>Just In</span>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa', marginLeft: 'auto' }}>Latest updates</span>
+                <div style={{ background: 'linear-gradient(135deg,#0D1B2A,#1B2B3A)', borderRadius: 14, padding: '16px 20px', marginBottom: 24, boxShadow: '0 4px 20px rgba(13,27,42,0.2)', overflow: 'hidden', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg,#C62828,#D4A017,#C62828)', backgroundSize: '200% 100%', animation: 'shimmerBar 2s infinite' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                    <span style={{ width: 8, height: 8, background: '#C62828', borderRadius: '50%', animation: 'pulse 1.5s infinite', display: 'inline-block', boxShadow: '0 0 8px rgba(198,40,40,0.6)' }} />
+                    <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', color: 'white', fontWeight: 700 }}>Just In</span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.4)', marginLeft: 'auto' }}>Latest updates</span>
                   </div>
-                  <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                  <div className="scroll-snap-x">
                     {justIn.map((a: any, i: number) => {
                       const cat = CATEGORIES.find(c => c.label === a.category)
                       return (
-                        <Link key={String(a._id)} href={`/article/${a.slug}`} style={{ textDecoration: 'none', flexShrink: 0, width: 200 }}>
-                          <div style={{ background: '#F8F8F6', borderRadius: 8, padding: '10px 12px', animation: `justIn 0.4s ease ${i * 0.1}s both`, border: '1px solid #F0F0EC' }}>
-                            {cat && <span style={{ background: cat.bg, color: cat.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 8, padding: '2px 6px', borderRadius: 3, display: 'inline-block', marginBottom: 6 }}>{cat.icon} {cat.label}</span>}
-                            <div style={{ fontSize: 12, fontWeight: 600, color: '#0D1B2A', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</div>
-                            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa', marginTop: 6 }}>{fmt(a.createdAt)}</div>
+                        <Link key={String(a._id)} href={`/article/${a.slug}`} style={{ textDecoration: 'none', flexShrink: 0, width: 220 }}>
+                          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', animation: `slideIn 0.4s ease ${i * 0.1}s both` }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}>
+                            {a.featuredImage && (
+                              <div style={{ height: 90, overflow: 'hidden' }}>
+                                <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                              </div>
+                            )}
+                            <div style={{ padding: '10px 12px' }}>
+                              {cat && <span style={{ background: cat.color, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, padding: '2px 7px', borderRadius: 3, display: 'inline-block', marginBottom: 6, letterSpacing: 0.5 }}>{cat.icon} {cat.label}</span>}
+                              <div style={{ fontSize: 12, fontWeight: 600, color: 'white', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontFamily: 'Poppins, sans-serif' }}>{a.title}</div>
+                              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>{fmt(a.createdAt)}</div>
+                            </div>
                           </div>
                         </Link>
                       )
@@ -204,7 +187,22 @@ export default async function HomePage({ searchParams }: any) {
               {/* Portal Cards */}
               {!search && !category && <PortalCards />}
 
-              {/* Featured Articles */}
+              {/* ── LIVE FEEDS FIRST (above latest news) ── */}
+              {!search && !category && (
+                <>
+                  <ScrollReveal>
+                    <CricketNewsWidget />
+                  </ScrollReveal>
+                  <ScrollReveal delay={50}>
+                    <NewsFeedWidget topic="education" limit={8} />
+                  </ScrollReveal>
+                  <ScrollReveal delay={100}>
+                    <NewsFeedWidget topic="sarkari" limit={6} />
+                  </ScrollReveal>
+                </>
+              )}
+
+              {/* ── LATEST NEWS (below live feeds) ── */}
               <div style={{ marginBottom: 8 }}>
                 <h2 className="sec-title">
                   <span style={{ width: 4, height: 20, background: 'linear-gradient(180deg,#C62828,#D4A017)', borderRadius: 2, display: 'inline-block', flexShrink: 0 }} />
@@ -216,23 +214,6 @@ export default async function HomePage({ searchParams }: any) {
                   {featured.map((a: any) => <ArticleCard key={String(a._id)} a={a} />)}
                 </div>
               </ScrollReveal>
-
-              {/* Cricket News Widget */}
-              {!search && !category && <CricketNewsWidget />}
-
-              {/* Education News Widget — major focus */}
-              {!search && !category && (
-                <ScrollReveal delay={50}>
-                  <NewsFeedWidget topic="education" limit={8} />
-                </ScrollReveal>
-              )}
-
-              {/* Sarkari News Widget */}
-              {!search && !category && (
-                <ScrollReveal delay={100}>
-                  <NewsFeedWidget topic="sarkari" limit={6} />
-                </ScrollReveal>
-              )}
 
               {/* More Stories */}
               {rest.length > 0 && (
@@ -260,7 +241,7 @@ export default async function HomePage({ searchParams }: any) {
                           <span style={{ width: 4, height: 20, background: catData?.color || '#888', borderRadius: 2, display: 'inline-block', flexShrink: 0 }} />
                           {catData?.icon} {cat}
                         </h2>
-                        <Link href={`/?category=${cat}`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: catData?.color || '#888', textDecoration: 'none', letterSpacing: 1, flexShrink: 0, marginLeft: 12 }}>View All →</Link>
+                        <Link href={`/feed/${cat.toLowerCase()}`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: catData?.color || '#888', textDecoration: 'none', letterSpacing: 1, flexShrink: 0, marginLeft: 12 }}>View All →</Link>
                       </div>
                       <div className="cat-sec-grid">
                         {catArts.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
@@ -330,7 +311,7 @@ export default async function HomePage({ searchParams }: any) {
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 3, color: '#2C3E50', textTransform: 'uppercase', marginBottom: 16 }}>India's Fastest News Platform</div>
               <div style={{ width: 48, height: 2, background: 'linear-gradient(90deg,#C62828,#D4A017)', borderRadius: 1, marginBottom: 16 }} />
               <p style={{ fontSize: 13, lineHeight: 1.9, color: '#6A8099', marginBottom: 16 }}>India's trusted digital newsroom — breaking news, IPL live scores, Sarkari Naukri, cricket analytics and education updates. Updated 24/7.</p>
-              <a href="mailto:65arunyadav65@gmail.com" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4A6080', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>📧 65arunyadav65@gmail.com</a>
+              <a href="mailto:admin@newsflash-v6.onrender.com" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4A6080', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>📧 admin@newsflash-v6.onrender.com</a>
             </div>
             <div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#D4A017', marginBottom: 16, fontWeight: 700 }}>Sections</div>
@@ -351,8 +332,8 @@ export default async function HomePage({ searchParams }: any) {
               <Link href="/contact" className="footer-link">Contact Us</Link>
               <Link href="/privacy-policy" className="footer-link">Privacy Policy</Link>
               <Link href="/terms" className="footer-link">Terms of Service</Link>
-              <a href="mailto:65arunyadav65@gmail.com" className="footer-link">Advertise With Us</a>
-              <a href="mailto:65arunyadav65@gmail.com?subject=News Tip" className="footer-link">Submit News Tip</a>
+              <a href="mailto:admin@newsflash-v6.onrender.com" className="footer-link">Advertise With Us</a>
+              <a href="mailto:admin@newsflash-v6.onrender.com?subject=News Tip" className="footer-link">Submit News Tip</a>
             </div>
           </div>
         </div>

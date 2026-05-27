@@ -2,8 +2,9 @@
 // @ts-nocheck
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import SaveStatusPopup, { SaveStatus } from '../SaveStatusPopup'
 
-const CATEGORIES = ['India','World','Business','Technology','Sports','Science','Health','Entertainment','Opinion','Cricket','Sarkari']
+const CATEGORIES = ['India','World','Business','Technology','Sports','Science','Health','Entertainment','Opinion','Cricket','Sarkari','Education']
 
 const inp = {
   width: '100%', padding: '9px 12px', border: '1px solid #E0DDD5', borderRadius: 4,
@@ -17,6 +18,8 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
   const [imgUploading, setImgUploading] = useState(false)
   const [error, setError]       = useState('')
   const [success, setSuccess]   = useState('')
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [saveMessage, setSaveMessage] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({
@@ -69,6 +72,8 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
     setLoading(true)
     setError('')
     setSuccess('')
+    setSaveStatus('saving')
+    setSaveMessage('')
 
     const payload = {
       ...form,
@@ -88,13 +93,19 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
       })
       if (!res.ok) {
         const d = await res.json()
-        setError(d.error || 'Failed to save article')
+        const errMsg = d.error || 'Failed to save article'
+        setError(errMsg)
+        setSaveStatus('error')
+        setSaveMessage(errMsg)
         return
       }
-      setSuccess(article ? 'Article updated!' : 'Article saved!')
-      setTimeout(() => router.push(isEmployee ? '/staff/articles' : '/admin/articles'), 800)
+      const finalStatus = forceDraft ? 'saved' : isEmployee ? 'saved' : payload.status === 'published' ? 'published' : 'saved'
+      setSaveStatus(finalStatus as SaveStatus)
+      setSaveMessage(forceDraft ? 'Saved as draft' : article ? 'Article updated successfully' : 'Article created successfully')
+      setTimeout(() => router.push(isEmployee ? '/staff/articles' : '/admin/articles'), 2000)
     } catch {
-      setError('Network error. Please try again.')
+      setSaveStatus('error')
+      setSaveMessage('Network error. Please check your connection.')
     } finally {
       setLoading(false)
     }
@@ -102,6 +113,11 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ background: 'white', padding: 28, borderRadius: 6 }}>
+      <SaveStatusPopup
+        status={saveStatus}
+        message={saveMessage}
+        onClose={() => setSaveStatus('idle')}
+      />
       {error   && <div style={{ background: '#FFF3F3', border: '1px solid #FFCDD2', color: '#C62828', padding: '10px 14px', borderRadius: 4, marginBottom: 16, fontSize: 13 }}>{error}</div>}
       {success && <div style={{ background: '#F1F8E9', border: '1px solid #C5E1A5', color: '#2E7D32', padding: '10px 14px', borderRadius: 4, marginBottom: 16, fontSize: 13 }}>{success}</div>}
 

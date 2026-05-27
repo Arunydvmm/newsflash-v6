@@ -10,8 +10,6 @@ export default function DarkModeToggle() {
     if (saved === '1') {
       setDark(true)
       document.documentElement.classList.add('dark')
-      document.body.style.background = '#0D1B2A'
-      document.body.style.color = '#E5E7EB'
     }
   }, [])
 
@@ -19,22 +17,27 @@ export default function DarkModeToggle() {
     const next = !dark
     setDark(next)
     localStorage.setItem('nf_dark', next ? '1' : '0')
+    // Toggle class on <html> — CSS variables handle everything
     document.documentElement.classList.toggle('dark', next)
-    document.body.style.background = next ? '#0D1B2A' : '#F4F4F0'
-    document.body.style.color = next ? '#E5E7EB' : '#1A1A1A'
   }
 
   return (
     <button onClick={toggle} title={dark ? 'Switch to Light mode' : 'Switch to Dark mode'}
       style={{
-        background: dark ? '#1B2B3A' : '#F0F0EC',
-        border: `1px solid ${dark ? '#2C3E50' : '#E0DDD5'}`,
-        borderRadius: 20, padding: '6px 12px', cursor: 'pointer',
-        fontSize: 14, display: 'flex', alignItems: 'center', gap: 6,
-        transition: 'all 0.2s',
+        background: dark ? '#1B2B3A' : '#F0F4FF',
+        border: `1.5px solid ${dark ? '#2C3E50' : '#C7D2FE'}`,
+        borderRadius: 20,
+        padding: '6px 14px',
+        cursor: 'pointer',
+        fontSize: 14,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        transition: 'all 0.25s ease',
+        flexShrink: 0,
       }}>
-      {dark ? '☀️' : '🌙'}
-      <span style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', color: dark ? '#A0AEC0' : '#888' }}>
+      <span style={{ fontSize: 16 }}>{dark ? '☀️' : '🌙'}</span>
+      <span style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', color: dark ? '#94A3B8' : '#3730A3', fontWeight: 600 }}>
         {dark ? 'Light' : 'Dark'}
       </span>
     </button>

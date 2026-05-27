@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import SaveStatusPopup, { SaveStatus } from '../SaveStatusPopup'
 
 const CATEGORIES = ['Railway','SSC','UPSC','Police','Defence','Bank','Teaching','State','PSU','Internship','Private','Other']
 const STATES = ['All India','Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Delhi','Jammu & Kashmir','Ladakh']
@@ -14,6 +15,8 @@ export default function SarkariJobForm({ job = null }) {
   const router  = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [saveMessage, setSaveMessage] = useState('')
   const [form, setForm] = useState({
     title:           job?.title           || '',
     organization:    job?.organization    || '',
@@ -56,6 +59,8 @@ export default function SarkariJobForm({ job = null }) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSaveStatus('saving')
+    setSaveMessage('')
     const payload = {
       title: form.title,
       organization: form.organization,
@@ -92,12 +97,22 @@ export default function SarkariJobForm({ job = null }) {
       body: JSON.stringify(payload),
     })
     const data = await res.json()
-    if (!res.ok) { setError(data.error || 'Failed'); setLoading(false); return }
-    router.push('/admin/sarkari')
+    if (!res.ok) {
+      const errMsg = data.error || 'Failed to save job'
+      setError(errMsg)
+      setSaveStatus('error')
+      setSaveMessage(errMsg)
+      setLoading(false)
+      return
+    }
+    setSaveStatus('published')
+    setSaveMessage(job ? 'Job listing updated successfully' : 'Job listing posted successfully')
+    setTimeout(() => router.push('/admin/sarkari'), 2000)
   }
 
   return (
     <form onSubmit={submit} style={{ background: 'white', padding: 28, borderRadius: 6 }}>
+      <SaveStatusPopup status={saveStatus} message={saveMessage} onClose={() => setSaveStatus('idle')} />
       {error && <div style={{ background: '#FFEBEE', color: '#C62828', padding: '10px 14px', borderRadius: 4, marginBottom: 16, fontSize: 13 }}>{error}</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>

@@ -47,7 +47,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+        <link rel="manifest" href="/manifest.json" />
         {/* SVG favicon */}
         <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23C62828'/><text y='.9em' font-size='70' font-family='serif' font-weight='900' fill='white'>N</text></svg>" />
         <meta name="theme-color" content="#C62828" />
@@ -74,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `
         }} />
       </head>
-      <body style={{ margin: 0, background: '#FAFAF8', color: '#1A1A1A' }}>
+      <body style={{ margin: 0 }}>
         {children}
         <MobileNav />
       </body>

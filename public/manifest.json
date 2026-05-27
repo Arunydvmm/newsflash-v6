@@ -1,0 +1,42 @@
+{
+  "name": "NewsFlash — India's Fastest News",
+  "short_name": "NewsFlash",
+  "description": "Breaking news, IPL live scores, Sarkari Naukri, cricket analytics and education updates. Updated 24/7.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D1B2A",
+  "theme_color": "#C62828",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%23C62828'/><text y='140' x='20' font-size='120' font-family='serif' font-weight='900' fill='white'>N</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='64' fill='%23C62828'/><text y='380' x='40' font-size='320' font-family='serif' font-weight='900' fill='white'>N</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["news", "sports", "education"],
+  "lang": "en-IN",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Cricket Live",
+      "url": "/cricket",
+      "description": "IPL live scores and match updates"
+    },
+    {
+      "name": "Sarkari Naukri",
+      "url": "/sarkari",
+      "description": "Latest government jobs"
+    },
+    {
+      "name": "Education",
+      "url": "/feed/education",
+      "description": "Education news and exam updates"
+    }
+  ]
+}
