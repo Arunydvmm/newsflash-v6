@@ -30,6 +30,8 @@ export async function GET(req: NextRequest) {
 
   // Create default ad slots
   const slots = [
+    { slotId: 'popunder',            name: 'Popunder (Global)',     size: 'Global',  position: 'Injected globally on all pages',      enabled: false, script: '' },
+    { slotId: 'native-banner',       name: 'Native Banner',         size: 'Native',  position: 'Below article grid on homepage',      enabled: false, script: '' },
     { slotId: 'header-leaderboard',  name: 'Header Leaderboard',   size: '728×90',  position: 'Below navigation in site header',    enabled: false, script: '' },
     { slotId: 'sidebar-rectangle',   name: 'Sidebar Rectangle',    size: '300×250', position: 'Right sidebar on homepage',          enabled: false, script: '' },
     { slotId: 'mid-article',         name: 'Mid-Article Banner',   size: '728×90',  position: 'Mid-way through article body',       enabled: false, script: '' },

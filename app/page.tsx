@@ -12,6 +12,7 @@ import NewsFeedWidget from './components/NewsFeedWidget'
 import ISTClock from './components/ISTClock'
 import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
+import AdSlotServer from './components/AdSlotServer'
 
 export const revalidate = 60
 
@@ -124,6 +125,9 @@ export default async function HomePage({ searchParams }: any) {
       {/* ── LIVE DASHBOARD BAR ── */}
       <LiveDashboard />
 
+      {/* ── HEADER LEADERBOARD AD ── */}
+      <AdSlotServer slotId="header-leaderboard" style={{ padding: '8px 0', background: '#F8F8F6', textAlign: 'center' }} />
+
       {/* ── SEARCH RESULT HEADER ── */}
       {(search || category) && (
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '14px 20px 0', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#6B7280' }}>
@@ -228,9 +232,13 @@ export default async function HomePage({ searchParams }: any) {
                 </>
               )}
 
+              {/* Native Banner Ad — below article grid */}
+              {!search && !category && (
+                <AdSlotServer slotId="native-banner" style={{ marginBottom: 32 }} />
+              )}
+
               {/* Category Sections */}
-              {!search && !category && catSections.map(({ cat, articles: catArts }, si) => {
-                const catData = CATEGORIES.find(c => c.label === cat)
+              {!search && !category && catSections.map(({ cat, articles: catArts }, si) => {                const catData = CATEGORIES.find(c => c.label === cat)
                 return (
                   <ScrollReveal key={cat} delay={si * 80}>
                     <div style={{ marginBottom: 40 }}>
@@ -252,8 +260,8 @@ export default async function HomePage({ searchParams }: any) {
 
             {/* ── SIDEBAR ── */}
             <aside className="sidebar">
-              {/* Ad */}
-              <div style={{ background: '#F0EFE8', border: '1px dashed #E0DDD5', height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#ccc', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 24, borderRadius: 10 }}>300 × 250 Ad</div>
+              {/* Sidebar Rectangle Ad */}
+              <AdSlotServer slotId="sidebar-rectangle" style={{ marginBottom: 24 }} />
 
               {/* Trending */}
               {trending.length > 0 && (
@@ -289,8 +297,8 @@ export default async function HomePage({ searchParams }: any) {
                 ))}
               </div>
 
-              {/* Ad 2 */}
-              <div style={{ background: '#F0EFE8', border: '1px dashed #E0DDD5', height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#ccc', textTransform: 'uppercase', letterSpacing: 2, borderRadius: 10 }}>300 × 200 Ad</div>
+              {/* Sidebar Ad 2 */}
+              <AdSlotServer slotId="sidebar-rectangle" style={{ marginTop: 8 }} />
             </aside>
           </div>
         )}

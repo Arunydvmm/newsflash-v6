@@ -7,6 +7,26 @@ import { getAuth } from '../../lib/auth'
 export async function GET() {
   await connectDB()
   const slots = await AdSlot.find().lean()
+
+  // Auto-add any missing slots (for existing installs)
+  const defaultSlots = [
+    { slotId: 'popunder',           name: 'Popunder (Global)',    size: 'Global',  position: 'Injected globally on all pages',   enabled: false, script: '' },
+    { slotId: 'native-banner',      name: 'Native Banner',        size: 'Native',  position: 'Below article grid on homepage',  enabled: false, script: '' },
+    { slotId: 'header-leaderboard', name: 'Header Leaderboard',   size: '728×90',  position: 'Below navigation in site header', enabled: false, script: '' },
+    { slotId: 'sidebar-rectangle',  name: 'Sidebar Rectangle',    size: '300×250', position: 'Right sidebar on homepage',       enabled: false, script: '' },
+    { slotId: 'mid-article',        name: 'Mid-Article Banner',   size: '728×90',  position: 'Mid-way through article body',    enabled: false, script: '' },
+    { slotId: 'mobile-sticky',      name: 'Mobile Sticky Footer', size: '320×50',  position: 'Sticky bottom on mobile devices', enabled: false, script: '' },
+    { slotId: 'cricket-sidebar',    name: 'Cricket Sidebar',      size: '300×250', position: 'Cricket section sidebar',         enabled: false, script: '' },
+    { slotId: 'sarkari-sidebar',    name: 'Sarkari Sidebar',      size: '300×250', position: 'Sarkari Naukri section sidebar',  enabled: false, script: '' },
+  ]
+  const existingIds = slots.map((s: any) => s.slotId)
+  const missing = defaultSlots.filter(s => !existingIds.includes(s.slotId))
+  if (missing.length > 0) {
+    await AdSlot.insertMany(missing)
+    const updated = await AdSlot.find().lean()
+    return NextResponse.json(updated)
+  }
+
   return NextResponse.json(slots)
 }
 

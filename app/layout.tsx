@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import MobileNav from './components/MobileNav'
 import HomeButton from './components/HomeButton'
+import AdManager from './components/AdManager'
 
 const SITE_URL  = 'https://newsflash-v6.onrender.com'
 const SITE_NAME = 'NewsFlash'
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <MobileNav />
         <HomeButton />
+        <AdManager />
       </body>
     </html>
   )
