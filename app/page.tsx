@@ -86,8 +86,8 @@ export default async function HomePage({ searchParams }: any) {
       </header>
 
       {/* ── CATEGORY BUTTONS NAV — 3 portals only ── */}
-      <div style={{ background: 'white', borderBottom: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '10px 20px', display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', alignItems: 'center' }}>
+      <div style={{ background: 'white', borderBottom: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '10px 20px', display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'thin', alignItems: 'center', WebkitOverflowScrolling: 'touch' }}>
           <Link href="/cricket" style={{ textDecoration: 'none', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(27,94,32,0.35)' }}>
               🏏 Cricket Live
@@ -159,7 +159,7 @@ export default async function HomePage({ searchParams }: any) {
                     <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', color: 'white', fontWeight: 700 }}>Just In</span>
                     <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.4)', marginLeft: 'auto' }}>Latest updates</span>
                   </div>
-                  <div className="scroll-snap-x">
+                  <div className="scroll-snap-x" style={{ marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
                     {justIn.map((a: any, i: number) => {
                       const cat = CATEGORIES.find(c => c.label === a.category)
                       return (

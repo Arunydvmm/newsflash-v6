@@ -280,6 +280,17 @@ img, video, iframe { max-width: 100%; height: auto; }
   flex-shrink: 0;
 }
 
+/* Mobile: hide scrollbar on light backgrounds */
+@media (max-width: 768px) {
+  .scroll-snap-x {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scroll-snap-x::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* ── PWA install prompt ── */
 .pwa-banner {
   position: fixed;
