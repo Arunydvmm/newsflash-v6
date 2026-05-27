@@ -46,8 +46,8 @@ export default function LiveJobsWidget({ limit = 6, location = '', title = '' }:
       })
   }, [limit, location, title])
 
-  // Don't hide — show error state so we can debug
-  // if (!loading && jobs.length === 0) return null
+  // Hide when no jobs to avoid empty widget
+  if (!loading && jobs.length === 0) return null
 
   const shimmer = {
     backgroundImage: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)',
@@ -133,7 +133,7 @@ export default function LiveJobsWidget({ limit = 6, location = '', title = '' }:
 
       <div style={{ padding: '10px 16px', background: '#FFF3E0', borderTop: '1px solid #FFE0B2', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>
-          Powered by IndianAPI.in · Real-time job data
+          Live job listings · Updated regularly
         </span>
         <Link href="/sarkari" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#E65100', textDecoration: 'none', fontWeight: 600 }}>
           View All Jobs →

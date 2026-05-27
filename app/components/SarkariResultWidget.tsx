@@ -83,7 +83,7 @@ export default function SarkariResultWidget() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {items.slice(0, 10).map((item: any, i: number) => (
-            <a key={item.id || i} href={item.link || '#'} target="_blank" rel="noopener noreferrer"
+            <a key={item.id || i} href={item.link || `https://sarkariresult.com`} target="_blank" rel="noopener noreferrer"
               style={{ display: 'flex', gap: 12, padding: '11px 20px', borderBottom: '1px solid #F8F8F6', textDecoration: 'none', alignItems: 'flex-start', transition: 'background 0.15s' }}
               onMouseEnter={e => (e.currentTarget.style.background = '#F8FFF8')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>

@@ -242,9 +242,10 @@ function PurpleCap() {
 
 export default function CricketPage() {
   const [matches, setMatches]     = useState<any[]>([])
+  const [news, setNews]           = useState<any[]>([])
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState('')
-  const [tab, setTab]             = useState<'live'|'upcoming'|'completed'|'points'|'orange'|'purple'>('completed')
+  const [tab, setTab]             = useState<'news'|'live'|'upcoming'|'completed'|'points'|'orange'|'purple'>('news')
   const [lastUpdated, setLastUpdated] = useState<Date|null>(null)
   const [seriesId, setSeriesId]   = useState('')
 
@@ -252,16 +253,13 @@ export default function CricketPage() {
     try {
       const res  = await fetch('/api/cricket/matches?type=currentMatches')
       const data = await res.json()
-      if (data.data) {
-        setMatches(data.data)
-        setLastUpdated(new Date())
-        setError('')
-        // Auto-switch to best available tab
-        const liveCount    = data.data.filter((m: any) => m.matchStarted && !m.matchEnded).length
-        const upcomingCount = data.data.filter((m: any) => !m.matchStarted).length
-        setTab(liveCount > 0 ? 'live' : upcomingCount > 0 ? 'upcoming' : 'completed')
-      }
-      else if (data.error) setError(data.error)
+      // data.news = RSS headlines, data.data = matches (empty for now)
+      setMatches(data.data || [])
+      setNews(data.news || [])
+      setLastUpdated(new Date())
+      setError('')
+      setTab('news') // default to news tab since live scores API unavailable
+      if (data.error) setError(data.error)
     } catch { setError('Failed to load') }
     finally { setLoading(false) }
   }, [])
@@ -277,6 +275,7 @@ export default function CricketPage() {
   const completed = matches.filter(m => m.matchEnded)
 
   const TABS = [
+    { key: 'news',      label: `📰 Cricket News` },
     { key: 'live',      label: `🔴 Live (${live.length})`,           highlight: live.length > 0 },
     { key: 'upcoming',  label: `📅 Upcoming (${upcoming.length})`,   highlight: false },
     { key: 'completed', label: `✅ Recent (${completed.length})`,    highlight: live.length === 0 },
@@ -336,6 +335,41 @@ export default function CricketPage() {
         {tab === 'orange' && <OrangeCap />}
         {tab === 'purple' && <PurpleCap />}
 
+        {/* Cricket News tab */}
+        {tab === 'news' && (
+          loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} style={{ borderRadius: 8, height: 72, backgroundImage: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite' }} />
+              ))}
+            </div>
+          ) : news.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 10 }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🏏</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#aaa' }}>No cricket news available</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, background: 'white', borderRadius: 10, border: '1px solid #E8E8E4', overflow: 'hidden' }}>
+              {news.map((item: any, i: number) => (
+                <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'flex', gap: 14, padding: '14px 18px', borderBottom: i < news.length - 1 ? '1px solid #F0F0EC' : 'none', textDecoration: 'none', transition: 'background 0.15s', alignItems: 'flex-start' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#F8FFF8')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#1B5E20', flexShrink: 0, marginTop: 6 }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A', lineHeight: 1.45, marginBottom: 4 }}>{item.title}</div>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#1B5E20', fontWeight: 600 }}>{item.source}</span>
+                      {item.pubDate && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>{new Date(item.pubDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>}
+                    </div>
+                  </div>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#1B5E20', flexShrink: 0, alignSelf: 'center' }}>Read →</span>
+                </a>
+              ))}
+            </div>
+          )
+        )}
+
         {/* Match tabs */}
         {['live','upcoming','completed'].includes(tab) && (
           loading ? (
@@ -369,8 +403,8 @@ export default function CricketPage() {
         <div style={{ marginTop: 32, background: 'white', borderRadius: 10, padding: 20, border: '1px solid #E8E8E4' }}>
           <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 700, color: '#0D1B2A', margin: '0 0 12px' }}>📰 Cricket News & Analysis</h3>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <Link href="/?category=Cricket" style={{ background: '#1B5E20', color: 'white', padding: '9px 18px', borderRadius: 6, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>View All Cricket Articles →</Link>
-            <Link href="/?category=Sports" style={{ background: '#F0F0EC', color: '#444', padding: '9px 18px', borderRadius: 6, textDecoration: 'none', fontSize: 13 }}>Sports News</Link>
+            <Link href="/feed/sports" style={{ background: '#1B5E20', color: 'white', padding: '9px 18px', borderRadius: 6, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>View All Cricket Articles →</Link>
+            <Link href="/feed/sports" style={{ background: '#F0F0EC', color: '#444', padding: '9px 18px', borderRadius: 6, textDecoration: 'none', fontSize: 13 }}>Sports News</Link>
           </div>
         </div>
       </main>

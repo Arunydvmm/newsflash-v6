@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import MobileNav from './components/MobileNav'
+import HomeButton from './components/HomeButton'
 
 const SITE_URL  = 'https://newsflash-v6.onrender.com'
 const SITE_NAME = 'NewsFlash'
@@ -53,8 +54,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23C62828'/><text y='.9em' font-size='70' font-family='serif' font-weight='900' fill='white'>N</text></svg>" />
         <meta name="theme-color" content="#C62828" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* Keep-alive: ping every 4 minutes as browser-side backup
-            Primary keep-alive should be UptimeRobot pinging /api/ping every 5 min */}
         <script dangerouslySetInnerHTML={{
           __html: `
             (function() {
@@ -63,11 +62,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   .then(function(r){ console.log('[NewsFlash] Keep-alive ping:', r.status) })
                   .catch(function(e){ console.warn('[NewsFlash] Ping failed:', e.message) });
               }
-              // Ping immediately on load
               ping();
-              // Then every 4 minutes
               setInterval(ping, 4 * 60 * 1000);
-              // Also ping when tab becomes visible again
               document.addEventListener('visibilitychange', function() {
                 if (document.visibilityState === 'visible') ping();
               });
@@ -78,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ margin: 0 }}>
         {children}
         <MobileNav />
+        <HomeButton />
       </body>
     </html>
   )

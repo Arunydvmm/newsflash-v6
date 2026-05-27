@@ -200,11 +200,11 @@ export default async function SarkariPage({ searchParams }: any) {
 
       {/* Live Jobs + Sarkari Result API + News Feed */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px 32px' }}>
-        <SarkariResultWidget />
         <LiveJobsWidget limit={8} />
         <SarkariNewsWidget />
         <NewsFeedWidget topic="sarkari" limit={10} />
         <NewsFeedWidget topic="education" limit={6} />
+        <SarkariResultWidget />
       </div>
 
       {/* Footer */}

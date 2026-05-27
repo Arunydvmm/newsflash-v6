@@ -92,8 +92,8 @@ export default function ContactPage() {
         {/* Contact Info */}
         <div style={{ marginTop: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {[
-            { icon: '📧', label: 'Email', value: '65arunyadav65@gmail.com', href: 'mailto:65arunyadav65@gmail.com' },
-            { icon: '📰', label: 'News Tips', value: 'Submit a news tip', href: 'mailto:65arunyadav65@gmail.com?subject=News Tip' },
+            { icon: '📧', label: 'Email', value: 'contact@newsflash.in', href: 'mailto:contact@newsflash.in' },
+            { icon: '📰', label: 'News Tips', value: 'Submit a news tip', href: 'mailto:contact@newsflash.in?subject=News Tip' },
           ].map(c => (
             <a key={c.label} href={c.href} style={{ background: 'white', borderRadius: 6, padding: '16px 20px', border: '1px solid #E0DDD5', textDecoration: 'none', display: 'flex', gap: 12, alignItems: 'center' }}>
               <span style={{ fontSize: 24 }}>{c.icon}</span>
