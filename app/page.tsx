@@ -309,7 +309,7 @@ export default async function HomePage({ searchParams }: any) {
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 3, color: '#2C3E50', textTransform: 'uppercase', marginBottom: 16 }}>India's Fastest News Platform</div>
               <div style={{ width: 48, height: 2, background: 'linear-gradient(90deg,#C62828,#D4A017)', borderRadius: 1, marginBottom: 16 }} />
               <p style={{ fontSize: 13, lineHeight: 1.9, color: '#6A8099', marginBottom: 16 }}>India's trusted digital newsroom — breaking news, IPL live scores, Sarkari Naukri, cricket analytics and education updates. Updated 24/7.</p>
-              <a href="mailto:contact@newsflash.in" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4A6080', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>📧 contact@newsflash.in</a>
+              <a href="/contact" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4A6080', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>📧 Contact Us</a>
             </div>
             <div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#D4A017', marginBottom: 16, fontWeight: 700 }}>Sections</div>
@@ -331,7 +331,7 @@ export default async function HomePage({ searchParams }: any) {
               <Link href="/privacy-policy" className="footer-link">Privacy Policy</Link>
               <Link href="/terms" className="footer-link">Terms of Service</Link>
               <a href="mailto:contact@newsflash.in" className="footer-link">Advertise With Us</a>
-              <a href="mailto:contact@newsflash.in?subject=News Tip" className="footer-link">Submit News Tip</a>
+              <Link href="/contact" className="footer-link">Submit News Tip</Link>
             </div>
           </div>
         </div>

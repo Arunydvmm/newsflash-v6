@@ -92,16 +92,16 @@ export default function ContactPage() {
         {/* Contact Info */}
         <div style={{ marginTop: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {[
-            { icon: '📧', label: 'Email', value: 'contact@newsflash.in', href: 'mailto:contact@newsflash.in' },
-            { icon: '📰', label: 'News Tips', value: 'Submit a news tip', href: 'mailto:contact@newsflash.in?subject=News Tip' },
+            { icon: '📧', label: 'Email', value: 'Use the form above', href: '#' },
+            { icon: '📰', label: 'News Tips', value: 'Submit via the form', href: '#' },
           ].map(c => (
-            <a key={c.label} href={c.href} style={{ background: 'white', borderRadius: 6, padding: '16px 20px', border: '1px solid #E0DDD5', textDecoration: 'none', display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div key={c.label} style={{ background: 'white', borderRadius: 6, padding: '16px 20px', border: '1px solid #E0DDD5', display: 'flex', gap: 12, alignItems: 'center' }}>
               <span style={{ fontSize: 24 }}>{c.icon}</span>
               <div>
                 <div style={{ fontSize: 11, color: '#888', fontFamily: 'JetBrains Mono, monospace', textTransform: 'uppercase', letterSpacing: 1 }}>{c.label}</div>
-                <div style={{ fontSize: 13, color: '#C62828', marginTop: 2 }}>{c.value}</div>
+                <div style={{ fontSize: 13, color: '#555', marginTop: 2 }}>{c.value}</div>
               </div>
-            </a>
+            </div>
           ))}
         </div>
       </main>

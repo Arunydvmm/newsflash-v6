@@ -83,7 +83,8 @@ export default function SarkariResultWidget() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {items.slice(0, 10).map((item: any, i: number) => (
-            <a key={item.id || i} href={item.link || `https://sarkariresult.com`} target="_blank" rel="noopener noreferrer"
+            item.link ? (
+            <a key={item.id || i} href={item.link} target="_blank" rel="noopener noreferrer"
               style={{ display: 'flex', gap: 12, padding: '11px 20px', borderBottom: '1px solid #F8F8F6', textDecoration: 'none', alignItems: 'flex-start', transition: 'background 0.15s' }}
               onMouseEnter={e => (e.currentTarget.style.background = '#F8FFF8')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
@@ -98,12 +99,26 @@ export default function SarkariResultWidget() {
                   {item.date && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#C62828' }}>{item.date}</span>}
                 </div>
               </div>
-              {item.link && (
-                <span style={{ background: activeTab.color, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '3px 8px', borderRadius: 3, flexShrink: 0, alignSelf: 'center' }}>
-                  View →
-                </span>
-              )}
+              <span style={{ background: activeTab.color, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '3px 8px', borderRadius: 3, flexShrink: 0, alignSelf: 'center' }}>
+                View →
+              </span>
             </a>
+            ) : (
+            <div key={item.id || i}
+              style={{ display: 'flex', gap: 12, padding: '11px 20px', borderBottom: '1px solid #F8F8F6', alignItems: 'flex-start' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: activeTab.color, flexShrink: 0, marginTop: 5 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#0D1B2A', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {item.title}
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {item.org && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#888' }}>{item.org}</span>}
+                  {item.extra && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: activeTab.color, fontWeight: 600 }}>{item.extra} Posts</span>}
+                  {item.date && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#C62828' }}>{item.date}</span>}
+                </div>
+              </div>
+            </div>
+            )
           ))}
         </div>
       )}
