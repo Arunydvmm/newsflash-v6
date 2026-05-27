@@ -7,6 +7,7 @@ import type { Metadata } from 'next'
 import NewsFeedWidget from '../components/NewsFeedWidget'
 import LiveJobsWidget from '../components/LiveJobsWidget'
 import SarkariNewsWidget from '../components/SarkariNewsWidget'
+import SarkariResultWidget from '../components/SarkariResultWidget'
 
 export const revalidate = 300
 
@@ -197,8 +198,9 @@ export default async function SarkariPage({ searchParams }: any) {
         )}
       </main>
 
-      {/* Live Jobs + News Feed */}
+      {/* Live Jobs + Sarkari Result API + News Feed */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px 32px' }}>
+        <SarkariResultWidget />
         <LiveJobsWidget limit={8} />
         <SarkariNewsWidget />
         <NewsFeedWidget topic="sarkari" limit={10} />
