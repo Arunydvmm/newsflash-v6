@@ -137,7 +137,7 @@ export default async function HomePage({ searchParams }: any) {
       )}
 
       {/* ── MAIN ── */}
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
+      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px', width: '100%', boxSizing: 'border-box' }}>
         {articles.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 20px', background: 'white', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
             <div style={{ fontSize: 56, marginBottom: 16 }}>📰</div>
@@ -152,14 +152,14 @@ export default async function HomePage({ searchParams }: any) {
             <div>
               {/* ── PREMIUM JUST IN ── */}
               {!search && !category && justIn.length > 0 && (
-                <div style={{ background: 'linear-gradient(135deg,#0D1B2A,#1B2B3A)', borderRadius: 14, padding: '16px 20px', marginBottom: 24, boxShadow: '0 4px 20px rgba(13,27,42,0.2)', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ background: 'linear-gradient(135deg,#0D1B2A,#1B2B3A)', borderRadius: 14, padding: '16px 20px', marginBottom: 24, boxShadow: '0 4px 20px rgba(13,27,42,0.2)', overflow: 'hidden', position: 'relative', width: '100%', boxSizing: 'border-box' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg,#C62828,#D4A017,#C62828)', backgroundSize: '200% 100%', animation: 'shimmerBar 2s infinite' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
                     <span style={{ width: 8, height: 8, background: '#C62828', borderRadius: '50%', animation: 'pulse 1.5s infinite', display: 'inline-block', boxShadow: '0 0 8px rgba(198,40,40,0.6)' }} />
                     <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', color: 'white', fontWeight: 700 }}>Just In</span>
                     <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.4)', marginLeft: 'auto' }}>Latest updates</span>
                   </div>
-                  <div className="scroll-snap-x" style={{ marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
+                  <div className="scroll-snap-x" style={{ marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20, width: 'calc(100% + 40px)' }}>
                     {justIn.map((a: any, i: number) => {
                       const cat = CATEGORIES.find(c => c.label === a.category)
                       return (
