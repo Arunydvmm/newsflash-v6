@@ -167,12 +167,16 @@ img, video, iframe { max-width: 100%; height: auto; }
 .nav-scroll {
   display: flex;
   overflow-x: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(198,40,40,0.4) #F0F0EC;
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
+  -webkit-overflow-scrolling: touch;
 }
-.nav-scroll::-webkit-scrollbar { display: none; }
+.nav-scroll::-webkit-scrollbar { height: 3px; }
+.nav-scroll::-webkit-scrollbar-track { background: #F0F0EC; }
+.nav-scroll::-webkit-scrollbar-thumb { background: #C62828; border-radius: 2px; }
 
 /* ── Sidebar ── */
 .sidebar { display: block; }
@@ -263,11 +267,14 @@ img, video, iframe { max-width: 100%; height: auto; }
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: #C62828 #F0F0EC;
   gap: 12px;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
 }
-.scroll-snap-x::-webkit-scrollbar { display: none; }
+.scroll-snap-x::-webkit-scrollbar { height: 4px; }
+.scroll-snap-x::-webkit-scrollbar-track { background: #F0F0EC; border-radius: 2px; }
+.scroll-snap-x::-webkit-scrollbar-thumb { background: #C62828; border-radius: 2px; }
 .scroll-snap-x > * {
   scroll-snap-align: start;
   flex-shrink: 0;
@@ -319,4 +326,60 @@ img, video, iframe { max-width: 100%; height: auto; }
 .just-in-card:hover {
   background: rgba(255,255,255,0.14);
   transform: translateY(-2px);
+}
+
+/* ── Device Optimization ── */
+
+/* Prevent horizontal overflow on all pages */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  /* Larger readable font on small screens */
+  body { font-size: 15px; }
+
+  /* Fix images overflowing on mobile */
+  img { max-width: 100%; height: auto; }
+
+  /* Prevent tables from breaking layout */
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #C62828 #F0F0EC; }
+  table::-webkit-scrollbar { height: 4px; }
+  table::-webkit-scrollbar-thumb { background: #C62828; border-radius: 2px; }
+
+  /* Fix inline styles that set fixed widths */
+  .main-pad { padding: 14px !important; }
+
+  /* Horizontal scroll bars visible on mobile for tab bars */
+  [style*="overflowX: auto"], [style*="overflow-x: auto"] {
+    scrollbar-width: thin !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Visible horizontal scrollbar for dark tab bars ── */
+.dark-scroll-bar {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.3) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.dark-scroll-bar::-webkit-scrollbar { height: 3px; }
+.dark-scroll-bar::-webkit-scrollbar-track { background: transparent; }
+.dark-scroll-bar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.35); border-radius: 2px; }
+
+/* ── Fix for inline overflowX auto on dark backgrounds ── */
+@media (max-width: 768px) {
+  /* Cricket tabs, sarkari nav, feed nav */
+  div[style*="background: '#0D1B2A'"] > div[style*="overflowX"],
+  div[style*="background: '#145214'"] > div[style*="overflowX"] {
+    scrollbar-width: thin !important;
+  }
 }
