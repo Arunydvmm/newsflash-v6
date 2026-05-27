@@ -1,47 +1,54 @@
 // @ts-nocheck
-// Debug endpoint — check cricket API status without using cache
-// Visit: /api/cricket/debug to diagnose issues
+// Debug endpoint — check LiveScore6 RapidAPI cricket status
+// Visit: /api/cricket/debug
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const API_KEY  = process.env.CRICKETDATA_API_KEY
-  const BASE_URL = 'https://api.cricapi.com/v1'
+  const API_KEY = process.env.RAPIDAPI_KEY
+  const HOST    = 'livescore6.p.rapidapi.com'
 
   if (!API_KEY) {
     return NextResponse.json({
       status: 'error',
-      issue: 'CRICKETDATA_API_KEY not set in environment variables',
-      fix: 'Add CRICKETDATA_API_KEY in Render Dashboard → Environment',
+      issue: 'RAPIDAPI_KEY not set in environment variables',
+      fix: 'Add RAPIDAPI_KEY in Render Dashboard → Environment',
     })
   }
 
   try {
-    // Test the API directly — no cache
-    const res = await fetch(`${BASE_URL}/currentMatches?apikey=${API_KEY}&offset=0`)
-    const data = await res.json()
+    // Test live matches endpoint
+    const res = await fetch(`https://${HOST}/matches/v2/list-live?category=cricket&timezone=5.5`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-rapidapi-host': HOST,
+        'x-rapidapi-key': API_KEY,
+      },
+    })
+
+    const text = await res.text()
+    let data: any = {}
+    try { data = JSON.parse(text) } catch { data = { raw: text.slice(0, 300) } }
+
+    const stages  = data?.Stages || []
+    const matches = stages.flatMap((s: any) => s?.Events || [])
 
     return NextResponse.json({
-      status: res.ok ? 'ok' : 'error',
-      httpStatus: res.status,
-      apiKeyPresent: true,
-      apiKeyPrefix: API_KEY.slice(0, 6) + '...',
-      responseStatus: data?.status,
-      matchCount: data?.data?.length || 0,
-      matches: data?.data?.slice(0, 3).map((m: any) => ({
-        name: m.name,
-        status: m.status,
-        matchStarted: m.matchStarted,
-        matchEnded: m.matchEnded,
-        teams: m.teams,
-      })) || [],
-      rawInfo: data?.info || null,
-      error: data?.status === 'failure' ? data : null,
+      status:         res.ok ? 'ok' : 'error',
+      httpStatus:     res.status,
+      apiKeyPresent:  true,
+      apiKeyPrefix:   API_KEY.slice(0, 8) + '...',
+      host:           HOST,
+      stagesCount:    stages.length,
+      matchCount:     matches.length,
+      sampleMatch:    matches[0] ? {
+        teams:  [matches[0]?.T1?.[0]?.Nm, matches[0]?.T2?.[0]?.Nm],
+        status: matches[0]?.Eps,
+        score1: matches[0]?.T1?.[0]?.Sc,
+        score2: matches[0]?.T2?.[0]?.Sc,
+      } : null,
+      rawPreview: text.slice(0, 400),
     })
   } catch (err: any) {
-    return NextResponse.json({
-      status: 'fetch_error',
-      error: err.message,
-      fix: 'Check if cricapi.com is accessible from Render servers',
-    })
+    return NextResponse.json({ status: 'fetch_error', error: err.message })
   }
 }
