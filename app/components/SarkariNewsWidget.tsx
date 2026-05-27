@@ -46,18 +46,23 @@ export default function SarkariNewsWidget() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
           {news.slice(0, 8).map((item: any, i: number) => (
-            <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'block', padding: '12px 16px', borderBottom: '1px solid #F0F0EC', borderRight: '1px solid #F0F0EC', textDecoration: 'none', transition: 'background 0.15s' }}
+            <div key={i}
               onMouseEnter={e => (e.currentTarget.style.background = '#FFF3E0')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#0D1B2A', lineHeight: 1.45, marginBottom: 5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {item.title}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#E65100', fontWeight: 600 }}>{item.source}</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>
-                  {item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''}
-                </span>
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              style={{ display: 'block', padding: '12px 16px', borderBottom: '1px solid #F0F0EC', borderRight: '1px solid #F0F0EC', textDecoration: 'none', transition: 'background 0.15s' }}>
+              <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: '#0D1B2A', lineHeight: 1.45, marginBottom: 5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {item.title}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#E65100', fontWeight: 600 }}>{item.source}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>
+                    {item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : ''}
+                  </span>
+                </div>
+              </a>
+            </div>
+          ))}
               </div>
             </a>
           ))}

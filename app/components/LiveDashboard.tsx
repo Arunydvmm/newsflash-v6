@@ -31,47 +31,53 @@ export default function LiveDashboard() {
 
         {/* Live matches */}
         {matches.map((m: any, i: number) => (
-          <Link key={m.id} href={`/cricket/match/${m.id}`}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 16px', borderRight: '1px solid #1B2B3A', textDecoration: 'none', flexShrink: 0, transition: 'background 0.15s' }}
+          <div key={m.id}
             onMouseEnter={e => (e.currentTarget.style.background = '#1B2B3A')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <span style={{ width: 7, height: 7, background: '#C62828', borderRadius: '50%', animation: 'pulse 1.5s infinite', flexShrink: 0 }} />
-            <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#C62828', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 1 }}>Live</div>
-              <div style={{ fontSize: 11, color: 'white', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                {m.teams?.join(' vs ') || m.name?.split(',')[0]}
-              </div>
-              {m.score?.[0] && (
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#A5D6A7' }}>
-                  {m.score[0].r}/{m.score[0].w} ({m.score[0].o})
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 16px', borderRight: '1px solid #1B2B3A', textDecoration: 'none', flexShrink: 0, transition: 'background 0.15s' }}>
+            <Link href={`/cricket/match/${m.id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+              <span style={{ width: 7, height: 7, background: '#C62828', borderRadius: '50%', animation: 'pulse 1.5s infinite', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#C62828', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 1 }}>Live</div>
+                <div style={{ fontSize: 11, color: 'white', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  {m.teams?.join(' vs ') || m.name?.split(',')[0]}
                 </div>
-              )}
-            </div>
-          </Link>
+                {m.score?.[0] && (
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#A5D6A7' }}>
+                    {m.score[0].r}/{m.score[0].w} ({m.score[0].o})
+                  </div>
+                )}
+              </div>
+            </Link>
+          </div>
         ))}
 
         {/* Jobs count */}
         {jobs > 0 && (
-          <Link href="/sarkari"
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRight: '1px solid #1B2B3A', textDecoration: 'none', flexShrink: 0 }}
+          <div
             onMouseEnter={e => (e.currentTarget.style.background = '#1B2B3A')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <span style={{ fontSize: 14 }}>🏛</span>
-            <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#E65100', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 1 }}>Sarkari</div>
-              <div style={{ fontSize: 11, color: 'white', fontWeight: 600 }}>{jobs.toLocaleString('en-IN')} Active Jobs</div>
-            </div>
-          </Link>
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRight: '1px solid #1B2B3A', textDecoration: 'none', flexShrink: 0, transition: 'background 0.15s' }}>
+            <Link href="/sarkari" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}>
+              <span style={{ fontSize: 14 }}>🏛</span>
+              <div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#E65100', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 1 }}>Sarkari</div>
+                <div style={{ fontSize: 11, color: 'white', fontWeight: 600 }}>{jobs.toLocaleString('en-IN')} Active Jobs</div>
+              </div>
+            </Link>
+          </div>
         )}
 
         {/* Spacer + Cricket link */}
         <div style={{ flex: 1 }} />
-        <Link href="/cricket" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 16px', textDecoration: 'none', flexShrink: 0 }}
+        <div
           onMouseEnter={e => (e.currentTarget.style.background = '#1B2B3A')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#4A6080', letterSpacing: 1 }}>Full Scorecard →</span>
-        </Link>
-      </div>
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 16px', textDecoration: 'none', flexShrink: 0, transition: 'background 0.15s' }}>
+          <Link href="/cricket" style={{ display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', color: 'inherit' }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#4A6080', letterSpacing: 1 }}>Full Scorecard →</span>
+          </Link>
+        </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
     </div>
   )

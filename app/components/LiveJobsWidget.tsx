@@ -85,29 +85,30 @@ export default function LiveJobsWidget({ limit = 6, location = '', title = '' }:
       ) : (
         <div>
           {jobs.map((job: any, i: number) => (
-            <a key={job.id || i} href={job.apply_link} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'flex', gap: 14, padding: '14px 20px', borderBottom: '1px solid #F0F0EC', textDecoration: 'none', transition: 'background 0.15s', alignItems: 'flex-start' }}
+            <div key={job.id || i}
               onMouseEnter={e => (e.currentTarget.style.background = '#FFF3E0')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              {/* Company initial */}
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,#E65100,#F57C00)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Playfair Display, serif', fontSize: 18, fontWeight: 900, flexShrink: 0 }}>
-                {(job.company || 'J').charAt(0).toUpperCase()}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {(job.title || job.job_title || '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'")}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              style={{ display: 'flex', gap: 14, padding: '14px 20px', borderBottom: '1px solid #F0F0EC', textDecoration: 'none', transition: 'background 0.15s', alignItems: 'flex-start' }}>
+              <a href={job.apply_link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', gap: 14, textDecoration: 'none', color: 'inherit', flex: 1, alignItems: 'flex-start' }}>
+                {/* Company initial */}
+                <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg,#E65100,#F57C00)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Playfair Display, serif', fontSize: 18, fontWeight: 900, flexShrink: 0 }}>
+                  {(job.company || 'J').charAt(0).toUpperCase()}
                 </div>
-                <div style={{ fontSize: 12, color: '#666', marginBottom: 6 }}>{job.company}</div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {job.location && (
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#888', display: 'flex', alignItems: 'center', gap: 3 }}>
-                      📍 {job.location}
-                    </span>
-                  )}
-                  {job.experience && (
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#888' }}>
-                      🎯 {job.experience}
-                    </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {(job.title || job.job_title || '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'")}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#666', marginBottom: 6 }}>{job.company}</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {job.location && (
+                      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#888', display: 'flex', alignItems: 'center', gap: 3 }}>
+                        📍 {job.location}
+                      </span>
+                    )}
+                    {job.experience && (
+                      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#888' }}>
+                        🎯 {job.experience}
+                      </span>
                   )}
                   {job.job_type && (
                     <span style={{ background: getJobTypeColor(job.job_type) + '20', color: getJobTypeColor(job.job_type), fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '2px 8px', borderRadius: 3, fontWeight: 600 }}>
@@ -116,17 +117,18 @@ export default function LiveJobsWidget({ limit = 6, location = '', title = '' }:
                   )}
                 </div>
               </div>
-              <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                <div style={{ background: '#E65100', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '4px 10px', borderRadius: 4, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                  Apply →
-                </div>
-                {job.posted_date && (
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa', marginTop: 4 }}>
-                    {new Date(job.posted_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                  <div style={{ background: '#E65100', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '4px 10px', borderRadius: 4, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    Apply →
                   </div>
-                )}
-              </div>
-            </a>
+                  {job.posted_date && (
+                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa', marginTop: 4 }}>
+                      {new Date(job.posted_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                    </div>
+                  )}
+                </div>
+              </a>
+            </div>
           ))}
         </div>
       )}

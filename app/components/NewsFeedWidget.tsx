@@ -52,20 +52,22 @@ export default function NewsFeedWidget({ topic = 'education', limit = 8, compact
       ) : (
         <div style={{ display: compact ? 'flex' : 'grid', flexDirection: compact ? 'column' : undefined, gridTemplateColumns: compact ? undefined : 'repeat(auto-fill, minmax(260px, 1fr))' }}>
           {news.map((item: any, i: number) => (
-            <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: compact ? '10px 16px' : '12px 16px', borderBottom: '1px solid #F0F0EC', borderRight: compact ? 'none' : '1px solid #F0F0EC', textDecoration: 'none', transition: 'background 0.15s', cursor: 'pointer' }}
+            <div key={i}
               onMouseEnter={e => (e.currentTarget.style.background = cfg.bg)}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              <div style={{ fontSize: compact ? 12 : 13, fontWeight: 500, color: '#0D1B2A', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {item.title}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
-                {item.source && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: cfg.color, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{item.source}</span>}
-                {item.pubDate && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa', flexShrink: 0 }}>
-                  {new Date(item.pubDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                </span>}
-              </div>
-            </a>
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: compact ? '10px 16px' : '12px 16px', borderBottom: '1px solid #F0F0EC', borderRight: compact ? 'none' : '1px solid #F0F0EC', textDecoration: 'none', transition: 'background 0.15s', cursor: 'pointer' }}>
+              <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ fontSize: compact ? 12 : 13, fontWeight: 500, color: '#0D1B2A', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {item.title}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                  {item.source && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: cfg.color, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{item.source}</span>}
+                  {item.pubDate && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa', flexShrink: 0 }}>
+                    {new Date(item.pubDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                  </span>}
+                </div>
+              </a>
+            </div>
           ))}
         </div>
       )}
