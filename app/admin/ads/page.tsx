@@ -57,6 +57,15 @@ export default function AdsPage() {
         body: JSON.stringify(slots),
         credentials: 'include',
       })
+      
+      // Check if response is JSON
+      const contentType = res.headers.get('content-type')
+      if (!contentType?.includes('application/json')) {
+        setMsg(`✗ Save failed: Server returned ${res.status} - ${res.statusText}. Please login again.`)
+        setMsgType('error')
+        return
+      }
+      
       if (res.ok) {
         setMsg('✓ Ad settings saved successfully!')
         setMsgType('success')
