@@ -33,13 +33,15 @@ function parseHTMLArticle(html: string) {
   const title = h1?.textContent?.trim() || seoTitle || doc.title?.replace(/\s*[-|–]\s*.*$/, '').trim() || ''
 
   // Remove ONLY: nav, header, footer, script, style, aside, breadcrumb, ads, sidebars
+  // DO NOT remove: article, main, div (they may contain content)
   const removeSelectors = [
     'nav','header','footer','script','style','aside',
     '.breadcrumb','[class*="breadcrumb"]',
     '[class*="nav"]','[class*="footer"]','[class*="header"]',
     '[class*="topbar"]','[class*="mobile-nav"]','[class*="logo"]',
     '[class*="sidebar"]','[class*="advertisement"]','[class*="ad-"]',
-    '[class*="ads"]','[id*="ad"]','[id*="ads"]'
+    '[class*="ads"]','[id*="ad"]','[id*="ads"]',
+    '[class*="comment"]','[class*="related"]','[class*="share"]'
   ]
   removeSelectors.forEach(sel => {
     doc.querySelectorAll(sel).forEach(el => el.remove())
@@ -51,25 +53,30 @@ function parseHTMLArticle(html: string) {
   const contentEl = doc.querySelector('article') || doc.querySelector('main') || doc.querySelector('[class*="article"]') || doc.querySelector('[class*="content"]') || doc.body
   let content = contentEl?.innerHTML?.trim() || ''
 
-  // PRESERVE STRUCTURE: Keep all important elements
-  // Only clean up unnecessary divs and classes, but preserve:
-  // - Tables, lists, headings, paragraphs, images
-  // - Iframes, SVG, canvas, code blocks
-  // - Blockquotes, strong, em, u, etc.
+  // PRESERVE ALL CONTENT STRUCTURE
+  // Keep: tables, lists, headings, paragraphs, images, iframes, SVG, canvas, code blocks, blockquotes
+  // Only remove: unnecessary wrapper divs and inline styles
   
-  // Remove only wrapper divs (divs with no content except other elements)
-  // But keep divs that contain important content
+  // Clean up only problematic patterns while preserving structure
   content = content
-    .replace(/<div[^>]*class="[^"]*(?:wrapper|container|row|col)[^"]*"[^>]*>/gi, '') // Remove wrapper divs
-    .replace(/<\/div>/gi, '') // Remove closing div tags
-    .replace(/\s+class="[^"]*"/gi, '') // Remove class attributes (keep structure)
-    .replace(/\s+id="[^"]*"/gi, '') // Remove id attributes
-    .replace(/\s+style="[^"]*"/gi, '') // Remove inline styles (let CSS handle it)
-    .replace(/\n{3,}/g, '\n\n') // Clean excessive whitespace
+    // Remove only empty wrapper divs and divs with only layout classes
+    .replace(/<div[^>]*class="[^"]*(?:wrapper|container|row|col|grid|flex|layout)[^"]*"[^>]*>\s*<\/div>/gi, '')
+    // Remove inline event handlers (onclick, onload, etc.)
+    .replace(/\s+on\w+="[^"]*"/gi, '')
+    // Remove data attributes that aren't needed
+    .replace(/\s+data-(?:track|analytics|ga)[^=]*="[^"]*"/gi, '')
+    // Clean up excessive whitespace
+    .replace(/\n{3,}/g, '\n\n')
     .trim()
 
   // Preserve image URLs (both absolute and relative)
-  // Don't modify image src attributes
+  // Extract all images for featured image selection
+  const images: string[] = []
+  const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/gi
+  let imgMatch
+  while ((imgMatch = imgRegex.exec(content)) !== null) {
+    images.push(imgMatch[1])
+  }
   
   // Summary — use SEO description first, then first meaningful <p>
   let summary = seoDescription || ''
@@ -83,13 +90,10 @@ function parseHTMLArticle(html: string) {
 
   // Featured Image — try SEO image first, then first img in content
   let featuredImage = seoImage || ''
-  if (!featuredImage) {
-    const firstImg = doc.querySelector('img')
-    if (firstImg) {
-      const src = firstImg.getAttribute('src') || ''
-      if (src.startsWith('http') || src.startsWith('//')) {
-        featuredImage = src
-      }
+  if (!featuredImage && images.length > 0) {
+    const firstImg = images[0]
+    if (firstImg.startsWith('http') || firstImg.startsWith('//')) {
+      featuredImage = firstImg
     }
   }
 
