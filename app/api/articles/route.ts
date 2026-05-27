@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   await connectDB()
   const body = await req.json()

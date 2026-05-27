@@ -5,7 +5,7 @@ import Employee from '../../../../models/Employee'
 import { getAuth } from '../../../../lib/auth'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   await connectDB()
   const emp = await Employee.findById(params.id).select('-passwordHash').lean()
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   await connectDB()
   const body = await req.json()
@@ -40,7 +40,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   await connectDB()
   await Employee.findByIdAndDelete(params.id)

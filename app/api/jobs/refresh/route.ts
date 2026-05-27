@@ -7,8 +7,7 @@ import JobCache from '../../../models/JobCache'
 import { getAuth } from '../../../lib/auth'
 
 export async function POST(req: NextRequest) {
-  // Only SuperAdmin can force refresh
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
@@ -63,7 +62,7 @@ export async function POST(req: NextRequest) {
 
 // GET — check quota status without using a hit
 export async function GET(req: NextRequest) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }

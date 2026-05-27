@@ -11,7 +11,8 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  if (!getAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = getAuth(req)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   await connectDB()
   const slots = await req.json()
   const updates = await Promise.all(

@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   // Admin only — get all contact messages
   const { getAuth } = await import('../../lib/auth')
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   await connectDB()
   const page  = parseInt(req.nextUrl.searchParams.get('page') || '1')

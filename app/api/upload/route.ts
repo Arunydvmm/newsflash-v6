@@ -4,7 +4,7 @@ import { uploadImage } from '../../lib/cloudinary'
 import { getAuth, getEmployeeAuth } from '../../lib/auth'
 
 export async function POST(req: NextRequest) {
-  const auth = getAuth() || getEmployeeAuth()
+  const auth = getAuth(req) || getEmployeeAuth(req)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {

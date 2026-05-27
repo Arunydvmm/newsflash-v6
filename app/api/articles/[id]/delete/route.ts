@@ -8,7 +8,7 @@ import { getAuth } from '../../../../lib/auth'
 type P = { params: { id: string } }
 
 export async function POST(_: NextRequest, { params }: P) {
-  const auth = getAuth()
+  const auth = getAuth(_)
   if (!auth) return NextResponse.json({ error:'Unauthorized' }, { status:401 })
   await connectDB()
   await Article.findByIdAndDelete(params.id)

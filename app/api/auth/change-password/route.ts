@@ -5,7 +5,7 @@ import Admin from '../../../models/Admin'
 import { getAuth } from '../../../lib/auth'
 
 export async function POST(req: NextRequest) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { currentPassword, newPassword } = await req.json()

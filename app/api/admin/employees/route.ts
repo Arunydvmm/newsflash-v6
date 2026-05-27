@@ -5,7 +5,7 @@ import Employee from '../../../models/Employee'
 import { getAuth } from '../../../lib/auth'
 
 export async function GET(req: NextRequest) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   await connectDB()
   const employees = await Employee.find().select('-passwordHash').sort({ createdAt: -1 }).lean()
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   await connectDB()
   const body = await req.json()

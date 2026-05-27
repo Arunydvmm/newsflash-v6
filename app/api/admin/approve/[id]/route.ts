@@ -5,7 +5,7 @@ import Article from '../../../../models/Article'
 import { getAuth } from '../../../../lib/auth'
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = getAuth()
+  const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   await connectDB()
   const { action } = await req.json() // 'approve' | 'reject'
