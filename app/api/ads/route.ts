@@ -32,10 +32,21 @@ export async function GET() {
 export async function PUT(req: NextRequest) {
   // Auth check — reads cookie directly from request (works in Route Handlers)
   const token = req.cookies.get('nf_token')?.value
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  console.log('[Ads API] Token present:', !!token, 'Cookies:', req.cookies.getAll().map(c => c.name))
+  
+  if (!token) {
+    console.log('[Ads API] No token found, returning 401')
+    return NextResponse.json({ error: 'Unauthorized - no token' }, { status: 401 })
+  }
+  
   const { verifyToken } = await import('../../lib/auth')
   const auth = verifyToken(token)
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  console.log('[Ads API] Auth verified:', !!auth)
+  
+  if (!auth) {
+    console.log('[Ads API] Token invalid, returning 401')
+    return NextResponse.json({ error: 'Unauthorized - invalid token' }, { status: 401 })
+  }
 
   await connectDB()
   const slots = await req.json()
@@ -48,5 +59,6 @@ export async function PUT(req: NextRequest) {
       )
     )
   )
+  console.log('[Ads API] Saved', updates.length, 'slots')
   return NextResponse.json(updates)
 }
