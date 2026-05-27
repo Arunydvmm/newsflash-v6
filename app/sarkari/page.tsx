@@ -10,7 +10,7 @@ import SarkariNewsWidget from '../components/SarkariNewsWidget'
 import SarkariResultWidget from '../components/SarkariResultWidget'
 import AdSlotServer from '../components/AdSlotServer'
 
-export const revalidate = 300
+export const revalidate = 0 // Disable ISR - fetch fresh data on every request
 
 export const metadata: Metadata = {
   title: 'Sarkari Naukri 2026 — Latest Government Jobs',

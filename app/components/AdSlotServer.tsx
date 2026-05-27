@@ -14,7 +14,24 @@ export default async function AdSlotServer({ slotId, style, className }: Props) 
   try {
     await connectDB()
     const slot = await AdSlot.findOne({ slotId }).lean()
-    if (!slot || !slot.enabled || !slot.script) return null
+    
+    // Debug logging
+    if (!slot) {
+      console.warn(`[AdSlot] Slot not found: ${slotId}`)
+      return null
+    }
+    
+    if (!slot.enabled) {
+      console.warn(`[AdSlot] Slot disabled: ${slotId}`)
+      return null
+    }
+    
+    if (!slot.script) {
+      console.warn(`[AdSlot] No script for slot: ${slotId}`)
+      return null
+    }
+
+    console.log(`[AdSlot] Rendering slot: ${slotId} (${slot.script.length} chars)`)
 
     return (
       <AdSlotClient
@@ -26,7 +43,8 @@ export default async function AdSlotServer({ slotId, style, className }: Props) 
         className={className}
       />
     )
-  } catch {
+  } catch (err) {
+    console.error(`[AdSlot] Error fetching slot ${slotId}:`, err)
     return null
   }
 }

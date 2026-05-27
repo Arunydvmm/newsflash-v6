@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import type { Metadata } from 'next'
 import AdSlotServer from '../../components/AdSlotServer'
 
-export const revalidate = 120
+export const revalidate = 0 // Disable ISR - fetch fresh data on every request
 
 const SITE_URL = 'https://newsflash-v6.onrender.com'
 

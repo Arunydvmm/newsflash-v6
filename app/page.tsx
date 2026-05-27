@@ -14,7 +14,7 @@ import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
 import AdSlotServer from './components/AdSlotServer'
 
-export const revalidate = 60
+export const revalidate = 0 // Disable ISR - fetch fresh data on every request
 
 export default async function HomePage({ searchParams }: any) {
   await connectDB()
