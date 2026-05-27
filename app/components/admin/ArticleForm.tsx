@@ -12,6 +12,73 @@ const inp = {
 }
 const lbl = { display: 'block', marginBottom: 5, fontSize: 12, fontWeight: 600, color: '#444', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' as const }
 
+// ── HTML Import Parser ──────────────────────────────────────────────
+function parseHTMLArticle(html: string) {
+  const parser = new DOMParser()
+  const doc    = parser.parseFromString(html, 'text/html')
+
+  // Title — try h1 first, then <title>
+  const h1    = doc.querySelector('h1')
+  const title = h1?.textContent?.trim() || doc.title?.replace(/\s*[-|–]\s*.*$/, '').trim() || ''
+
+  // Remove nav, header, footer, script, style, aside, .breadcrumb elements
+  const removeSelectors = ['nav','header','footer','script','style','aside','.breadcrumb','[class*="breadcrumb"]','[class*="nav"]','[class*="footer"]','[class*="header"]','[class*="topbar"]','[class*="mobile-nav"]','[class*="logo"]']
+  removeSelectors.forEach(sel => {
+    doc.querySelectorAll(sel).forEach(el => el.remove())
+  })
+  // Remove the h1 we already extracted
+  doc.querySelectorAll('h1').forEach(el => el.remove())
+
+  // Main content — try article, main, .article-body, .content, body
+  const contentEl = doc.querySelector('article') || doc.querySelector('main') || doc.querySelector('[class*="article"]') || doc.querySelector('[class*="content"]') || doc.body
+  let content = contentEl?.innerHTML?.trim() || ''
+
+  // Clean up content — remove empty divs, excessive whitespace
+  content = content
+    .replace(/<div[^>]*>\s*<\/div>/gi, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+
+  // Summary — first <p> with meaningful text (>50 chars)
+  let summary = ''
+  const paras = doc.querySelectorAll('p')
+  for (const p of paras) {
+    const text = p.textContent?.trim() || ''
+    if (text.length > 50) { summary = text.slice(0, 300); break }
+  }
+
+  // Tags — look for tag elements
+  const tagEls = doc.querySelectorAll('[class*="tag"], [class*="label"], [class*="badge"]')
+  const tags = Array.from(tagEls).map(el => el.textContent?.trim()).filter(Boolean).join(', ')
+
+  // Category — guess from content/title
+  const titleLower = title.toLowerCase()
+  const contentLower = content.toLowerCase()
+  let category = 'India'
+  if (titleLower.includes('neet') || titleLower.includes('jee') || titleLower.includes('education') || titleLower.includes('exam') || titleLower.includes('university') || titleLower.includes('school')) category = 'Education'
+  else if (titleLower.includes('cricket') || titleLower.includes('ipl') || titleLower.includes('sport')) category = 'Sports'
+  else if (titleLower.includes('tech') || titleLower.includes('ai ') || titleLower.includes('startup')) category = 'Technology'
+  else if (titleLower.includes('business') || titleLower.includes('market') || titleLower.includes('economy')) category = 'Business'
+  else if (titleLower.includes('health') || titleLower.includes('medical') || titleLower.includes('hospital')) category = 'Health'
+  else if (titleLower.includes('world') || titleLower.includes('global') || titleLower.includes('international')) category = 'World'
+  else if (titleLower.includes('sarkari') || titleLower.includes('government job') || titleLower.includes('recruitment')) category = 'Sarkari'
+
+  // Author — look for author elements
+  const authorEl = doc.querySelector('[class*="author"], [class*="byline"], [itemprop="author"]')
+  const author = authorEl?.textContent?.replace(/✍️|by\s*/gi, '').trim() || ''
+
+  // Read time — look for read time element or estimate
+  const readTimeEl = doc.querySelector('[class*="read-time"], [class*="readtime"]')
+  const readTimeText = readTimeEl?.textContent || ''
+  const readTimeMatch = readTimeText.match(/(\d+)/)
+  const readTime = readTimeMatch ? parseInt(readTimeMatch[1]) : Math.max(1, Math.round(content.replace(/<[^>]+>/g, '').split(/\s+/).length / 200))
+
+  // Slug from title
+  const slugVal = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80)
+
+  return { title, slug: slugVal, content, summary, tags, category, author, readTime }
+}
+
 export default function ArticleForm({ article = null, isEmployee = false }) {
   const router  = useRouter()
   const [loading, setLoading]   = useState(false)
@@ -20,7 +87,10 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
   const [success, setSuccess]   = useState('')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saveMessage, setSaveMessage] = useState('')
-  const fileRef = useRef<HTMLInputElement>(null)
+  const fileRef    = useRef<HTMLInputElement>(null)
+  const importRef  = useRef<HTMLInputElement>(null)
+  const [importing, setImporting] = useState(false)
+  const [importMsg, setImportMsg] = useState('')
 
   const [form, setForm] = useState({
     title:          article?.title          || '',
@@ -67,8 +137,40 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
     }
   }
 
-  async function handleSubmit(e: any, forceDraft = false) {
-    e.preventDefault()
+  function handleHTMLImport(e: any) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    setImportMsg('')
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const html = ev.target?.result as string
+        const parsed = parseHTMLArticle(html)
+        setForm(p => ({
+          ...p,
+          title:    parsed.title    || p.title,
+          slug:     parsed.slug     || p.slug,
+          content:  parsed.content  || p.content,
+          summary:  parsed.summary  || p.summary,
+          tags:     parsed.tags     || p.tags,
+          category: parsed.category || p.category,
+          author:   parsed.author   || p.author,
+          readTime: parsed.readTime || p.readTime,
+        }))
+        setImportMsg(`✓ Imported: "${parsed.title.slice(0, 60)}${parsed.title.length > 60 ? '...' : ''}"`)
+      } catch (err) {
+        setImportMsg('✗ Failed to parse HTML file')
+      } finally {
+        setImporting(false)
+        // Reset input so same file can be re-imported
+        if (importRef.current) importRef.current.value = ''
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  async function handleSubmit(e: any, forceDraft = false) {    e.preventDefault()
     setLoading(true)
     setError('')
     setSuccess('')
@@ -120,6 +222,28 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
       />
       {error   && <div style={{ background: '#FFF3F3', border: '1px solid #FFCDD2', color: '#C62828', padding: '10px 14px', borderRadius: 4, marginBottom: 16, fontSize: 13 }}>{error}</div>}
       {success && <div style={{ background: '#F1F8E9', border: '1px solid #C5E1A5', color: '#2E7D32', padding: '10px 14px', borderRadius: 4, marginBottom: 16, fontSize: 13 }}>{success}</div>}
+
+      {/* ── HTML IMPORT ── */}
+      <div style={{ marginBottom: 24, padding: '14px 18px', background: 'linear-gradient(135deg,#F0F4FF,#EEF2FF)', border: '1.5px dashed #6366F1', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, color: '#4338CA', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 3 }}>
+            📥 Import from HTML
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#6366F1' }}>
+            Upload an .html file — title, content, summary, tags & category auto-filled
+          </div>
+          {importMsg && (
+            <div style={{ marginTop: 6, fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: importMsg.startsWith('✓') ? '#2E7D32' : '#C62828', fontWeight: 600 }}>
+              {importMsg}
+            </div>
+          )}
+        </div>
+        <button type="button" onClick={() => importRef.current?.click()} disabled={importing}
+          style={{ background: '#4338CA', color: 'white', border: 'none', padding: '9px 18px', borderRadius: 6, cursor: importing ? 'not-allowed' : 'pointer', fontSize: 12, fontFamily: 'JetBrains Mono, monospace', fontWeight: 600, letterSpacing: 0.5, opacity: importing ? 0.7 : 1, whiteSpace: 'nowrap' }}>
+          {importing ? '⏳ Importing...' : '📂 Choose HTML File'}
+        </button>
+        <input ref={importRef} type="file" accept=".html,.htm" style={{ display: 'none' }} onChange={handleHTMLImport} />
+      </div>
 
       {/* Title */}
       <div style={{ marginBottom: 18 }}>
