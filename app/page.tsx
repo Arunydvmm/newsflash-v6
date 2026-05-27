@@ -160,9 +160,7 @@ export default async function HomePage({ searchParams }: any) {
                       const cat = CATEGORIES.find(c => c.label === a.category)
                       return (
                         <Link key={String(a._id)} href={`/article/${a.slug}`} style={{ textDecoration: 'none', flexShrink: 0, width: 220 }}>
-                          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', animation: `slideIn 0.4s ease ${i * 0.1}s both` }}
-                            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
-                            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}>
+                          <div className="just-in-card">
                             {a.featuredImage && (
                               <div style={{ height: 90, overflow: 'hidden' }}>
                                 <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
