@@ -1,45 +1,20 @@
 // @ts-nocheck
-// LiveScore6 RapidAPI — cricket matches backend proxy
+// Free Cricbuzz Cricket API (RapidAPI) — cricket matches backend proxy
+// Host: free-cricbuzz-cricket-api.p.rapidapi.com
 // API key NEVER sent to frontend
 import { NextRequest, NextResponse } from 'next/server'
 
-const RAPIDAPI_HOST = 'livescore6.p.rapidapi.com'
-const CACHE_TTL     = 15 * 60 * 1000 // 15 minutes
+const RAPIDAPI_HOST = 'free-cricbuzz-cricket-api.p.rapidapi.com'
+const CACHE_TTL     = 10 * 60 * 1000 // 10 minutes
 
 let cache: { data: any; ts: number } | null = null
-
-// Returns today's date in YYYYMMDD format (IST)
-function getTodayDate(): string {
-  const now = new Date()
-  // IST = UTC+5:30
-  const ist = new Date(now.getTime() + (5.5 * 60 * 60 * 1000))
-  const y = ist.getUTCFullYear()
-  const m = String(ist.getUTCMonth() + 1).padStart(2, '0')
-  const d = String(ist.getUTCDate()).padStart(2, '0')
-  return `${y}${m}${d}`
-}
-
-// Cricket-related keywords to validate stages/competitions
-const CRICKET_KEYWORDS = [
-  'cricket', 'ipl', 'test', 't20', 'odi', 'bbl', 'psl', 'cpl', 'sa20',
-  'wpl', 'icc', 'ranji', 'duleep', 'vijay', 'syed mushtaq', 'nca',
-  'india', 'england', 'australia', 'pakistan', 'sri lanka', 'bangladesh',
-  'new zealand', 'south africa', 'west indies', 'zimbabwe', 'afghanistan',
-]
-
-function isCricketStage(stage: any): boolean {
-  const name = (stage?.Cnm || stage?.Snm || '').toLowerCase()
-  if (!name) return false
-  return CRICKET_KEYWORDS.some(kw => name.includes(kw))
-}
 
 export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get('type') || 'matches'
 
-  // Serve from cache if fresh
   if (cache && Date.now() - cache.ts < CACHE_TTL) {
     return NextResponse.json(cache.data, {
-      headers: { 'X-Cache': 'HIT', 'Cache-Control': 'public, max-age=900' },
+      headers: { 'X-Cache': 'HIT', 'Cache-Control': 'public, max-age=600' },
     })
   }
 
@@ -50,20 +25,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    let url = ''
-    switch (type) {
-      case 'news':
-        url = `https://${RAPIDAPI_HOST}/news/list?category=cricket`
-        break
-      case 'matches':
-      case 'currentMatches':
-      default:
-        // Use list-by-date for today's cricket matches (more reliable than list-live)
-        url = `https://${RAPIDAPI_HOST}/matches/v2/list-by-date?category=cricket&timezone=5.5&date=${getTodayDate()}`
-        break
-    }
-
-    const res = await fetch(url, {
+    // Free Cricbuzz API — cricket-matches returns live + recent + upcoming
+    const res = await fetch(`https://${RAPIDAPI_HOST}/cricket-matches`, {
       headers: {
         'Content-Type': 'application/json',
         'x-rapidapi-host': RAPIDAPI_HOST,
@@ -73,17 +36,18 @@ export async function GET(req: NextRequest) {
     })
 
     if (!res.ok) {
-      console.error('LiveScore6 API error:', res.status, await res.text())
+      const errText = await res.text()
+      console.error('Cricbuzz API error:', res.status, errText)
       if (cache) return NextResponse.json(cache.data, { headers: { 'X-Cache': 'STALE' } })
       return NextResponse.json({ error: `API error: ${res.status}`, data: [] }, { status: 502 })
     }
 
     const raw = await res.json()
-    const normalized = normalizeLiveScore6(raw, type)
+    const normalized = normalizeCricbuzz(raw)
     cache = { data: normalized, ts: Date.now() }
 
     return NextResponse.json(normalized, {
-      headers: { 'X-Cache': 'MISS', 'Cache-Control': 'public, max-age=900' },
+      headers: { 'X-Cache': 'MISS', 'Cache-Control': 'public, max-age=600' },
     })
   } catch (err: any) {
     console.error('Cricket API error:', err.message)
@@ -92,54 +56,57 @@ export async function GET(req: NextRequest) {
   }
 }
 
-function normalizeLiveScore6(raw: any, type: string) {
-  if (type === 'news') {
-    const articles = raw?.Stages || raw?.articles || raw?.data || []
-    return {
-      data: articles.map((a: any) => ({
-        id:           a.Eid || a.id || Math.random().toString(36),
-        name:         a.Snm || a.title || '',
-        status:       a.Eps || a.status || '',
-        matchStarted: true,
-        matchEnded:   false,
-        teams:        [],
-        score:        [],
-        venue:        '',
-        isNews:       true,
-        link:         a.Url || a.url || '',
-      })),
-    }
-  }
-
-  // Match list — LiveScore6 uses Stages > Events structure
-  // Filter stages to only include cricket competitions
-  const stages = (raw?.Stages || []).filter(isCricketStage)
+function normalizeCricbuzz(raw: any) {
+  // Free Cricbuzz API response structure:
+  // { typeMatches: [ { matchType, seriesMatches: [ { seriesAdWrapper: { seriesName, matches: [ { matchInfo, matchScore } ] } } ] } ] }
   const matches: any[] = []
 
-  for (const stage of stages) {
-    const events = stage?.Events || []
-    for (const ev of events) {
-      const t1 = ev?.T1?.[0] || {}
-      const t2 = ev?.T2?.[0] || {}
-      const isLive      = ev?.Eps === 'Live' || ev?.Eps === 'HT' || ev?.Eps === 'In Progress'
-      const isCompleted = ev?.Eps === 'Fin'  || ev?.Eps === 'FT' || ev?.Eps === 'Ended'
-      const isUpcoming  = !isLive && !isCompleted
+  const typeMatches = raw?.typeMatches || []
 
-      matches.push({
-        id:           ev?.Eid || ev?.id,
-        name:         `${t1?.Nm || 'Team 1'} vs ${t2?.Nm || 'Team 2'}`,
-        status:       isLive ? 'Live' : isCompleted ? 'Completed' : ev?.Eps || 'Upcoming',
-        matchStarted: isLive || isCompleted,
-        matchEnded:   isCompleted,
-        teams:        [t1?.Nm || 'Team 1', t2?.Nm || 'Team 2'],
-        score: [
-          { r: t1?.Sc || t1?.Scr || 0, w: t1?.Wkts || 0, o: t1?.Ovs || 0 },
-          { r: t2?.Sc || t2?.Scr || 0, w: t2?.Wkts || 0, o: t2?.Ovs || 0 },
-        ],
-        venue:     stage?.Snm || ev?.Vnm || '',
-        matchType: 'Cricket',
-        series:    stage?.Cnm || '',
-      })
+  for (const typeMatch of typeMatches) {
+    const seriesMatches = typeMatch?.seriesMatches || []
+    for (const sm of seriesMatches) {
+      const wrapper = sm?.seriesAdWrapper || sm
+      const seriesName = wrapper?.seriesName || ''
+      const matchList  = wrapper?.matches || []
+
+      for (const m of matchList) {
+        const info  = m?.matchInfo  || {}
+        const score = m?.matchScore || {}
+
+        const matchId   = info?.matchId   || info?.id
+        const team1     = info?.team1     || {}
+        const team2     = info?.team2     || {}
+        const state     = info?.state     || ''   // 'In Progress', 'Complete', 'Preview'
+        const status    = info?.status    || ''
+        const matchType = info?.matchFormat || info?.matchType || 'T20'
+        const venue     = info?.venueInfo?.ground || info?.venueInfo?.city || ''
+
+        const isLive      = state === 'In Progress'
+        const isCompleted = state === 'Complete'
+
+        // Score extraction
+        const t1Score = score?.team1Score?.inngs1 || score?.team1Score?.inngs2 || {}
+        const t2Score = score?.team2Score?.inngs1 || score?.team2Score?.inngs2 || {}
+
+        matches.push({
+          id:           String(matchId),
+          name:         `${team1?.teamName || 'Team 1'} vs ${team2?.teamName || 'Team 2'}`,
+          shortName:    `${team1?.teamSName || ''} vs ${team2?.teamSName || ''}`,
+          status,
+          matchStarted: isLive || isCompleted,
+          matchEnded:   isCompleted,
+          teams:        [team1?.teamName || 'Team 1', team2?.teamName || 'Team 2'],
+          teamShort:    [team1?.teamSName || '', team2?.teamSName || ''],
+          score: [
+            { r: t1Score?.runs || 0, w: t1Score?.wickets || 0, o: t1Score?.overs || 0 },
+            { r: t2Score?.runs || 0, w: t2Score?.wickets || 0, o: t2Score?.overs || 0 },
+          ],
+          venue,
+          matchType,
+          series: seriesName,
+        })
+      }
     }
   }
 
