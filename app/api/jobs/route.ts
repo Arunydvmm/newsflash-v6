@@ -55,7 +55,12 @@ export async function GET(req: NextRequest) {
     })
 
     if (!res.ok) {
-      console.error('RapidAPI Jobs error:', res.status, await res.text())
+      const errText = await res.text()
+      console.error('RapidAPI Jobs error:', res.status, errText)
+      // 403 = not subscribed — return empty silently so widget hides
+      if (res.status === 403) {
+        return NextResponse.json({ jobs: [], total: 0, notSubscribed: true })
+      }
       if (cached?.jobs?.length > 0) {
         return NextResponse.json({ jobs: cached.jobs.slice(0, limit), total: cached.jobs.length, source: 'stale' })
       }

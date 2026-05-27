@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-const MODEL        = 'llama3-70b-8192' // Fast, accurate, free tier
+const MODEL = 'llama-3.3-70b-versatile' // Current Groq model (replaces decommissioned llama3-70b-8192)
 
 // Cache to avoid repeated API calls for same item
 const cache: Record<string, { data: any; ts: number }> = {}
