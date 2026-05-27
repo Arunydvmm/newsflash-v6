@@ -64,7 +64,6 @@ export default function SarkariNewsWidget() {
             </div>
           ))}
         </div>
-        </div>
       )}
 
       <div style={{ padding: '10px 16px', background: '#FFF3E0', borderTop: '1px solid #FFE0B2', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
