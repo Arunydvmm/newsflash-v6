@@ -17,6 +17,18 @@ export default function AdsPage() {
   const [msgType, setMsgType] = useState<'success'|'error'>('success')
   const [expandedSlot, setExpandedSlot] = useState<string | null>(null)
 
+  // Get color based on ad type
+  const getDimensionColor = (type: string) => {
+    const colors: Record<string, string> = {
+      'Popunder': '#C62828',
+      'Native': '#E65100',
+      'Social Bar': '#1565C0',
+      'Smartlink': '#6A1B9A',
+      'Banner': '#0D1B2A',
+    }
+    return colors[type] || '#666'
+  }
+
   useEffect(() => {
     fetch('/api/ads').then(r => r.json()).then(d => {
       if (Array.isArray(d)) setSlots(d)
@@ -60,7 +72,7 @@ export default function AdsPage() {
     setTimeout(() => setMsg(''), 4000)
   }
 
-  const ORDER = ['popunder','native-banner','header-leaderboard','sidebar-rectangle','sidebar-rectangle-2','mid-article','mobile-sticky','cricket-sidebar','sarkari-sidebar']
+  const ORDER = ['popunder','native-banner','social-bar','smartlink','header-leaderboard','sidebar-rectangle','sidebar-rectangle-2','mid-article','mobile-sticky','cricket-sidebar','sarkari-sidebar','banner-160x600','banner-160x300','banner-468x60']
   const sorted = [...slots].sort((a, b) => ORDER.indexOf(a.slotId) - ORDER.indexOf(b.slotId))
 
   return (
@@ -122,14 +134,14 @@ export default function AdsPage() {
 
                     {/* Type */}
                     <td style={{ padding: '12px 16px', color: '#666' }}>
-                      <span style={{ background: '#F0F0EC', padding: '3px 8px', borderRadius: 3, fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }}>
-                        {s.size}
+                      <span style={{ background: getDimensionColor(s.type), color: 'white', padding: '3px 8px', borderRadius: 3, fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>
+                        {s.type}
                       </span>
                     </td>
 
                     {/* Size */}
-                    <td style={{ padding: '12px 16px', color: '#666', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>
-                      {s.position}
+                    <td style={{ padding: '12px 16px', color: '#666', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, fontWeight: 500 }}>
+                      {s.size === 'Dynamic' ? '📐 Dynamic' : s.size}
                     </td>
 
                     {/* Status Toggle */}
