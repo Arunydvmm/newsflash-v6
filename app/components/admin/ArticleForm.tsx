@@ -32,8 +32,15 @@ function parseHTMLArticle(html: string) {
   const h1    = doc.querySelector('h1')
   const title = h1?.textContent?.trim() || seoTitle || doc.title?.replace(/\s*[-|–]\s*.*$/, '').trim() || ''
 
-  // Remove nav, header, footer, script, style, aside, breadcrumb elements
-  const removeSelectors = ['nav','header','footer','script','style','aside','.breadcrumb','[class*="breadcrumb"]','[class*="nav"]','[class*="footer"]','[class*="header"]','[class*="topbar"]','[class*="mobile-nav"]','[class*="logo"]','[class*="sidebar"]','[class*="advertisement"]','[class*="ad-"]']
+  // Remove ONLY: nav, header, footer, script, style, aside, breadcrumb, ads, sidebars
+  const removeSelectors = [
+    'nav','header','footer','script','style','aside',
+    '.breadcrumb','[class*="breadcrumb"]',
+    '[class*="nav"]','[class*="footer"]','[class*="header"]',
+    '[class*="topbar"]','[class*="mobile-nav"]','[class*="logo"]',
+    '[class*="sidebar"]','[class*="advertisement"]','[class*="ad-"]',
+    '[class*="ads"]','[id*="ad"]','[id*="ads"]'
+  ]
   removeSelectors.forEach(sel => {
     doc.querySelectorAll(sel).forEach(el => el.remove())
   })
@@ -44,25 +51,26 @@ function parseHTMLArticle(html: string) {
   const contentEl = doc.querySelector('article') || doc.querySelector('main') || doc.querySelector('[class*="article"]') || doc.querySelector('[class*="content"]') || doc.body
   let content = contentEl?.innerHTML?.trim() || ''
 
-  // Preserve structure: keep h2, h3, p, ul, ol, li, table, blockquote, img, strong, em, etc.
-  // But clean up unnecessary divs and classes
+  // PRESERVE STRUCTURE: Keep all important elements
+  // Only clean up unnecessary divs and classes, but preserve:
+  // - Tables, lists, headings, paragraphs, images
+  // - Iframes, SVG, canvas, code blocks
+  // - Blockquotes, strong, em, u, etc.
+  
+  // Remove only wrapper divs (divs with no content except other elements)
+  // But keep divs that contain important content
   content = content
-    .replace(/<div[^>]*>/gi, '') // Remove div opening tags
-    .replace(/<\/div>/gi, '') // Remove div closing tags
-    .replace(/\s+class="[^"]*"/gi, '') // Remove class attributes
+    .replace(/<div[^>]*class="[^"]*(?:wrapper|container|row|col)[^"]*"[^>]*>/gi, '') // Remove wrapper divs
+    .replace(/<\/div>/gi, '') // Remove closing div tags
+    .replace(/\s+class="[^"]*"/gi, '') // Remove class attributes (keep structure)
     .replace(/\s+id="[^"]*"/gi, '') // Remove id attributes
-    .replace(/\s+style="[^"]*"/gi, '') // Remove inline styles
-    .replace(/<br\s*\/?>/gi, '') // Remove br tags
+    .replace(/\s+style="[^"]*"/gi, '') // Remove inline styles (let CSS handle it)
     .replace(/\n{3,}/g, '\n\n') // Clean excessive whitespace
     .trim()
 
-  // Convert relative image URLs to absolute (if base URL is available)
-  // This preserves images in the content
-  content = content.replace(/src="(?!http|\/\/|data:)([^"]*)"/gi, (match, url) => {
-    // Keep relative URLs as-is; they'll be handled by the frontend
-    return `src="${url}"`
-  })
-
+  // Preserve image URLs (both absolute and relative)
+  // Don't modify image src attributes
+  
   // Summary — use SEO description first, then first meaningful <p>
   let summary = seoDescription || ''
   if (!summary) {
