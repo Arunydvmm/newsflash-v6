@@ -78,6 +78,7 @@ export default function LiveDashboard() {
             <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#4A6080', letterSpacing: 1 }}>Full Scorecard →</span>
           </Link>
         </div>
+      </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
     </div>
   )

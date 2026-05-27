@@ -63,9 +63,7 @@ export default function SarkariNewsWidget() {
               </a>
             </div>
           ))}
-              </div>
-            </a>
-          ))}
+        </div>
         </div>
       )}
 
