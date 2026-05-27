@@ -30,35 +30,49 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  // Auth check — reads cookie directly from request (works in Route Handlers)
-  const token = req.cookies.get('nf_token')?.value
-  console.log('[Ads API] Token present:', !!token, 'Cookies:', req.cookies.getAll().map(c => c.name))
-  
-  if (!token) {
-    console.log('[Ads API] No token found, returning 401')
-    return NextResponse.json({ error: 'Unauthorized - no token' }, { status: 401 })
-  }
-  
-  const { verifyToken } = await import('../../lib/auth')
-  const auth = verifyToken(token)
-  console.log('[Ads API] Auth verified:', !!auth)
-  
-  if (!auth) {
-    console.log('[Ads API] Token invalid, returning 401')
-    return NextResponse.json({ error: 'Unauthorized - invalid token' }, { status: 401 })
-  }
+  try {
+    // Auth check — reads cookie directly from request
+    const token = req.cookies.get('nf_token')?.value
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized - no token' }, { status: 401 })
+    }
+    
+    const { verifyToken } = await import('../../lib/auth')
+    const auth = verifyToken(token)
+    
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized - invalid token' }, { status: 401 })
+    }
 
-  await connectDB()
-  const slots = await req.json()
-  const updates = await Promise.all(
-    slots.map((s: any) =>
-      AdSlot.findOneAndUpdate(
-        { slotId: s.slotId },
-        { enabled: s.enabled, script: s.script },
-        { new: true }
+    await connectDB()
+    const slots = await req.json()
+    
+    const updates = await Promise.all(
+      slots.map((s: any) =>
+        AdSlot.findOneAndUpdate(
+          { slotId: s.slotId },
+          { enabled: s.enabled, script: s.script },
+          { new: true }
+        )
       )
     )
-  )
-  console.log('[Ads API] Saved', updates.length, 'slots')
-  return NextResponse.json(updates)
+    
+    return NextResponse.json(updates)
+  } catch (error: any) {
+    console.error('[Ads API PUT Error]', error)
+    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
+  }
 }
+
+// Handle unsupported methods
+export async function POST() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function DELETE() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+export async function PATCH() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
