@@ -11,18 +11,14 @@ export async function GET() {
   const defaultSlots = [
     { slotId: 'popunder',           name: 'Popunder',             type: 'Popunder',        size: 'Global',      position: 'Injected globally on all pages',                    enabled: false, script: '' },
     { slotId: 'native-banner',      name: 'Native Banner',        type: 'Native',          size: 'Native',      position: 'Below article grid on homepage',                    enabled: false, script: '' },
-    { slotId: 'social-bar',         name: 'Social Bar',           type: 'Social Bar',      size: 'Dynamic',     position: 'Floating social sharing bar on pages',              enabled: false, script: '' },
-    { slotId: 'smartlink',          name: 'Smartlink',            type: 'Smartlink',       size: 'Dynamic',     position: 'Smart link ads (auto-sizing)',                      enabled: false, script: '' },
-    { slotId: 'header-leaderboard', name: 'Header Leaderboard',   type: 'Banner',          size: '728×90',      position: 'Below navigation in site header',                   enabled: false, script: '' },
-    { slotId: 'sidebar-rectangle',  name: 'Sidebar Rectangle (Top)',    type: 'Banner',   size: '300×250',     position: 'Top of right sidebar on homepage',                  enabled: false, script: '' },
-    { slotId: 'sidebar-rectangle-2', name: 'Sidebar Rectangle (Bottom)', type: 'Banner',  size: '300×250',     position: 'Bottom of right sidebar on homepage',               enabled: false, script: '' },
-    { slotId: 'mid-article',        name: 'Mid-Article Banner',   type: 'Banner',          size: '728×90',      position: 'Mid-way through article body',                      enabled: false, script: '' },
-    { slotId: 'mobile-sticky',      name: 'Mobile Sticky Footer', type: 'Banner',          size: '320×50',      position: 'Sticky bottom on mobile devices',                   enabled: false, script: '' },
-    { slotId: 'cricket-sidebar',    name: 'Cricket Sidebar',      type: 'Banner',          size: '300×250',     position: 'Cricket section sidebar',                           enabled: false, script: '' },
-    { slotId: 'sarkari-sidebar',    name: 'Sarkari Sidebar',      type: 'Banner',          size: '300×250',     position: 'Sarkari Naukri section sidebar',                    enabled: false, script: '' },
-    { slotId: 'banner-160x600',     name: 'Banner 160×600',       type: 'Banner',          size: '160×600',     position: 'Wide skyscraper sidebar ad',                        enabled: false, script: '' },
-    { slotId: 'banner-160x300',     name: 'Banner 160×300',       type: 'Banner',          size: '160×300',     position: 'Half-page sidebar ad',                              enabled: false, script: '' },
-    { slotId: 'banner-468x60',      name: 'Banner 468×60',        type: 'Banner',          size: '468×60',      position: 'Half-page banner ad',                               enabled: false, script: '' },
+    { slotId: 'banner-728x90',      name: 'Banner 728×90',        type: 'Banner',          size: '728×90',      position: 'Header leaderboard & mid-article on all pages',     enabled: false, script: '' },
+    { slotId: 'banner-300x250',     name: 'Banner 300×250',       type: 'Banner',          size: '300×250',     position: 'Sidebar rectangles on all pages',                   enabled: false, script: '' },
+    { slotId: 'social-bar',         name: 'Social Bar',           type: 'Social Bar',      size: 'Dynamic',     position: 'Floating social sharing bar on all pages',          enabled: false, script: '' },
+    { slotId: 'smartlink',          name: 'Smartlink',            type: 'Smartlink',       size: 'Dynamic',     position: 'Smart link ads (auto-sizing) on all pages',         enabled: false, script: '' },
+    { slotId: 'banner-320x50',      name: 'Banner 320×50',        type: 'Banner',          size: '320×50',      position: 'Mobile sticky footer on all pages',                 enabled: false, script: '' },
+    { slotId: 'banner-160x600',     name: 'Banner 160×600',       type: 'Banner',          size: '160×600',     position: 'Wide skyscraper sidebar on all pages',              enabled: false, script: '' },
+    { slotId: 'banner-160x300',     name: 'Banner 160×300',       type: 'Banner',          size: '160×300',     position: 'Half-page sidebar on all pages',                    enabled: false, script: '' },
+    { slotId: 'banner-468x60',      name: 'Banner 468×60',        type: 'Banner',          size: '468×60',      position: 'Half-page banner on all pages',                     enabled: false, script: '' },
   ]
   const existingIds = slots.map((s: any) => s.slotId)
   const missing = defaultSlots.filter(s => !existingIds.includes(s.slotId))

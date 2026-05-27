@@ -8,6 +8,7 @@ import NewsFeedWidget from '../components/NewsFeedWidget'
 import LiveJobsWidget from '../components/LiveJobsWidget'
 import SarkariNewsWidget from '../components/SarkariNewsWidget'
 import SarkariResultWidget from '../components/SarkariResultWidget'
+import AdSlotServer from '../components/AdSlotServer'
 
 export const revalidate = 300
 

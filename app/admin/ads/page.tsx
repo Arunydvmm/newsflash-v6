@@ -72,7 +72,7 @@ export default function AdsPage() {
     setTimeout(() => setMsg(''), 4000)
   }
 
-  const ORDER = ['popunder','native-banner','social-bar','smartlink','header-leaderboard','sidebar-rectangle','sidebar-rectangle-2','mid-article','mobile-sticky','cricket-sidebar','sarkari-sidebar','banner-160x600','banner-160x300','banner-468x60']
+  const ORDER = ['popunder','native-banner','banner-728x90','banner-300x250','social-bar','smartlink','banner-320x50','banner-160x600','banner-160x300','banner-468x60']
   const sorted = [...slots].sort((a, b) => ORDER.indexOf(a.slotId) - ORDER.indexOf(b.slotId))
 
   return (

@@ -126,7 +126,7 @@ export default async function HomePage({ searchParams }: any) {
       <LiveDashboard />
 
       {/* ── HEADER LEADERBOARD AD ── */}
-      <AdSlotServer slotId="header-leaderboard" style={{ padding: '8px 0', background: '#F8F8F6', textAlign: 'center' }} />
+      <AdSlotServer slotId="banner-728x90" style={{ padding: '8px 0', background: '#F8F8F6', textAlign: 'center' }} />
 
       {/* ── SEARCH RESULT HEADER ── */}
       {(search || category) && (
@@ -261,7 +261,7 @@ export default async function HomePage({ searchParams }: any) {
             {/* ── SIDEBAR ── */}
             <aside className="sidebar">
               {/* Sidebar Rectangle Ad */}
-              <AdSlotServer slotId="sidebar-rectangle" style={{ marginBottom: 24 }} />
+              <AdSlotServer slotId="banner-300x250" style={{ marginBottom: 24 }} />
 
               {/* Trending */}
               {trending.length > 0 && (
@@ -298,7 +298,7 @@ export default async function HomePage({ searchParams }: any) {
               </div>
 
               {/* Sidebar Ad 2 */}
-              <AdSlotServer slotId="sidebar-rectangle-2" style={{ marginTop: 8 }} />
+              <AdSlotServer slotId="banner-300x250" style={{ marginTop: 8 }} />
             </aside>
           </div>
         )}

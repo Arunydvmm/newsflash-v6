@@ -5,6 +5,7 @@ import { connectDB } from '../../lib/db'
 import Article from '../../models/Article'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
+import AdSlotServer from '../../components/AdSlotServer'
 
 export const revalidate = 120
 
@@ -179,6 +180,11 @@ export default async function ArticlePage({ params }: Props) {
           {/* CONTENT */}
           <div style={{ fontSize:16, lineHeight:1.85, color:'#2A2A2A' }} dangerouslySetInnerHTML={{ __html: a.content }} />
 
+          {/* Mid-Article Ad */}
+          <div style={{ margin:'32px 0', padding:'16px 0' }}>
+            <AdSlotServer slotId="banner-728x90" style={{ minHeight: 90, textAlign: 'center' }} />
+          </div>
+
           {/* TAGS */}
           {a.tags?.length > 0 && (
             <div style={{ marginTop:28, paddingTop:20, borderTop:'1px solid #E0DDD5' }}>
@@ -240,8 +246,9 @@ export default async function ArticlePage({ params }: Props) {
         {/* SIDEBAR */}
         <aside className="sidebar-col">
           <div style={{ position:'sticky', top:20 }}>
-            <div style={{ background:'#F0EFE8', border:'1px dashed #E0DDD5', height:250, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'JetBrains Mono, monospace', fontSize:10, color:'#bbb', textTransform:'uppercase', letterSpacing:2, marginBottom:24 }}>
-              300 × 250 — Sidebar Ad
+            {/* Ad Slot 1 */}
+            <div style={{ marginBottom:24 }}>
+              <AdSlotServer slotId="banner-300x250" style={{ minHeight: 250 }} />
             </div>
             <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing:2, textTransform:'uppercase', color:'#6B6B6B', borderBottom:'2px solid #1A1A1A', paddingBottom:6, marginBottom:12 }}>More from {a.category}</div>
             {related.map(r => (
