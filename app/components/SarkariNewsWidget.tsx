@@ -75,6 +75,7 @@ export default function SarkariNewsWidget() {
           View All Jobs →
         </Link>
       </div>
+    </div>
     </>
   )
 }
