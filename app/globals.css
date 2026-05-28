@@ -236,6 +236,21 @@ img, video, iframe { max-width: 100%; height: auto; }
 .article-body ul li { margin-bottom: 0.5em; font-size: 15px; line-height: 1.8; }
 .article-body a    { color: var(--red); text-decoration: underline; }
 
+/* ── Dark theme text color fixes ── */
+@media (prefers-color-scheme: dark) {
+  h1, h2, h3, h4, h5, h6 { color: #E8F0F8 !important; }
+  p, span, div, td, li { color: #B8C5D6 !important; }
+  a { color: #5BA3FF !important; }
+  .text-dark { color: #B8C5D6 !important; }
+  .text-muted { color: #7A8A9E !important; }
+  .text-secondary { color: #94A3B8 !important; }
+  table th { color: #E8F0F8 !important; background: #1A2332 !important; }
+  table td { color: #B8C5D6 !important; }
+  table tbody tr { background: #0F1419 !important; }
+  table tbody tr:nth-child(even) { background: #1A2332 !important; }
+  table tbody tr:hover { background: #1F2D3D !important; }
+}
+
 /* ── Topbar desktop only ── */
 .topbar-desktop { display: flex; }
 

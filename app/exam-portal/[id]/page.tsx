@@ -27,7 +27,7 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
         <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0D1B2A', marginBottom: 8 }}>Item Not Found</h1>
-          <p style={{ fontSize: 14, color: '#666', marginBottom: 24 }}>The exam portal item you're looking for doesn't exist.</p>
+          <p style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>The exam portal item you're looking for doesn't exist.</p>
           <Link href="/sarkari" style={{ display: 'inline-block', background: '#1B5E20', color: 'white', padding: '10px 20px', borderRadius: 6, textDecoration: 'none', fontWeight: 600 }}>
             ← Back to Sarkari Naukri
           </Link>
@@ -61,6 +61,17 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: '#F4F4F0', minHeight: '100vh' }}>
+      <style>{`
+        @media (prefers-color-scheme: dark) {
+          body { background: #0D1B2A; color: #E8F0F8; }
+          h1, h2, h3, h4, h5, h6 { color: #E8F0F8; }
+          .text-dark { color: #B8C5D6; }
+          .text-muted { color: #7A8A9E; }
+          a { color: #5BA3FF; }
+          .bg-light { background: #1A2332; }
+          .border-light { border-color: #2C3E50; }
+        }
+      `}</style>
       {/* Header */}
       <header style={{ background: '#1B5E20', color: 'white' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 20px' }}>

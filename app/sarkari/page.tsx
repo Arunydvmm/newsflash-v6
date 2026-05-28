@@ -121,6 +121,17 @@ export default async function SarkariPage() {
         tbody tr:nth-child(even) { background: #FAFAFA; }
         tbody tr:nth-child(odd) { background: white; }
         tbody tr:hover { background: #F0F0F0 !important; }
+        th { color: #0D1B2A !important; }
+        td { color: #333 !important; }
+        a { color: #1565C0 !important; }
+        @media (prefers-color-scheme: dark) {
+          tbody tr:nth-child(even) { background: #1A2332; }
+          tbody tr:nth-child(odd) { background: #0F1419; }
+          tbody tr:hover { background: #1F2D3D !important; }
+          th { color: #E8F0F8 !important; }
+          td { color: #B8C5D6 !important; }
+          a { color: #5BA3FF !important; }
+        }
         @media (max-width: 768px) {
           table { font-size: 12px; }
           th, td { padding: 10px 12px !important; }
