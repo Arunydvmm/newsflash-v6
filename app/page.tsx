@@ -9,6 +9,7 @@ import ScrollReveal from './components/ScrollReveal'
 import CricketNewsWidget from './components/CricketNewsWidget'
 import LiveDashboard from './components/LiveDashboard'
 import NewsFeedWidget from './components/NewsFeedWidget'
+import WeatherWidget from './components/WeatherWidget'
 import ISTClock from './components/ISTClock'
 import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
@@ -124,6 +125,11 @@ export default async function HomePage({ searchParams }: any) {
 
       {/* ── LIVE DASHBOARD BAR ── */}
       <LiveDashboard />
+
+      {/* ── WEATHER WIDGET ── */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px' }}>
+        <WeatherWidget />
+      </div>
 
       {/* ── HEADER LEADERBOARD AD ── */}
       <AdSlotServer slotId="banner-728x90" style={{ padding: '8px 0', background: '#F8F8F6', textAlign: 'center' }} />
