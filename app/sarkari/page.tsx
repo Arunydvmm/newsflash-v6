@@ -54,48 +54,48 @@ export default async function SarkariPage() {
           <div style={{ fontSize: 14, color: '#666' }}>No items available</div>
         </div>
       ) : (
-        <div style={{ background: 'white', borderRadius: 8, overflow: 'hidden', border: '1px solid #E8E8E4' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div style={{ background: 'white', borderRadius: 8, overflow: 'auto', border: '1px solid #E8E8E4' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
             <thead>
-              <tr style={{ background: '#F8F8F8', borderBottom: '1px solid #E8E8E4' }}>
+              <tr style={{ background: '#F8F8F8', borderBottom: '2px solid #E8E8E4' }}>
                 {type === 'vacancy' ? (
                   <>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Job Title</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Organization</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Posts</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Salary</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Last Date</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Job Title</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Organization</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Posts</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Salary</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Last Date</th>
                   </>
                 ) : (
                   <>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Title</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Organization</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Category</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Date</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Title</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Organization</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Category</th>
+                    <th style={{ padding: '14px 16px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#0D1B2A', whiteSpace: 'nowrap' }}>Date</th>
                   </>
                 )}
               </tr>
             </thead>
             <tbody>
-              {items.map((item: any) => {
+              {items.map((item: any, idx: number) => {
                 const dl = daysLeft(item.importantDates?.lastDate || item.importantDates?.registrationEnd || item.importantDates?.admitCardDate || item.importantDates?.answerKeyDate || item.importantDates?.resultDate)
                 return (
-                  <tr key={String(item._id)} style={{ borderBottom: '1px solid #E8E8E4', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#F8F8F8'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
-                    <td style={{ padding: '12px 16px', fontSize: 13 }}>
-                      <Link href={`/exam-portal/${item._id}`} style={{ color: '#1565C0', textDecoration: 'none', fontWeight: 500, cursor: 'pointer' }}>
+                  <tr key={String(item._id)} style={{ borderBottom: '1px solid #E8E8E4', transition: 'background 0.2s', background: idx % 2 === 0 ? 'white' : '#FAFAFA' }} onMouseEnter={(e) => e.currentTarget.style.background = '#F0F0F0'} onMouseLeave={(e) => e.currentTarget.style.background = idx % 2 === 0 ? 'white' : '#FAFAFA'}>
+                    <td style={{ padding: '14px 16px', fontSize: 13, minWidth: '200px' }}>
+                      <Link href={`/exam-portal/${item._id}`} style={{ color: '#1565C0', textDecoration: 'none', fontWeight: 600, cursor: 'pointer' }}>
                         {item.title}
                       </Link>
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.organization}</td>
+                    <td style={{ padding: '14px 16px', fontSize: 13, color: '#666', minWidth: '150px' }}>{item.organization}</td>
                     {type === 'vacancy' ? (
                       <>
-                        <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.totalVacancy || '—'}</td>
-                        <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.salaryText || '—'}</td>
+                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#666', textAlign: 'center', minWidth: '80px' }}>{item.totalVacancy || '—'}</td>
+                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#666', minWidth: '120px' }}>{item.salaryText || '—'}</td>
                       </>
                     ) : (
-                      <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.category || '—'}</td>
+                      <td style={{ padding: '14px 16px', fontSize: 13, color: '#666', minWidth: '100px' }}>{item.category || '—'}</td>
                     )}
-                    <td style={{ padding: '12px 16px', fontSize: 13, fontFamily: 'JetBrains Mono, monospace' }}>
+                    <td style={{ padding: '14px 16px', fontSize: 13, fontFamily: 'JetBrains Mono, monospace', textAlign: 'center', minWidth: '120px' }}>
                       <div style={{ fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates?.lastDate || item.importantDates?.registrationEnd || item.importantDates?.admitCardDate || item.importantDates?.answerKeyDate || item.importantDates?.resultDate)}</div>
                       {dl !== null && dl >= 0 && (
                         <div style={{ fontSize: 11, marginTop: 4, color: dl <= 3 ? '#C62828' : '#2E7D32', fontWeight: 600 }}>
@@ -117,7 +117,14 @@ export default async function SarkariPage() {
     <div style={{ fontFamily: "'Inter', sans-serif", background: '#F4F4F0', minHeight: '100vh' }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        table tr:hover { background: #F8F8F8; }
+        table { width: 100%; }
+        tbody tr:nth-child(even) { background: #FAFAFA; }
+        tbody tr:nth-child(odd) { background: white; }
+        tbody tr:hover { background: #F0F0F0 !important; }
+        @media (max-width: 768px) {
+          table { font-size: 12px; }
+          th, td { padding: 10px 12px !important; }
+        }
       `}</style>
 
       {/* Header */}
