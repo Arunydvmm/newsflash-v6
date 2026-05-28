@@ -120,7 +120,6 @@ export default async function SarkariPage() {
             </div>
           </div>
         )}
-      </main>
 
         {/* SECTION 3: ADMIT CARDS */}
         {admitCards.length > 0 && (
