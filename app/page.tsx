@@ -6,7 +6,6 @@ import { LoadingBar, WelcomePopup, HeroSlider, ArticleCard, CategoryButton } fro
 import DarkModeToggle from './components/DarkModeToggle'
 import PortalCards from './components/PortalCards'
 import InteractiveNav from './components/InteractiveNav'
-import PortalNav from './components/PortalNav'
 import ScrollReveal from './components/ScrollReveal'
 import CricketNewsWidget from './components/CricketNewsWidget'
 import LiveDashboard from './components/LiveDashboard'
@@ -59,7 +58,7 @@ export default async function HomePage({ searchParams }: any) {
       {/* ── TOP BAR — Date, Time, Navigation ── */}
       <InteractiveNav />
 
-      {/* ── HEADER — Logo, Search, Dark Mode ── */}
+      {/* ── HEADER — Logo, Search, Weather ── */}
       <header style={{ background: 'white', borderBottom: '2px solid #0D1B2A', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', padding: '12px 20px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
           {/* Logo */}
@@ -73,13 +72,10 @@ export default async function HomePage({ searchParams }: any) {
             <button type="submit" style={{ background: '#0D1B2A', color: 'white', border: 'none', padding: '10px 14px', cursor: 'pointer', fontSize: 14 }}>🔍</button>
           </form>
 
-          {/* Dark Mode Toggle */}
-          <DarkModeToggle />
+          {/* Weather Icon Placeholder */}
+          <div style={{ fontSize: 24, cursor: 'pointer' }}>🌤️</div>
         </div>
       </header>
-
-      {/* ── PORTAL BUTTONS — Cricket, Sarkari, Education ── */}
-      <PortalNav />
 
       {/* ── BREAKING TICKER ── */}
       <div style={{ display: 'flex', overflow: 'hidden', alignItems: 'center', background: 'linear-gradient(90deg,#C62828,#B71C1C)' }}>
@@ -96,8 +92,8 @@ export default async function HomePage({ searchParams }: any) {
         </div>
       </div>
 
-      {/* ── WEATHER WIDGET ── */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 20px' }}>
+      {/* ── WEATHER WIDGET (CENTERED) ── */}
+      <div style={{ maxWidth: 800, margin: '20px auto', padding: '0 20px' }}>
         <WeatherWidget />
       </div>
 
