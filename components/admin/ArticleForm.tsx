@@ -221,7 +221,7 @@ export default function ArticleForm({ article = null, isEmployee = false }) {
           </button>
         )}
         <button type="button" onClick={() => router.back()}
-          style={{ background: 'white', color: '#888', padding: '11px 20px', border: '1px solid #E0DDD5', borderRadius: 4, cursor: 'pointer', fontSize: 13 }}>
+          style={{ background: 'white', color: '#666666', padding: '11px 20px', border: '1px solid #E0DDD5', borderRadius: 4, cursor: 'pointer', fontSize: 13 }}>
           Cancel
         </button>
       </div>

@@ -188,7 +188,7 @@ export default function SarkariJobForm({ job = null }) {
         <button type="submit" disabled={loading} style={{ background: '#1B5E20', color: 'white', padding: '11px 24px', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 13, fontWeight: 600, opacity: loading ? 0.7 : 1 }}>
           {loading ? 'Saving...' : job ? 'Update Job' : 'Post Job'}
         </button>
-        <button type="button" onClick={() => router.back()} style={{ background: 'white', color: '#888', padding: '11px 20px', border: '1px solid #E0DDD5', borderRadius: 4, cursor: 'pointer', fontSize: 13 }}>
+        <button type="button" onClick={() => router.back()} style={{ background: 'white', color: '#666666', padding: '11px 20px', border: '1px solid #E0DDD5', borderRadius: 4, cursor: 'pointer', fontSize: 13 }}>
           Cancel
         </button>
       </div>

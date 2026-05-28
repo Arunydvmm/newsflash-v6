@@ -51,7 +51,7 @@ export default async function SarkariPage() {
       {items.length === 0 ? (
         <div style={{ background: 'white', borderRadius: 8, padding: 40, textAlign: 'center', border: '1px solid #E8E8E4' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
-          <div style={{ fontSize: 14, color: '#666' }}>No items available</div>
+          <div style={{ fontSize: 14, color: '#666666' }}>No items available</div>
         </div>
       ) : (
         <div style={{ background: 'white', borderRadius: 8, overflow: 'auto', border: '1px solid #E8E8E4' }}>
@@ -86,14 +86,14 @@ export default async function SarkariPage() {
                         {item.title}
                       </Link>
                     </td>
-                    <td style={{ padding: '14px 16px', fontSize: 13, color: '#666', minWidth: '150px' }}>{item.organization}</td>
+                    <td style={{ padding: '14px 16px', fontSize: 13, color: '#666666', minWidth: '150px' }}>{item.organization}</td>
                     {type === 'vacancy' ? (
                       <>
-                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#666', textAlign: 'center', minWidth: '80px' }}>{item.totalVacancy || '—'}</td>
-                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#666', minWidth: '120px' }}>{item.salaryText || '—'}</td>
+                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#666666', textAlign: 'center', minWidth: '80px' }}>{item.totalVacancy || '—'}</td>
+                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#666666', minWidth: '120px' }}>{item.salaryText || '—'}</td>
                       </>
                     ) : (
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: '#666', minWidth: '100px' }}>{item.category || '—'}</td>
+                      <td style={{ padding: '14px 16px', fontSize: 13, color: '#666666', minWidth: '100px' }}>{item.category || '—'}</td>
                     )}
                     <td style={{ padding: '14px 16px', fontSize: 13, fontFamily: 'JetBrains Mono, monospace', textAlign: 'center', minWidth: '120px' }}>
                       <div style={{ fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates?.lastDate || item.importantDates?.registrationEnd || item.importantDates?.admitCardDate || item.importantDates?.answerKeyDate || item.importantDates?.resultDate)}</div>
@@ -122,16 +122,8 @@ export default async function SarkariPage() {
         tbody tr:nth-child(odd) { background: white; }
         tbody tr:hover { background: #F0F0F0 !important; }
         th { color: #0D1B2A !important; }
-        td { color: #333 !important; }
+        td { color: #333333 !important; }
         a { color: #1565C0 !important; }
-        @media (prefers-color-scheme: dark) {
-          tbody tr:nth-child(even) { background: #1A2332; }
-          tbody tr:nth-child(odd) { background: #0F1419; }
-          tbody tr:hover { background: #1F2D3D !important; }
-          th { color: #E8F0F8 !important; }
-          td { color: #B8C5D6 !important; }
-          a { color: #5BA3FF !important; }
-        }
         @media (max-width: 768px) {
           table { font-size: 12px; }
           th, td { padding: 10px 12px !important; }

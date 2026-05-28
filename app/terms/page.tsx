@@ -17,7 +17,7 @@ export default function TermsPage() {
           <Link href="/" style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 900, color: '#0D1B2A', textDecoration: 'none' }}>
             NEWS<span style={{ color: '#C62828' }}>FLASH</span>
           </Link>
-          <Link href="/" style={{ fontSize: 12, color: '#888', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace' }}>← Back to Home</Link>
+          <Link href="/" style={{ fontSize: 12, color: '#666666', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace' }}>← Back to Home</Link>
         </div>
       </header>
 
@@ -25,7 +25,7 @@ export default function TermsPage() {
         <div style={{ background: 'white', borderRadius: 12, padding: '40px 48px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
           <div style={{ marginBottom: 32 }}>
             <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 36, fontWeight: 700, color: '#0D1B2A', marginBottom: 8 }}>Terms of Service</h1>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#aaa' }}>Last updated: {LAST_UPDATED}</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#999999' }}>Last updated: {LAST_UPDATED}</div>
             <div style={{ width: 48, height: 3, background: 'linear-gradient(90deg,#C62828,#D4A017)', borderRadius: 2, marginTop: 16 }} />
           </div>
 
@@ -85,7 +85,7 @@ export default function TermsPage() {
           ].map((section, i) => (
             <div key={i} style={{ marginBottom: 28 }}>
               <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, fontWeight: 700, color: '#0D1B2A', marginBottom: 10 }}>{section.title}</h2>
-              <div style={{ fontSize: 14, color: '#444', lineHeight: 1.9, whiteSpace: 'pre-line' }}>{section.content}</div>
+              <div style={{ fontSize: 14, color: '#333333', lineHeight: 1.9, whiteSpace: 'pre-line' }}>{section.content}</div>
             </div>
           ))}
         </div>

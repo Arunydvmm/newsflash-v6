@@ -62,15 +62,13 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: '#F4F4F0', minHeight: '100vh' }}>
       <style>{`
-        @media (prefers-color-scheme: dark) {
-          body { background: #0D1B2A; color: #E8F0F8; }
-          h1, h2, h3, h4, h5, h6 { color: #E8F0F8; }
-          .text-dark { color: #B8C5D6; }
-          .text-muted { color: #7A8A9E; }
-          a { color: #5BA3FF; }
-          .bg-light { background: #1A2332; }
-          .border-light { border-color: #2C3E50; }
-        }
+        body { background: #F4F4F0; color: #333333; }
+        h1, h2, h3, h4, h5, h6 { color: #0D1B2A; }
+        .text-dark { color: #333333; }
+        .text-muted { color: #666666; }
+        a { color: #1565C0; }
+        .bg-light { background: #FFFFFF; }
+        .border-light { border-color: #E8E8E4; }
       `}</style>
       {/* Header */}
       <header style={{ background: '#1B5E20', color: 'white' }}>
@@ -92,7 +90,7 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
           <span style={{ background: TYPE_COLORS[item.type], color: 'white', padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
             {TYPE_ICONS[item.type]} {item.type}
           </span>
-          {item.category && <span style={{ background: '#E8E8E4', color: '#666', padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>{item.category}</span>}
+          {item.category && <span style={{ background: '#E8E8E4', color: '#333333', padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>{item.category}</span>}
           {item.isFeatured && <span style={{ background: '#FFF8E1', color: '#E65100', padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>⭐ Featured</span>}
         </div>
 
@@ -101,7 +99,7 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
           {/* Organization */}
           {item.organization && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#999', textTransform: 'uppercase', marginBottom: 4 }}>Organization</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#666666', textTransform: 'uppercase', marginBottom: 4 }}>Organization</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: '#0D1B2A' }}>{item.organization}</div>
             </div>
           )}
@@ -109,25 +107,25 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
           {/* Description */}
           {item.description && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#999', textTransform: 'uppercase', marginBottom: 8 }}>Description</div>
-              <div style={{ fontSize: 14, color: '#333', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{item.description}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#666666', textTransform: 'uppercase', marginBottom: 8 }}>Description</div>
+              <div style={{ fontSize: 14, color: '#333333', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{item.description}</div>
             </div>
           )}
 
           {/* Important Dates */}
           {item.importantDates && Object.keys(item.importantDates).length > 0 && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#999', textTransform: 'uppercase', marginBottom: 12 }}>Important Dates</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#666666', textTransform: 'uppercase', marginBottom: 12 }}>Important Dates</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                 {item.importantDates.registrationStart && (
                   <div style={{ background: '#F8F8F8', padding: 12, borderRadius: 6 }}>
-                    <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Registration Start</div>
+                    <div style={{ fontSize: 11, color: '#666666', marginBottom: 4 }}>Registration Start</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates.registrationStart)}</div>
                   </div>
                 )}
                 {item.importantDates.registrationEnd && (
                   <div style={{ background: '#F8F8F8', padding: 12, borderRadius: 6 }}>
-                    <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Registration End</div>
+                    <div style={{ fontSize: 11, color: '#666666', marginBottom: 4 }}>Registration End</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates.registrationEnd)}</div>
                     {daysLeft(item.importantDates.registrationEnd) !== null && (
                       <div style={{ fontSize: 11, marginTop: 4, color: daysLeft(item.importantDates.registrationEnd) <= 3 ? '#C62828' : '#2E7D32' }}>
@@ -138,25 +136,25 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
                 )}
                 {item.importantDates.examDate && (
                   <div style={{ background: '#F8F8F8', padding: 12, borderRadius: 6 }}>
-                    <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Exam Date</div>
+                    <div style={{ fontSize: 11, color: '#666666', marginBottom: 4 }}>Exam Date</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates.examDate)}</div>
                   </div>
                 )}
                 {item.importantDates.admitCardDate && (
                   <div style={{ background: '#F8F8F8', padding: 12, borderRadius: 6 }}>
-                    <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Admit Card Date</div>
+                    <div style={{ fontSize: 11, color: '#666666', marginBottom: 4 }}>Admit Card Date</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates.admitCardDate)}</div>
                   </div>
                 )}
                 {item.importantDates.answerKeyDate && (
                   <div style={{ background: '#F8F8F8', padding: 12, borderRadius: 6 }}>
-                    <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Answer Key Date</div>
+                    <div style={{ fontSize: 11, color: '#666666', marginBottom: 4 }}>Answer Key Date</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates.answerKeyDate)}</div>
                   </div>
                 )}
                 {item.importantDates.resultDate && (
                   <div style={{ background: '#F8F8F8', padding: 12, borderRadius: 6 }}>
-                    <div style={{ fontSize: 11, color: '#999', marginBottom: 4 }}>Result Date</div>
+                    <div style={{ fontSize: 11, color: '#666666', marginBottom: 4 }}>Result Date</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates.resultDate)}</div>
                   </div>
                 )}
