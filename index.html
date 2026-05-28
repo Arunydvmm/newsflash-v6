@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NewsFlash - India's Fastest News Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="custom-styles">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8f9fa;
+      color: #111827;
+    }
+
+    h1, h2, h3, h4, h5, h6, .serif-font {
+      font-family: 'Playfair Display', serif;
+    }
+
+    .ticker-wrap {
+      overflow: hidden;
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+
+    .ticker-content {
+      display: inline-block;
+      animation: ticker 30s linear infinite;
+    }
+
+    @keyframes ticker {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .gradient-overlay {
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#dc2626',
+              blue: '#2563eb',
+              dark: '#1e293b',
+              gray: '#64748b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head>
+<body class="antialiased flex flex-col min-h-screen">
+<!-- BEGIN: TopBar -->
+<div class="bg-brand-dark text-gray-300 text-xs py-1 px-4 border-b border-gray-700 hidden md:block">
+<div class="max-w-7xl mx-auto flex justify-between items-center">
+<div class="flex items-center space-x-4">
+<span>Thu, 28 May, 2026</span>
+<span class="text-brand-red font-bold">13:00:00 IST</span>
+</div>
+<div class="flex space-x-4">
+<a class="hover:text-white transition-colors" href="#">India</a>
+<a class="hover:text-white transition-colors" href="#">World</a>
+<a class="hover:text-white transition-colors" href="#">Business</a>
+<a class="hover:text-white transition-colors" href="#">Tech</a>
+<a class="hover:text-white transition-colors" href="#">Sports</a>
+</div>
+</div>
+</div>
+<!-- END: TopBar -->
+<!-- BEGIN: MainHeader -->
+<header class="bg-white sticky top-0 z-50 border-b shadow-sm">
+<div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"><div class="flex items-center space-x-2 mr-6 text-gray-600 hover:text-brand-red cursor-default transition-colors border-r pr-6 border-gray-100 hidden lg:flex">
+<span class="material-symbols-outlined text-xl text-yellow-500">wb_sunny</span>
+<div class="flex flex-col leading-none">
+<span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">London, UK</span>
+<span class="text-sm font-bold text-gray-900">18°C</span>
+</div>
+</div>
+<!-- Logo -->
+<a class="flex-shrink-0" href="/">
+<h1 class="text-3xl font-bold tracking-tighter uppercase text-black">
+          NEWS<span class="text-brand-red">FLASH</span><span class="text-brand-red text-xl leading-none align-baseline">.</span>
+</h1>
+</a>
+<!-- Search & Controls -->
+<div class="flex items-center space-x-4 ml-auto">
+<div class="relative hidden sm:block">
+<input class="w-64 pl-4 pr-10 py-1.5 text-sm border-gray-300 rounded-full focus:ring-brand-blue focus:border-brand-blue bg-gray-50" placeholder="Search news..." type="text"/>
+<button class="absolute right-0 top-0 h-full px-3 text-white bg-gray-800 rounded-r-full hover:bg-gray-700 transition-colors">
+<svg class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<button class="flex items-center space-x-1 px-3 py-1.5 rounded-full border border-gray-200 hover:bg-gray-50 text-sm font-medium transition-colors">
+<span>🌙</span>
+<span class="hidden sm:inline">Dark</span>
+</button>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: ActionNav -->
+<nav class="bg-gray-50 border-b overflow-x-auto custom-scrollbar">
+<div class="max-w-7xl mx-auto px-4 py-2 flex items-center space-x-3 whitespace-nowrap">
+<a class="flex items-center space-x-2 bg-green-700 text-white px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-green-800 transition-colors shadow-sm" href="#">
+<span>🏏</span>
+<span>Cricket Live</span>
+<span class="bg-red-500 text-[10px] px-1.5 py-0.5 rounded animate-pulse">LIVE</span>
+</a>
+<a class="flex items-center space-x-2 bg-orange-600 text-white px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-orange-700 transition-colors shadow-sm" href="#">
+<span>🏛</span>
+<span>Sarkari Naukri</span>
+</a>
+<a class="flex items-center space-x-2 bg-blue-700 text-white px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-blue-800 transition-colors shadow-sm" href="#">
+<span>🎓</span>
+<span>Education</span>
+</a>
+</div>
+</nav>
+<!-- END: ActionNav -->
+<!-- BEGIN: BreakingTicker -->
+<div class="bg-brand-red text-white flex items-stretch h-8 text-sm overflow-hidden">
+<div class="bg-red-800 font-bold px-4 flex items-center shrink-0 uppercase tracking-wider relative z-10">
+<span class="mr-2 h-2 w-2 bg-white rounded-full animate-pulse"></span> Breaking
+    </div>
+<div class="ticker-wrap flex-1 flex items-center bg-brand-red">
+<div class="ticker-content">
+<span class="mx-4">Petrol Diesel Price Today — May 28, 2026: City-wise Rates, CNG Prices &amp; Full India Fuel Rate Guide</span>·
+        <span class="mx-4">India Monsoon 2026: IMD Forecast, State-wise Arrival Dates, Rainfall Predictions &amp; Heatwave Alerts</span>·
+        <span class="mx-4">Bakrid 2026 (Eid ul Adha): Today's Date Confirmed as May 28 — Bank Holidays, Significance, Qurbani &amp; State-wise Guide</span>·
+        <span class="mx-4">IPL 2026 Eliminator: Sooryavanshi's 97 off 29 Balls Destroys SRH — RR Storm Into Qualifier 2 vs GT</span>·
+        <span class="mx-4">Petrol Diesel Price Today — May 28, 2026: City-wise Rates, CNG Prices &amp; Full India Fuel Rate Guide</span>·
+        <span class="mx-4">India Monsoon 2026: IMD Forecast, State-wise Arrival Dates, Rainfall Predictions &amp; Heatwave Alerts</span>·
+      </div>
+</div>
+</div>
+<!-- END: BreakingTicker -->
+<!-- BEGIN: MainContent -->
+<main class="flex-grow max-w-7xl mx-auto px-4 py-6 w-full flex flex-col lg:flex-row gap-8">
+<!-- Primary Column -->
+<div class="flex-1 min-w-0">
+<!-- BEGIN: Hero Section -->
+<section class="mb-8">
+<div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-gray-800">
+<h2 class="text-xl font-bold uppercase tracking-tight flex items-center">
+<span class="w-1 h-5 bg-brand-red mr-2"></span> Just In
+          </h2>
+<a class="text-sm text-gray-500 hover:text-brand-blue uppercase font-semibold" href="#">Latest updates</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<!-- Main Hero Article (Spans 2 cols on MD) -->
+<article class="md:col-span-4 relative rounded-xl overflow-hidden shadow-lg group cursor-pointer aspect-[16/9] md:aspect-[21/9]">
+<img alt="Hero News" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/ADBb0ugV8d7KeFYVkZwe4pzeTX6dyoB_Lbb-xjhqUAxMreaQ1BTGg14nN20ougRq0vMYUod6ePyDIZZxvaNe4A6KmIdzxxk9XRPtNkQm74g-QEXYMWkqNpll3Kv0D7lWclkrbnfEln9ezcJcePcQu3Q0yFQMkkwtbVEUUshk55dgtyzq8PmlfbRYvxMvveTGhHdOMthro-Aicq20nu9SqGvG9cirlFaaBMd31aFRB8FrZljW-655pAPv_FYYUg"/>
+<div class="absolute inset-0 gradient-overlay"></div>
+<div class="absolute bottom-0 left-0 right-0 p-6 flex flex-col justify-end">
+<span class="bg-brand-red text-white text-[10px] font-bold uppercase px-2 py-1 rounded w-max mb-3 tracking-wider">🇮🇳 India</span>
+<h3 class="text-2xl md:text-4xl font-bold text-white leading-tight serif-font group-hover:underline decoration-2 underline-offset-4">
+                 Bakrid 2026 (Eid ul Adha): Today's Date Confirmed as May 28 — Bank Holidays, Significance, Qurbani &amp; State-wise Guide
+               </h3>
+<div class="flex items-center text-gray-300 text-sm mt-4 space-x-3">
+<span class="font-medium text-white">Arun Yadav</span>
+<span>·</span>
+<span>5 min read</span>
+</div>
+</div>
+<!-- Slider Controls (Visual only) -->
+<button class="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center hover:bg-black/60 transition backdrop-blur-sm">❮</button>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 text-white rounded-full flex items-center justify-center hover:bg-black/60 transition backdrop-blur-sm">❯</button>
+<!-- Slider Dots -->
+<div class="absolute bottom-4 right-6 flex space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-brand-red"></span>
+<span class="w-2 h-2 rounded-full bg-white/50"></span>
+<span class="w-2 h-2 rounded-full bg-white/50"></span>
+<span class="w-2 h-2 rounded-full bg-white/50"></span>
+</div>
+</article>
+</div>
+</section>
+<!-- END: Hero Section -->
+<!-- BEGIN: Quick Links Cards -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+<!-- Exam Portal Card -->
+<a class="block bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl p-5 text-white shadow-md hover:shadow-lg transition-shadow relative overflow-hidden group" href="#">
+<div class="relative z-10 flex items-center space-x-4">
+<div class="text-3xl bg-white/20 p-3 rounded-lg group-hover:scale-110 transition-transform">📚</div>
+<div>
+<h3 class="font-bold text-lg leading-tight mb-1">Exam Portal</h3>
+<p class="text-xs text-indigo-100 line-clamp-2">Answer Keys · Admit Cards · Results · Notifications</p>
+</div>
+<div class="ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all">→</div>
+</div>
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white opacity-5 rounded-full blur-xl"></div>
+</a>
+<!-- Cricket Live Card -->
+<a class="block bg-gradient-to-br from-emerald-600 to-green-700 rounded-xl p-5 text-white shadow-md hover:shadow-lg transition-shadow relative overflow-hidden group" href="#">
+<div class="relative z-10 flex items-center space-x-4">
+<div class="text-3xl bg-white/20 p-3 rounded-lg group-hover:scale-110 transition-transform">🏏</div>
+<div>
+<h3 class="font-bold text-lg leading-tight mb-1">Cricket Live</h3>
+<p class="text-xs text-emerald-100 line-clamp-2">IPL scores · Points Table · Orange &amp; Purple Cap</p>
+</div>
+<div class="ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all">→</div>
+</div>
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white opacity-5 rounded-full blur-xl"></div>
+</a>
+<!-- Sarkari Naukri Card -->
+<a class="block bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-5 text-white shadow-md hover:shadow-lg transition-shadow relative overflow-hidden group" href="#">
+<div class="relative z-10 flex items-center space-x-4">
+<div class="text-3xl bg-white/20 p-3 rounded-lg group-hover:scale-110 transition-transform">🏛</div>
+<div>
+<h3 class="font-bold text-lg leading-tight mb-1">Sarkari Naukri</h3>
+<p class="text-xs text-orange-100 line-clamp-2">Railway · SSC · UPSC · Bank · Police jobs 2026</p>
+</div>
+<div class="ml-auto opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all">→</div>
+</div>
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white opacity-5 rounded-full blur-xl"></div>
+</a>
+</section>
+<!-- END: Quick Links Cards -->
+<!-- BEGIN: Latest News List -->
+<section class="mb-10">
+<div class="flex items-center mb-6 pb-2 border-b-2 border-gray-800">
+<h2 class="text-2xl font-bold uppercase tracking-tight flex items-center">
+<span class="w-1.5 h-6 bg-brand-red mr-3"></span> Latest News
+          </h2>
+</div>
+<div class="space-y-6">
+<!-- Article Item -->
+<article class="flex flex-col sm:flex-row gap-5 group cursor-pointer border-b border-gray-100 pb-6 last:border-0">
+<div class="w-full sm:w-1/3 aspect-[4/3] rounded-lg overflow-hidden shrink-0 relative">
+<img alt="News Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkvmpkKCAzQ__bWQRnCl99mhPi_i17dFfwKREpxq9HDGXAEoHRrUaxevaCZF9z3hGCiegtE6lWdwHnl4bH4pCIv5dp9AXBO1QHFqq0_BHXr7GY_09YbnGdd3PyHC_a9k643tn6h_Gyt-6RDE4U9RJo609Ifr0iU3BinkbuEHOE1Y5LlMgHnNK5CNZjraffS8oIZDHSxYx-s3Ked7FicalySCt7divb5opUv815dXtiAmsO6fHUuSgNYf35Gs8F1baUAxepwD-QZsk"/>
+<span class="absolute top-2 left-2 bg-white/90 backdrop-blur text-brand-red text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-sm">🇮🇳 India</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<h3 class="text-xl font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-blue transition-colors serif-font">
+                Petrol Diesel Price Today — May 28, 2026: City-wise Rates, CNG Prices &amp; Full India Fuel Rate Guide
+              </h3>
+<p class="text-gray-600 text-sm mb-3 line-clamp-2">Latest fuel prices across all major Indian cities on May 28, 2026. Delhi, Mumbai, Chennai, Kolkata, Hyderabad and 20+ cities — complete rate chart with CNG and LPG prices.</p>
+<div class="flex items-center text-xs text-gray-500 space-x-2 mt-auto">
+<span class="font-medium text-gray-700">admin</span>
+<span>·</span>
+<span>28 May 2026</span>
+<span>·</span>
+<span>3 min read</span>
+</div>
+</div>
+</article>
+<!-- Article Item -->
+<article class="flex flex-col sm:flex-row gap-5 group cursor-pointer border-b border-gray-100 pb-6 last:border-0">
+<div class="w-full sm:w-1/3 aspect-[4/3] rounded-lg overflow-hidden shrink-0 relative">
+<img alt="News Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt_J7cJbBWcwocr-_Sleqv3etjIy7t7ttpW0AJ8SH7tCB8oswbi6Q8YTCJxc6eqPViQ-j79IENGN5OkkA7s8YIhdRb_tAck8jNd7wBPaUXhqpxnDRjeLNQ7Cy7UWdCaJdxg-BYE6SRijkle8gVOBoRB-V3LzwbVmPg2XZftEA6VgcbmA-fIjBYJigELPsQveZobWDqUtO4eCzcKgXUy24-5BeNPHnZ3bfQ_bl676zzxt8QgKVyrDPl5Sbt-NF0okJIjzYeI3b34C0"/>
+<span class="absolute top-2 left-2 bg-white/90 backdrop-blur text-brand-red text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-sm">🇮🇳 India</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<h3 class="text-xl font-bold text-gray-900 leading-snug mb-2 group-hover:text-brand-blue transition-colors serif-font">
+                India Monsoon 2026: IMD Forecast, State-wise Arrival Dates, Rainfall Predictions &amp; Heatwave Alerts
+              </h3>
+<div class="flex items-center text-xs text-gray-500 space-x-2 mt-auto">
+<span>28 May 2026</span>
+<span>·</span>
+<span>4 min read</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- END: Latest News List -->
+<!-- BEGIN: Sports Section -->
+<section class="mb-10">
+<div class="flex items-center justify-between mb-6 pb-2 border-b-2 border-brand-blue">
+<h2 class="text-2xl font-bold uppercase tracking-tight flex items-center">
+<span class="w-1.5 h-6 bg-brand-blue mr-3"></span> ⚽ Sports
+          </h2>
+<a class="text-xs font-bold text-brand-blue hover:underline uppercase tracking-wider" href="#">View All →</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<article class="group cursor-pointer">
+<div class="aspect-[16/9] rounded-lg overflow-hidden mb-3 relative">
+<img alt="Sports Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/ADBb0uh1uo_c_U-WGkMbdnTBHEKP8rGc9cug_DN76_oR762uGxTArZHxz08TcOREibE73t4HJg4zK_vQyr2RioWsJWuCsTratCzB-4aGxpE8s66mWvaadr6MEjDc47MIgl61XUfNJ3jiJa03WTVZbYQcRQG1D4WecTh8k9Q_T-6gdkbBzybWB8tTZB5ZiY0CKRhVt2AU5mpND7Dg4FURxOjRlXtoP9jVKXUGDu7NM-JPTXBZ9mDWcvaTEiPiE2E"/>
+<span class="absolute top-2 left-2 bg-brand-blue text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-sm">⚽ Sports</span>
+</div>
+<h3 class="font-bold text-gray-900 leading-snug group-hover:text-brand-blue transition-colors mb-2 serif-font text-lg">
+              IPL 2026 Eliminator: Sooryavanshi's 97 off 29 Balls Destroys SRH — RR Storm Into Qualifier 2 vs GT
+            </h3>
+<div class="text-xs text-gray-500 flex space-x-2">
+<span>28 May 2026</span><span>·</span><span>6 min read</span>
+</div>
+</article>
+</div>
+</section>
+<!-- END: Sports Section -->
+</div>
+<!-- BEGIN: Sidebar -->
+<aside class="w-full lg:w-[320px] shrink-0 space-y-8">
+<!-- Trending Now Widget -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+<div class="bg-gray-50 px-5 py-4 border-b border-gray-200">
+<h3 class="text-lg font-bold flex items-center text-gray-900 uppercase tracking-tight">
+<span class="mr-2 text-xl">🔥</span> Trending Now
+          </h3>
+</div>
+<div class="p-5">
+<ol class="space-y-4">
+<li class="flex gap-4 group cursor-pointer border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+<span class="text-2xl font-bold text-brand-red font-serif opacity-80 group-hover:opacity-100 transition-opacity">1</span>
+<div>
+<h4 class="text-sm font-semibold text-gray-800 leading-tight group-hover:text-brand-blue transition-colors mb-1">
+                  India Monsoon 2026: IMD Forecast, Arrival Dates &amp; State-wise Predictions
+                </h4>
+<p class="text-[10px] text-gray-400 uppercase tracking-wider">89 reads</p>
+</div>
+</li>
+<li class="flex gap-4 group cursor-pointer border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+<span class="text-2xl font-bold text-gray-300 font-serif group-hover:text-gray-400 transition-colors">2</span>
+<div>
+<h4 class="text-sm font-semibold text-gray-800 leading-tight group-hover:text-brand-blue transition-colors mb-1">
+                  Cockroach Janta Party Faces Widespread Digital Shutdown: Founder Alleges Coordinated Crackdown
+                </h4>
+<p class="text-[10px] text-gray-400 uppercase tracking-wider">27 reads</p>
+</div>
+</li>
+<li class="flex gap-4 group cursor-pointer border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+<span class="text-2xl font-bold text-gray-300 font-serif group-hover:text-gray-400 transition-colors">3</span>
+<div>
+<h4 class="text-sm font-semibold text-gray-800 leading-tight group-hover:text-brand-blue transition-colors mb-1">
+                  Petrol Diesel Price Today 2026: City-wise Rates Across India Explained
+                </h4>
+<p class="text-[10px] text-gray-400 uppercase tracking-wider">25 reads</p>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<!-- Quick Links Widget -->
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+<div class="bg-gray-50 px-5 py-4 border-b border-gray-200">
+<h3 class="text-lg font-bold text-gray-900 uppercase tracking-tight">Quick Links</h3>
+</div>
+<div class="p-2">
+<ul class="text-sm text-gray-700 divide-y divide-gray-100">
+<li><a class="flex justify-between items-center py-3 px-3 hover:bg-gray-50 hover:text-brand-blue rounded transition-colors" href="#"><span>🏏 Cricket Live Scores</span> <span class="text-gray-400">→</span></a></li>
+<li><a class="flex justify-between items-center py-3 px-3 hover:bg-gray-50 hover:text-brand-blue rounded transition-colors" href="#"><span>🏛 Sarkari Naukri 2026</span> <span class="text-gray-400">→</span></a></li>
+<li><a class="flex justify-between items-center py-3 px-3 hover:bg-gray-50 hover:text-brand-blue rounded transition-colors" href="#"><span>🎓 Education News</span> <span class="text-gray-400">→</span></a></li>
+<li><a class="flex justify-between items-center py-3 px-3 hover:bg-gray-50 hover:text-brand-blue rounded transition-colors" href="#"><span>📧 Contact Us</span> <span class="text-gray-400">→</span></a></li>
+<li><a class="flex justify-between items-center py-3 px-3 hover:bg-gray-50 hover:text-brand-blue rounded transition-colors" href="#"><span>ℹ About NewsFlash</span> <span class="text-gray-400">→</span></a></li>
+</ul>
+</div>
+</div>
+</aside>
+<!-- END: Sidebar -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="bg-brand-dark text-gray-300 mt-auto pt-12 pb-6 border-t-4 border-brand-red">
+<div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+<!-- Brand Info -->
+<div class="space-y-4">
+<h2 class="text-2xl font-bold tracking-tighter uppercase text-white">
+          NEWS<span class="text-brand-red">FLASH</span><span class="text-brand-red text-xl leading-none align-baseline">.</span>
+</h2>
+<p class="text-sm text-gray-400 font-medium uppercase tracking-widest mb-4">India's Fastest News Platform</p>
+<p class="text-sm text-gray-400 leading-relaxed">India's trusted digital newsroom — breaking news, IPL live scores, Sarkari Naukri, cricket analytics and education updates. Updated 24/7.</p>
+<a class="inline-flex items-center space-x-2 text-sm text-white hover:text-brand-red transition-colors border border-gray-700 hover:border-brand-red px-4 py-2 rounded-full mt-2" href="#">
+<span>📧</span>
+<span>Contact Us</span>
+</a>
+</div>
+<!-- Sections -->
+<div>
+<h3 class="text-white font-bold uppercase tracking-wider mb-4 border-b border-gray-700 pb-2">Sections</h3>
+<ul class="space-y-2 text-sm text-gray-400 grid grid-cols-2 gap-x-4">
+<li><a class="hover:text-white transition-colors" href="#">India</a></li>
+<li><a class="hover:text-white transition-colors" href="#">World</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Business</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Technology</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Sports</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Science</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Health</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Education</a></li>
+</ul>
+</div>
+<!-- Portals -->
+<div>
+<h3 class="text-white font-bold uppercase tracking-wider mb-4 border-b border-gray-700 pb-2">Portals</h3>
+<ul class="space-y-2 text-sm text-gray-400">
+<li><a class="hover:text-white transition-colors flex items-center space-x-2" href="#"><span>🏏</span><span>Cricket Live</span></a></li>
+<li><a class="hover:text-white transition-colors flex items-center space-x-2" href="#"><span>🏛</span><span>Sarkari Naukri</span></a></li>
+<li><a class="hover:text-white transition-colors flex items-center space-x-2" href="#"><span>🎓</span><span>Education</span></a></li>
+<li><a class="hover:text-white transition-colors flex items-center space-x-2" href="#"><span>🗺</span><span>Sitemap</span></a></li>
+</ul>
+</div>
+<!-- Company -->
+<div>
+<h3 class="text-white font-bold uppercase tracking-wider mb-4 border-b border-gray-700 pb-2">Company</h3>
+<ul class="space-y-2 text-sm text-gray-400">
+<li><a class="hover:text-white transition-colors" href="#">About Us</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Contact Us</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Terms of Service</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Advertise With Us</a></li>
+</ul>
+</div>
+</div>
+<!-- Bottom Bar -->
+<div class="max-w-7xl mx-auto px-4 border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+<p>© 2026 NewsFlash Media. All rights reserved. · India</p>
+<div class="flex space-x-4 mt-4 md:mt-0">
+<a class="hover:text-white transition-colors" href="#">Privacy</a>
+<a class="hover:text-white transition-colors" href="#">Terms</a>
+<a class="hover:text-white transition-colors" href="#">About</a>
+<a class="hover:text-white transition-colors" href="#">Contact</a>
+</div>
+</div>
+</footer>
+<!-- END: Footer -->
+<!-- BEGIN: Promo Modal -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden" id="promo-modal">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative text-center">
+<button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors" onclick="document.getElementById('promo-modal').classList.add('hidden')">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<h2 class="text-3xl font-bold tracking-tighter uppercase text-black mb-2">
+        NEWS<span class="text-brand-red">FLASH</span><span class="text-brand-red text-xl leading-none align-baseline">.</span>
+</h2>
+<p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">India's Fastest News Platform</p>
+<p class="text-sm text-gray-600 mb-8 leading-relaxed">
+        Breaking news · IPL live scores · Sarkari Naukri · Cricket analytics · Education updates — all in one place, updated 24/7.
+      </p>
+<div class="flex flex-col space-y-3 items-center">
+<button class="bg-brand-red hover:bg-red-700 text-white font-bold py-2.5 px-8 rounded-full shadow-lg hover:shadow-xl transition-all w-full max-w-xs flex justify-center items-center space-x-2">
+<span>Start Reading</span>
+<span>→</span>
+</button>
+<div class="flex space-x-3 w-full max-w-xs">
+<button class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 font-semibold py-2 rounded-full text-sm transition-colors flex justify-center items-center space-x-1">
+<span>🏏</span><span>Live Scores</span>
+</button>
+<button class="flex-1 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 font-semibold py-2 rounded-full text-sm transition-colors flex justify-center items-center space-x-1">
+<span>🏛</span><span>Sarkari Jobs</span>
+</button>
+</div>
+</div>
+<p class="text-[10px] text-gray-400 mt-6 cursor-pointer hover:underline" onclick="document.getElementById('promo-modal').classList.add('hidden')">Click outside to close</p>
+</div>
+</div>
+<!-- END: Promo Modal -->
+<script data-purpose="modal-handler">
+    // Simple script to show modal on load for demonstration (optional, usually triggered by intention)
+    // setTimeout(() => {
+    //   document.getElementById('promo-modal').classList.remove('hidden');
+    // }, 2000);
+    
+    // Close modal on outside click
+    document.getElementById('promo-modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.add('hidden');
+      }
+    });
+  </script>
+</body></html>
