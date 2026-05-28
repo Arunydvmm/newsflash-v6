@@ -124,7 +124,7 @@ export default function ExamPortalPage() {
               </thead>
               <tbody>
                 {items.map((item: any) => (
-                  <tr key={item._id} style={{ borderBottom: '1px solid #E5E5E5', hover: { background: '#F8F8F8' } }}>
+                  <tr key={item._id} style={{ borderBottom: '1px solid #E5E5E5' }}>
                     <td style={{ padding: '12px 16px', fontSize: 13 }}>
                       <span style={{ background: TYPE_COLORS[item.type], color: 'white', padding: '4px 8px', borderRadius: 3, fontSize: 11, fontWeight: 600 }}>
                         {TYPE_ICONS[item.type]} {item.type}
