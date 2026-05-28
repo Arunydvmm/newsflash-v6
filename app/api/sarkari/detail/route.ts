@@ -32,24 +32,38 @@ async function fetchFromRapidAPI(jobId: string, apiKey: string) {
 
 async function analyzeWithGroqAI(basicData: any, groqApiKey: string) {
   try {
-    const prompt = `Analyze and structure this job notification data into a comprehensive format:
+    const prompt = `You are a job notification analyzer. Analyze this job data and return ONLY a valid JSON object (no markdown, no extra text).
 
 Job Title: ${basicData.title}
 Organization: ${basicData.organization}
 Type: ${basicData.type}
 
-Please provide a structured JSON response with:
-1. overview: A 2-3 sentence summary of the job
-2. totalVacancy: Number of posts (if available)
-3. salary: Salary/pay scale details
-4. eligibility: {education, age, experience}
-5. importantDates: {notificationDate, applicationStart, lastDate, examDate, resultDate}
-6. applicationFee: {general, scSt, paymentMode}
-7. selectionProcess: Array of selection steps
-8. howToApply: Array of application steps
-9. additionalInfo: Any other relevant information
-
-Return ONLY valid JSON, no markdown or extra text. If information is not available, use empty strings or empty arrays.`
+Return this exact JSON structure:
+{
+  "overview": "2-3 sentence summary",
+  "totalVacancy": "number or empty string",
+  "salary": "salary details or empty string",
+  "eligibility": {
+    "education": "education requirement or empty string",
+    "age": "age limit or empty string",
+    "experience": "experience requirement or empty string"
+  },
+  "importantDates": {
+    "notificationDate": "date or empty string",
+    "applicationStart": "date or empty string",
+    "lastDate": "date or empty string",
+    "examDate": "date or empty string",
+    "resultDate": "date or empty string"
+  },
+  "applicationFee": {
+    "general": "fee or empty string",
+    "scSt": "fee or empty string",
+    "paymentMode": "mode or empty string"
+  },
+  "selectionProcess": ["step1", "step2"],
+  "howToApply": ["step1", "step2"],
+  "additionalInfo": "additional info or empty string"
+}`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -59,26 +73,47 @@ Return ONLY valid JSON, no markdown or extra text. If information is not availab
       },
       body: JSON.stringify({
         model: 'mixtral-8x7b-32768',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
-        max_tokens: 1500,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a JSON generator. Always respond with valid JSON only, no markdown or extra text.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.2,
+        max_tokens: 1000,
       }),
     })
 
     if (!response.ok) {
-      console.error('Groq API error:', response.status)
+      const errorData = await response.json().catch(() => ({}))
+      console.error('Groq API error:', response.status, errorData)
       return null
     }
 
     const result = await response.json()
     const content = result.choices?.[0]?.message?.content || ''
     
-    // Parse JSON from response
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0])
+    if (!content) {
+      console.error('Groq API: Empty response')
+      return null
     }
-    return null
+
+    // Try to parse JSON directly
+    try {
+      return JSON.parse(content)
+    } catch (e) {
+      // Try to extract JSON from response
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0])
+      }
+      console.error('Groq API: Could not parse JSON from response:', content.slice(0, 100))
+      return null
+    }
   } catch (err) {
     console.error('Groq AI error:', err)
     return null

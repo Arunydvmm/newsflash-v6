@@ -246,11 +246,6 @@ export default function SarkariResultDetailPage({ params }: { params: { id: stri
           </div>
         )}
 
-        {/* Disclaimer */}
-        <div style={{ background: '#FFF8E1', border: '2px solid #FFE082', borderRadius: 8, padding: '16px', marginBottom: 32, fontSize: 12, color: '#E65100', fontFamily: 'JetBrains Mono, monospace', lineHeight: 1.7 }}>
-          ⚠ Information sourced from Sarkari Result — always verify from official sources before applying
-        </div>
-
         {/* Action Buttons */}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 32 }}>
           {detail.officialWebsite && (
@@ -266,11 +261,24 @@ export default function SarkariResultDetailPage({ params }: { params: { id: stri
         </div>
       </main>
 
-      {/* Footer */}
-      <footer style={{ background: '#0D1B2A', color: '#4A6080', padding: '24px 20px', textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>
+      {/* Footer with Disclaimer */}
+      <footer style={{ background: '#0D1B2A', color: '#4A6080', padding: '32px 20px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ marginBottom: 12 }}>Powered by Sarkari Result · NewsFlash Media</div>
-          <div style={{ fontSize: 10, color: '#2C3E50' }}>© {new Date().getFullYear()} All rights reserved</div>
+          {/* Disclaimer Section */}
+          <div style={{ background: '#FFF8E1', border: '2px solid #FFE082', borderRadius: 8, padding: '20px', marginBottom: 32 }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: '#E65100', marginBottom: 12, fontWeight: 700 }}>
+              ⚠ Disclaimer
+            </div>
+            <p style={{ fontSize: 13, color: '#E65100', lineHeight: 1.8, margin: 0 }}>
+              This information is sourced from publicly available data and aggregated from various government job portals. NewsFlash Media does not guarantee the accuracy, completeness, or timeliness of the information provided. Candidates are strongly advised to verify all details directly from official government websites and notifications before applying. NewsFlash Media is not responsible for any discrepancies or changes made by the recruiting organizations after publication.
+            </p>
+          </div>
+
+          {/* Footer Info */}
+          <div style={{ textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>
+            <div style={{ marginBottom: 12 }}>Powered by Sarkari Result · NewsFlash Media</div>
+            <div style={{ fontSize: 10, color: '#2C3E50' }}>© {new Date().getFullYear()} All rights reserved</div>
+          </div>
         </div>
       </footer>
     </div>
