@@ -72,8 +72,10 @@ export default async function HomePage({ searchParams }: any) {
             <button type="submit" style={{ background: '#0D1B2A', color: 'white', border: 'none', padding: '10px 14px', cursor: 'pointer', fontSize: 14 }}>🔍</button>
           </form>
 
-          {/* Weather Icon Placeholder */}
-          <div style={{ fontSize: 24, cursor: 'pointer' }}>🌤️</div>
+          {/* Weather Widget Compact */}
+          <div style={{ minWidth: 60 }}>
+            <WeatherWidget />
+          </div>
         </div>
       </header>
 
@@ -90,11 +92,6 @@ export default async function HomePage({ searchParams }: any) {
             ))}
           </div>
         </div>
-      </div>
-
-      {/* ── WEATHER WIDGET (CENTERED) ── */}
-      <div style={{ maxWidth: 800, margin: '20px auto', padding: '0 20px' }}>
-        <WeatherWidget />
       </div>
 
       {/* ── LIVE DASHBOARD BAR ── */}

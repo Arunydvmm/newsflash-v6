@@ -130,9 +130,9 @@ export function HeroSlider({ articles }: { articles: any[] }) {
         </div>
       </div>
       {/* Dots */}
-      <div style={{ position: 'absolute', bottom: 18, right: 20, display: 'flex', gap: 6 }}>
+      <div style={{ position: 'absolute', bottom: 18, right: 20, display: 'flex', gap: 4 }}>
         {articles.map((_, i) => (
-          <button key={i} onClick={() => go(i)} style={{ width: i === cur ? 22 : 7, height: 7, borderRadius: 4, background: i === cur ? T.gold : 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} />
+          <button key={i} onClick={() => go(i)} style={{ width: i === cur ? 12 : 4, height: 4, borderRadius: 2, background: i === cur ? T.gold : 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} />
         ))}
       </div>
       {/* Arrows */}
