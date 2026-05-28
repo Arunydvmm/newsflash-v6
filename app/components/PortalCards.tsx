@@ -17,13 +17,6 @@ const PORTALS = [
     href: '/cricket',
     bg: 'linear-gradient(135deg,#1B5E20,#2E7D32)',
   },
-  {
-    label: 'Sarkari Naukri',
-    icon: '🏛',
-    desc: 'Railway · SSC · UPSC · Bank · Police jobs 2026',
-    href: '/sarkari',
-    bg: 'linear-gradient(135deg,#E65100,#F57C00)',
-  },
 ]
 
 export default function PortalCards() {
