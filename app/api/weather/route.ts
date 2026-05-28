@@ -43,14 +43,16 @@ const getMockWeatherData = (locationName: string) => ({
 
 async function getLocationKey(lat: number, lon: number) {
   try {
+    // Try using the geoposition endpoint which is more reliable
     const url = `https://dataservice.accuweather.com/locations/v1/currentlocation?apikey=${ACCUWEATHER_API_KEY}&q=${lat},${lon}&details=true`
-    console.log('Fetching location key from:', url)
+    console.log('Fetching location key from:', url.replace(ACCUWEATHER_API_KEY, 'API_KEY'))
     
     const res = await fetch(url, { cache: 'no-store' })
 
     if (!res.ok) {
       console.error('Location API response not ok:', res.status, res.statusText)
-      return null
+      // Try alternative endpoint
+      return await getLocationKeyAlternative(lat, lon)
     }
     
     const data = await res.json()
@@ -58,12 +60,42 @@ async function getLocationKey(lat: number, lon: number) {
     
     if (!data || !data.Key) {
       console.error('No Key in location response:', data)
-      return null
+      // Try alternative endpoint
+      return await getLocationKeyAlternative(lat, lon)
     }
     
     return data.Key
   } catch (err) {
     console.error('AccuWeather location error:', err)
+    // Try alternative endpoint
+    return await getLocationKeyAlternative(lat, lon)
+  }
+}
+
+async function getLocationKeyAlternative(lat: number, lon: number) {
+  try {
+    // Use the geoposition endpoint as alternative
+    const url = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${ACCUWEATHER_API_KEY}&q=${lat},${lon}&details=true`
+    console.log('Trying alternative location endpoint')
+    
+    const res = await fetch(url, { cache: 'no-store' })
+
+    if (!res.ok) {
+      console.error('Alternative location API response not ok:', res.status, res.statusText)
+      return null
+    }
+    
+    const data = await res.json()
+    console.log('Alternative location data:', data)
+    
+    if (!data || !data.Key) {
+      console.error('No Key in alternative location response:', data)
+      return null
+    }
+    
+    return data.Key
+  } catch (err) {
+    console.error('AccuWeather alternative location error:', err)
     return null
   }
 }
