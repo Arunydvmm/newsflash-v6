@@ -4,6 +4,13 @@ import Link from 'next/link'
 
 const PORTALS = [
   {
+    label: 'Exam Portal',
+    icon: '📚',
+    desc: 'Answer Keys · Admit Cards · Results · Notifications',
+    href: '/exams',
+    bg: 'linear-gradient(135deg,#6A1B9A,#8E24AA)',
+  },
+  {
     label: 'Cricket Live',
     icon: '🏏',
     desc: 'IPL scores · Points Table · Orange & Purple Cap',
