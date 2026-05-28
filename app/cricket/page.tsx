@@ -351,20 +351,22 @@ export default function CricketPage() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0, background: 'white', borderRadius: 10, border: '1px solid #E8E8E4', overflow: 'hidden' }}>
               {news.map((item: any, i: number) => (
-                <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
-                  style={{ display: 'flex', gap: 14, padding: '14px 18px', borderBottom: i < news.length - 1 ? '1px solid #F0F0EC' : 'none', textDecoration: 'none', transition: 'background 0.15s', alignItems: 'flex-start' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F8FFF8')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#1B5E20', flexShrink: 0, marginTop: 6 }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A', lineHeight: 1.45, marginBottom: 4 }}>{item.title}</div>
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#1B5E20', fontWeight: 600 }}>{item.source}</span>
-                      {item.pubDate && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>{new Date(item.pubDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>}
-                    </div>
+            <div key={i}
+              onMouseEnter={e => (e.currentTarget.style.background = '#F8FFF8')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              style={{ display: 'flex', gap: 14, padding: '14px 18px', borderBottom: i < news.length - 1 ? '1px solid #F0F0EC' : 'none', textDecoration: 'none', transition: 'background 0.15s', alignItems: 'flex-start' }}>
+              <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', gap: 14, textDecoration: 'none', color: 'inherit', flex: 1, alignItems: 'flex-start' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#1B5E20', flexShrink: 0, marginTop: 6 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#0D1B2A', lineHeight: 1.45, marginBottom: 4 }}>{item.title}</div>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#1B5E20', fontWeight: 600 }}>{item.source}</span>
+                    {item.pubDate && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>{new Date(item.pubDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>}
                   </div>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#1B5E20', flexShrink: 0, alignSelf: 'center' }}>Read →</span>
-                </a>
+                </div>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#1B5E20', flexShrink: 0, alignSelf: 'center' }}>Read →</span>
+              </a>
+            </div>
               ))}
             </div>
           )
