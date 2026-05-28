@@ -29,15 +29,30 @@ export default function WeatherWidget() {
         },
         (err) => {
           console.error('Geolocation error:', err)
-          // Fallback to default location (India)
-          fetchWeather(20.5937, 78.9629, 'India')
+          // Fallback to IP-based location
+          fetchIPLocation()
         }
       )
     } else {
-      // Fallback to default location
-      fetchWeather(20.5937, 78.9629, 'India')
+      // Fallback to IP-based location
+      fetchIPLocation()
     }
   }, [])
+
+  const fetchIPLocation = async () => {
+    try {
+      const res = await fetch('/api/weather')
+      if (res.ok) {
+        const ipLocation = await res.json()
+        fetchWeather(ipLocation.lat, ipLocation.lon, ipLocation.city)
+      } else {
+        fetchWeather(20.5937, 78.9629, 'India')
+      }
+    } catch (err) {
+      console.error('IP location error:', err)
+      fetchWeather(20.5937, 78.9629, 'India')
+    }
+  }
 
   const fetchWeather = async (lat: number, lon: number, locationName?: string) => {
     try {
@@ -51,13 +66,20 @@ export default function WeatherWidget() {
       })
 
       if (!res.ok) {
+        const errorData = await res.json()
+        console.error('Weather API error:', errorData)
         setError('Failed to load weather')
         setLoading(false)
         return
       }
 
       const data = await res.json()
-      setWeather(data)
+      if (data && data.current) {
+        setWeather(data)
+        setError('')
+      } else {
+        setError('Invalid weather data')
+      }
       setLoading(false)
     } catch (err) {
       console.error('Weather fetch error:', err)
@@ -66,24 +88,35 @@ export default function WeatherWidget() {
     }
   }
 
+  const handleWeatherClick = () => {
+    router.push('/weather')
+  }
+
   if (loading) {
     return (
-      <div style={{ background: 'linear-gradient(135deg,#1565C0,#0D47A1)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, color: 'white', textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>
-        ⏳ Loading weather...
+      <div style={{ background: 'linear-gradient(135deg,#1565C0,#0D47A1)', borderRadius: 12, padding: '20px', marginBottom: 20, color: 'white', textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, minHeight: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(21,101,192,0.3)' }}>
+        <div>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
+          <div>Loading weather...</div>
+        </div>
       </div>
     )
   }
 
   if (error || !weather) {
-    return null
+    return (
+      <div style={{ background: 'linear-gradient(135deg,#1565C0,#0D47A1)', borderRadius: 12, padding: '20px', marginBottom: 20, color: 'white', textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, minHeight: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(21,101,192,0.3)', cursor: 'pointer' }} onClick={handleWeatherClick}>
+        <div>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>⚠️</div>
+          <div>{error || 'Weather unavailable'}</div>
+          <div style={{ fontSize: 10, marginTop: 8, opacity: 0.8 }}>Click to retry</div>
+        </div>
+      </div>
+    )
   }
 
   const { current, forecast, location } = weather
   const icon = WEATHER_ICONS[current.icon] || '🌤️'
-
-  const handleWeatherClick = () => {
-    router.push('/weather')
-  }
 
   return (
     <div 
