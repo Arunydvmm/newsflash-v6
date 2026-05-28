@@ -157,7 +157,7 @@ export default async function HomePage({ searchParams }: any) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingLeft: 20, paddingRight: 20 }}>
                     <span style={{ width: 8, height: 8, background: '#C62828', borderRadius: '50%', animation: 'pulse 1.5s infinite', display: 'inline-block', boxShadow: '0 0 8px rgba(198,40,40,0.6)' }} />
                     <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, letterSpacing: 2, textTransform: 'uppercase', color: 'white', fontWeight: 700 }}>Just In</span>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.4)', marginLeft: 'auto' }}>Latest updates</span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.75)', marginLeft: 'auto' }}>Latest updates</span>
                   </div>
                   <div className="scroll-snap-x" style={{ marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
                     {justIn.map((a: any, i: number) => {
@@ -173,7 +173,7 @@ export default async function HomePage({ searchParams }: any) {
                             <div style={{ padding: '10px 12px' }}>
                               {cat && <span style={{ background: cat.color, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, padding: '2px 7px', borderRadius: 3, display: 'inline-block', marginBottom: 6, letterSpacing: 0.5 }}>{cat.icon} {cat.label}</span>}
                               <div style={{ fontSize: 12, fontWeight: 600, color: 'white', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', fontFamily: 'Poppins, sans-serif' }}>{a.title}</div>
-                              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.4)', marginTop: 6 }}>{fmt(a.createdAt)}</div>
+                              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.75)', marginTop: 6 }}>{fmt(a.createdAt)}</div>
                             </div>
                           </div>
                         </Link>

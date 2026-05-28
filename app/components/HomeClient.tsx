@@ -189,7 +189,7 @@ export function ArticleCard({ a, size = 'md', horizontal = false }: { a: any; si
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: hov ? T.red : T.dark, lineHeight: 1.4, marginBottom: 4, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</div>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa' }}>{fmt(a.createdAt)} · {a.readTime || 1} min</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#666' }}>{fmt(a.createdAt)} · {a.readTime || 1} min</div>
         </div>
       </Link>
     </div>
@@ -212,7 +212,7 @@ export function ArticleCard({ a, size = 'md', horizontal = false }: { a: any; si
           <div style={{ padding: size === 'sm' ? '10px 12px' : '14px 16px' }}>
             {cat && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: cat.bg, color: cat.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, marginBottom: 8, fontWeight: 600 }}>{cat.icon} {cat.label}</span>}
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: size === 'sm' ? 14 : 16, fontWeight: 700, lineHeight: 1.35, color: hov ? T.red : T.dark, marginBottom: 8, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</h3>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#aaa', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#666', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <span>{fmt(a.createdAt)}</span><span>·</span><span>{a.readTime || 1} min</span>
               {a.views > 0 && <><span>·</span><span>{a.views.toLocaleString('en-IN')} views</span></>}
             </div>
