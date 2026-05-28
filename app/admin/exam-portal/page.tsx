@@ -26,6 +26,8 @@ export default function ExamPortalPage() {
   const [filter, setFilter] = useState({ type: '', category: '', search: '' })
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showImport, setShowImport] = useState(false)
+  const [importLoading, setImportLoading] = useState(false)
 
   useEffect(() => {
     fetchItems()
@@ -73,6 +75,69 @@ export default function ExamPortalPage() {
     }
   }
 
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setImportLoading(true)
+    try {
+      const text = await file.text()
+      const lines = text.split('\n').filter(l => l.trim())
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+      
+      const records = lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim())
+        const record: any = {}
+        headers.forEach((header, i) => {
+          record[header] = values[i] || ''
+        })
+        return record
+      })
+
+      let imported = 0
+      for (const record of records) {
+        try {
+          await fetch('/api/exam-portal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: record.type || 'job-notification',
+              title: record.title,
+              organization: record.organization,
+              category: record.category,
+              description: record.description,
+              applyLink: record.applylink || record.apply_link,
+              notificationPdf: record.notificationpdf || record.notification_pdf,
+              admitCardLink: record.admitcardlink || record.admit_card_link,
+              answerKeyLink: record.answerkeylink || record.answer_key_link,
+              resultLink: record.resultlink || record.result_link,
+              importantDates: {
+                registrationStart: record.registration_start,
+                registrationEnd: record.registration_end,
+                examDate: record.exam_date,
+                admitCardDate: record.admit_card_date,
+                answerKeyDate: record.answer_key_date,
+                resultDate: record.result_date,
+              },
+            }),
+          })
+          imported++
+        } catch (err) {
+          console.error('Error importing record:', err)
+        }
+      }
+
+      alert(`Imported ${imported} items successfully!`)
+      setShowImport(false)
+      fetchItems()
+    } catch (err) {
+      console.error('Error parsing CSV:', err)
+      alert('Error parsing CSV file')
+    } finally {
+      setImportLoading(false)
+    }
+  }
+
   const fmt = (d: any) => d ? new Date(d).toLocaleDateString('en-IN') : '—'
 
   return (
@@ -85,9 +150,14 @@ export default function ExamPortalPage() {
             <h1 style={{ fontSize: 28, fontWeight: 700, color: '#0D1B2A', margin: '8px 0 0' }}>Exam Portal</h1>
             <p style={{ fontSize: 13, color: '#999', margin: '4px 0 0' }}>Manage notifications, admit cards, answer keys, results</p>
           </div>
-          <button onClick={() => setShowForm(!showForm)} style={{ background: '#C62828', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
-            + New Item
-          </button>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button onClick={() => setShowImport(!showImport)} style={{ background: '#1565C0', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
+              📥 Import CSV
+            </button>
+            <button onClick={() => setShowForm(!showForm)} style={{ background: '#C62828', color: 'white', border: 'none', padding: '10px 20px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
+              + New Item
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -102,6 +172,26 @@ export default function ExamPortalPage() {
           </select>
           <input type="text" placeholder="Search..." value={filter.search} onChange={e => setFilter({ ...filter, search: e.target.value })} style={{ padding: '8px 12px', border: '1px solid #E5E5E5', borderRadius: 4, fontSize: 13, flex: 1, minWidth: 200 }} />
         </div>
+
+        {/* Import Form */}
+        {showImport && (
+          <div style={{ background: 'white', padding: 20, borderRadius: 8, marginBottom: 20, border: '1px solid #E5E5E5' }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>📥 Import from CSV</h3>
+            <p style={{ fontSize: 13, color: '#666', marginBottom: 16 }}>
+              Upload a CSV file with columns: type, title, organization, category, description, applyLink, notificationPdf, admitCardLink, answerKeyLink, resultLink, registration_start, registration_end, exam_date, admit_card_date, answer_key_date, result_date
+            </p>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleImportCSV}
+                disabled={importLoading}
+                style={{ padding: '8px 12px', border: '1px solid #E5E5E5', borderRadius: 4, fontSize: 13, flex: 1 }}
+              />
+              {importLoading && <span style={{ fontSize: 13, color: '#666' }}>Importing...</span>}
+            </div>
+          </div>
+        )}
 
         {/* Table */}
         {loading ? (

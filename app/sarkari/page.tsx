@@ -3,12 +3,12 @@ import { connectDB } from '../lib/db'
 import SarkariJob from '../models/SarkariJob'
 import ExamPortal from '../models/ExamPortal'
 import Link from 'next/link'
+import { format } from 'date-fns'
 import type { Metadata } from 'next'
 import NewsFeedWidget from '../components/NewsFeedWidget'
 import LiveJobsWidget from '../components/LiveJobsWidget'
 import SarkariNewsWidget from '../components/SarkariNewsWidget'
 import SarkariResultWidget from '../components/SarkariResultWidget'
-import SarkariTabs from '../components/SarkariTabs'
 
 export const revalidate = 0
 
@@ -22,67 +22,102 @@ export default async function SarkariPage() {
   await connectDB()
 
   const [latestJobs, examNotifications, admitCards, answerKeys, results] = await Promise.all([
-    SarkariJob.find({ isActive: true, isExpired: false }).sort({ createdAt: -1 }).limit(15).lean(),
-    ExamPortal.find({ isActive: true, isExpired: false, type: 'job-notification' }).sort({ isFeatured: -1, createdAt: -1 }).limit(10).lean(),
-    ExamPortal.find({ isActive: true, isExpired: false, type: 'admit-card' }).sort({ isFeatured: -1, createdAt: -1 }).limit(10).lean(),
-    ExamPortal.find({ isActive: true, isExpired: false, type: 'answer-key' }).sort({ isFeatured: -1, createdAt: -1 }).limit(10).lean(),
-    ExamPortal.find({ isActive: true, isExpired: false, type: 'result' }).sort({ isFeatured: -1, createdAt: -1 }).limit(10).lean(),
+    SarkariJob.find({ isActive: true, isExpired: false }).sort({ createdAt: -1 }).limit(50).lean(),
+    ExamPortal.find({ isActive: true, isExpired: false, type: 'job-notification' }).sort({ isFeatured: -1, createdAt: -1 }).limit(50).lean(),
+    ExamPortal.find({ isActive: true, isExpired: false, type: 'admit-card' }).sort({ isFeatured: -1, createdAt: -1 }).limit(50).lean(),
+    ExamPortal.find({ isActive: true, isExpired: false, type: 'answer-key' }).sort({ isFeatured: -1, createdAt: -1 }).limit(50).lean(),
+    ExamPortal.find({ isActive: true, isExpired: false, type: 'result' }).sort({ isFeatured: -1, createdAt: -1 }).limit(50).lean(),
   ])
 
-  const tabs = [
-    {
-      id: 'notifications',
-      icon: '📋',
-      label: 'Exam Notifications',
-      color: '#1565C0',
-      count: examNotifications.length,
-      items: examNotifications,
-      createLink: '/admin/exam-portal/new?type=job-notification',
-    },
-    {
-      id: 'vacancy',
-      icon: '💼',
-      label: 'Latest Vacancy',
-      color: '#E65100',
-      count: latestJobs.length,
-      items: latestJobs,
-      createLink: '/admin/sarkari/new',
-    },
-    {
-      id: 'admit-cards',
-      icon: '🎫',
-      label: 'Admit Cards',
-      color: '#E65100',
-      count: admitCards.length,
-      items: admitCards,
-      createLink: '/admin/exam-portal/new?type=admit-card',
-    },
-    {
-      id: 'answer-keys',
-      icon: '📝',
-      label: 'Answer Keys',
-      color: '#6A1B9A',
-      count: answerKeys.length,
-      items: answerKeys,
-      createLink: '/admin/exam-portal/new?type=answer-key',
-    },
-    {
-      id: 'results',
-      icon: '✅',
-      label: 'Results',
-      color: '#2E7D32',
-      count: results.length,
-      items: results,
-      createLink: '/admin/exam-portal/new?type=result',
-    },
-  ]
+  const fmt = (d: any) => d ? format(new Date(d), 'd MMM yyyy') : '—'
+  const daysLeft = (d: any) => {
+    if (!d) return null
+    const diff = Math.ceil((new Date(d).getTime() - Date.now()) / 86400000)
+    return diff
+  }
+
+  const TableSection = ({ icon, title, color, items, type }: any) => (
+    <div style={{ marginBottom: 40 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <span style={{ fontSize: 24 }}>{icon}</span>
+        <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>
+          {title}
+        </h2>
+        <span style={{ background: color, color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>
+          {items.length} Items
+        </span>
+      </div>
+
+      {items.length === 0 ? (
+        <div style={{ background: 'white', borderRadius: 8, padding: 40, textAlign: 'center', border: '1px solid #E8E8E4' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
+          <div style={{ fontSize: 14, color: '#666' }}>No items available</div>
+        </div>
+      ) : (
+        <div style={{ background: 'white', borderRadius: 8, overflow: 'hidden', border: '1px solid #E8E8E4' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#F8F8F8', borderBottom: '1px solid #E8E8E4' }}>
+                {type === 'vacancy' ? (
+                  <>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Job Title</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Organization</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Posts</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Salary</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Last Date</th>
+                  </>
+                ) : (
+                  <>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Title</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Organization</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Category</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#666' }}>Date</th>
+                  </>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item: any) => {
+                const dl = daysLeft(item.importantDates?.lastDate || item.importantDates?.registrationEnd || item.importantDates?.admitCardDate || item.importantDates?.answerKeyDate || item.importantDates?.resultDate)
+                return (
+                  <tr key={String(item._id)} style={{ borderBottom: '1px solid #E8E8E4', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#F8F8F8'} onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
+                    <td style={{ padding: '12px 16px', fontSize: 13 }}>
+                      <Link href={`/exam-portal/${item._id}`} style={{ color: '#1565C0', textDecoration: 'none', fontWeight: 500, cursor: 'pointer' }}>
+                        {item.title}
+                      </Link>
+                    </td>
+                    <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.organization}</td>
+                    {type === 'vacancy' ? (
+                      <>
+                        <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.totalVacancy || '—'}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.salaryText || '—'}</td>
+                      </>
+                    ) : (
+                      <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.category || '—'}</td>
+                    )}
+                    <td style={{ padding: '12px 16px', fontSize: 13, fontFamily: 'JetBrains Mono, monospace' }}>
+                      <div style={{ fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates?.lastDate || item.importantDates?.registrationEnd || item.importantDates?.admitCardDate || item.importantDates?.answerKeyDate || item.importantDates?.resultDate)}</div>
+                      {dl !== null && dl >= 0 && (
+                        <div style={{ fontSize: 11, marginTop: 4, color: dl <= 3 ? '#C62828' : '#2E7D32', fontWeight: 600 }}>
+                          {dl === 0 ? '⏰ Today' : `⏰ ${dl}d left`}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: '#F4F4F0', minHeight: '100vh' }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        .item-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
-        .item-card { transition: all 0.2s; }
+        table tr:hover { background: #F8F8F8; }
       `}</style>
 
       {/* Header */}
@@ -97,7 +132,50 @@ export default async function SarkariPage() {
       </header>
 
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 20px' }}>
-        <SarkariTabs tabs={tabs} />
+        {/* SECTION 1: EXAM NOTIFICATIONS */}
+        <TableSection
+          icon="📋"
+          title="Exam Notifications"
+          color="#1565C0"
+          items={examNotifications}
+          type="notification"
+        />
+
+        {/* SECTION 2: LATEST VACANCY */}
+        <TableSection
+          icon="💼"
+          title="Latest Vacancy"
+          color="#E65100"
+          items={latestJobs}
+          type="vacancy"
+        />
+
+        {/* SECTION 3: ADMIT CARDS */}
+        <TableSection
+          icon="🎫"
+          title="Admit Cards"
+          color="#E65100"
+          items={admitCards}
+          type="admit-cards"
+        />
+
+        {/* SECTION 4: ANSWER KEYS */}
+        <TableSection
+          icon="📝"
+          title="Answer Keys"
+          color="#6A1B9A"
+          items={answerKeys}
+          type="answer-keys"
+        />
+
+        {/* SECTION 5: RESULTS */}
+        <TableSection
+          icon="✅"
+          title="Results"
+          color="#2E7D32"
+          items={results}
+          type="results"
+        />
       </main>
 
       {/* Live Jobs + Sarkari Result API + News Feed */}
