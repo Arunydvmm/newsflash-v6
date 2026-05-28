@@ -62,7 +62,11 @@ export default async function SarkariPage() {
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: 24 }}>📋</span>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Exam Notifications</h2>
+              <Link href="/admin/exam-portal/new?type=job-notification" style={{ textDecoration: 'none', flex: 1 }}>
+                <button style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#1565C0'} onMouseLeave={(e) => e.currentTarget.style.color = '#0D1B2A'}>
+                  Exam Notifications
+                </button>
+              </Link>
               <span style={{ background: '#1565C0', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{examNotifications.length} New</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
@@ -92,7 +96,11 @@ export default async function SarkariPage() {
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: 24 }}>💼</span>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Latest Vacancy</h2>
+              <Link href="/admin/sarkari/new" style={{ textDecoration: 'none', flex: 1 }}>
+                <button style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#E65100'} onMouseLeave={(e) => e.currentTarget.style.color = '#0D1B2A'}>
+                  Latest Vacancy
+                </button>
+              </Link>
               <span style={{ background: '#E65100', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{latestJobs.length} Jobs</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -126,7 +134,11 @@ export default async function SarkariPage() {
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: 24 }}>🎫</span>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Admit Cards</h2>
+              <Link href="/admin/exam-portal/new?type=admit-card" style={{ textDecoration: 'none', flex: 1 }}>
+                <button style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#E65100'} onMouseLeave={(e) => e.currentTarget.style.color = '#0D1B2A'}>
+                  Admit Cards
+                </button>
+              </Link>
               <span style={{ background: '#E65100', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{admitCards.length} Available</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
@@ -147,7 +159,11 @@ export default async function SarkariPage() {
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: 24 }}>📝</span>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Answer Keys</h2>
+              <Link href="/admin/exam-portal/new?type=answer-key" style={{ textDecoration: 'none', flex: 1 }}>
+                <button style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#6A1B9A'} onMouseLeave={(e) => e.currentTarget.style.color = '#0D1B2A'}>
+                  Answer Keys
+                </button>
+              </Link>
               <span style={{ background: '#6A1B9A', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{answerKeys.length} Available</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
@@ -168,7 +184,11 @@ export default async function SarkariPage() {
           <div style={{ marginBottom: 40 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: 24 }}>✅</span>
-              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Results</h2>
+              <Link href="/admin/exam-portal/new?type=result" style={{ textDecoration: 'none', flex: 1 }}>
+                <button style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.color = '#2E7D32'} onMouseLeave={(e) => e.currentTarget.style.color = '#0D1B2A'}>
+                  Results
+                </button>
+              </Link>
               <span style={{ background: '#2E7D32', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{results.length} Available</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
