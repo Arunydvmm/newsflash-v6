@@ -72,33 +72,12 @@ export default function SarkariTabs({ tabs }: { tabs: TabData[] }) {
 
       {/* Tab Content */}
       <div>
-        {/* Header with Create Button */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 28 }}>{activeTabData.icon}</span>
-            <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>
-              {activeTabData.label}
-            </h2>
-          </div>
-          <Link href={activeTabData.createLink} style={{ textDecoration: 'none' }}>
-            <button style={{
-              background: activeTabData.color,
-              color: 'white',
-              padding: '10px 16px',
-              borderRadius: 6,
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: "'Inter', sans-serif",
-              transition: 'opacity 0.2s',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-            >
-              + Create New
-            </button>
-          </Link>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <span style={{ fontSize: 28 }}>{activeTabData.icon}</span>
+          <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>
+            {activeTabData.label}
+          </h2>
         </div>
 
         {/* Content based on tab type */}
