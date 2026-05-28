@@ -11,67 +11,23 @@ import SarkariNewsWidget from '../components/SarkariNewsWidget'
 import SarkariResultWidget from '../components/SarkariResultWidget'
 import AdSlotServer from '../components/AdSlotServer'
 
-export const revalidate = 0 // Disable ISR - fetch fresh data on every request
+export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: 'Sarkari Naukri 2026 — Latest Government Jobs, Answer Keys, Admit Cards',
-  description: 'Latest Sarkari Naukri 2026 — Railway, SSC, UPSC, Bank jobs. Answer Keys, Admit Cards, Results, Notifications. Check eligibility, salary, last date and apply online.',
-  keywords: ['sarkari naukri', 'government jobs', 'answer keys', 'admit cards', 'sarkari result', 'latest jobs 2026', 'SSC', 'UPSC', 'Railway jobs'],
+  title: 'Sarkari Naukri 2026 — Jobs, Answer Keys, Admit Cards, Results',
+  description: 'Latest Government Jobs, Answer Keys, Admit Cards, Results, Exam Notifications. SSC, UPSC, Railway, Bank, Police jobs 2026.',
+  keywords: ['sarkari naukri', 'government jobs', 'answer keys', 'admit cards', 'exam results', 'latest jobs 2026'],
 }
 
-const CAT_ICONS: Record<string, string> = {
-  Railway: '🚂', SSC: '📋', UPSC: '🏛', Police: '👮', Defence: '🎖',
-  Bank: '🏦', Teaching: '📚', State: '🗺', PSU: '🏭', Internship: '💼', Private: '🏢', Other: '📌',
-}
-const CAT_COLORS: Record<string, string> = {
-  Railway: '#1565C0', SSC: '#6A1B9A', UPSC: '#C62828', Police: '#1B5E20',
-  Defence: '#0D1B2A', Bank: '#D4A017', Teaching: '#E65100', State: '#2E7D32',
-  PSU: '#1565C0', Internship: '#00838F', Private: '#555', Other: '#888',
-}
-
-const EXAM_TYPE_ICONS: Record<string, string> = {
-  'job-notification': '📋',
-  'admit-card': '🎫',
-  'answer-key': '📝',
-  'result': '✅',
-  'exam-date': '📅',
-}
-const EXAM_TYPE_COLORS: Record<string, string> = {
-  'job-notification': '#1565C0',
-  'admit-card': '#E65100',
-  'answer-key': '#6A1B9A',
-  'result': '#2E7D32',
-  'exam-date': '#C62828',
-}
-const EXAM_TYPE_LABELS: Record<string, string> = {
-  'job-notification': 'Job Notification',
-  'admit-card': 'Admit Card',
-  'answer-key': 'Answer Key',
-  'result': 'Result',
-  'exam-date': 'Exam Date',
-}
-
-export default async function SarkariPage({ searchParams }: any) {
+export default async function SarkariPage() {
   await connectDB()
-  const category = searchParams?.category || ''
-  const state    = searchParams?.state    || ''
-  const search   = searchParams?.search   || ''
-  const tab      = searchParams?.tab      || 'jobs'
 
-  const q: any = { isActive: true, isExpired: false }
-  if (category) q.category = { $regex: new RegExp(`^${category}$`, 'i') }
-  if (state && state !== 'All India') q.state = { $in: [state, 'All India'] }
-  if (search) q.$text = { $search: search }
-
-  const [jobs, featured, counts, examItems] = await Promise.all([
-    SarkariJob.find(q).sort({ isFeatured: -1, createdAt: -1 }).limit(30).lean(),
-    SarkariJob.find({ isActive: true, isExpired: false, isFeatured: true }).sort({ createdAt: -1 }).limit(6).lean(),
-    SarkariJob.aggregate([
-      { $match: { isActive: true, isExpired: false } },
-      { $group: { _id: '$category', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]),
-    ExamPortal.find({ isActive: true, isExpired: false }).sort({ isFeatured: -1, createdAt: -1 }).limit(20).lean(),
+  const [latestJobs, examNotifications, admitCards, answerKeys, results] = await Promise.all([
+    SarkariJob.find({ isActive: true, isExpired: false }).sort({ createdAt: -1 }).limit(15).lean(),
+    ExamPortal.find({ isActive: true, isExpired: false, type: 'job-notification' }).sort({ isFeatured: -1, createdAt: -1 }).limit(10).lean(),
+    ExamPortal.find({ isActive: true, isExpired: false, type: 'admit-card' }).sort({ isFeatured: -1, createdAt: -1 }).limit(10).lean(),
+    ExamPortal.find({ isActive: true, isExpired: false, type: 'answer-key' }).sort({ isFeatured: -1, createdAt: -1 }).limit(10).lean(),
+    ExamPortal.find({ isActive: true, isExpired: false, type: 'result' }).sort({ isFeatured: -1, createdAt: -1 }).limit(10).lean(),
   ])
 
   const fmt = (d: any) => d ? format(new Date(d), 'd MMM yyyy') : '—'
@@ -85,240 +41,148 @@ export default async function SarkariPage({ searchParams }: any) {
     <div style={{ fontFamily: "'Inter', sans-serif", background: '#F4F4F0', minHeight: '100vh' }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        .job-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
-        .job-card { transition: all 0.2s; }
-        @media (max-width: 768px) {
-          .sarkari-grid { grid-template-columns: 1fr !important; }
-          .cat-grid { grid-template-columns: repeat(3, 1fr) !important; }
-          .main-pad { padding: 16px 14px !important; }
-        }
+        .item-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
+        .item-card { transition: all 0.2s; }
       `}</style>
 
       {/* Header */}
       <header style={{ background: '#1B5E20', color: 'white' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-          <div>
-            <Link href="/" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }}>← NewsFlash</Link>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 900, marginTop: 2 }}>
-              Sarkari <span style={{ color: '#A5D6A7' }}>Naukri</span>
-            </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>Latest Government Jobs 2026</div>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 20px' }}>
+          <Link href="/" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }}>← NewsFlash</Link>
+          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 32, fontWeight: 900, marginTop: 8, marginBottom: 4 }}>
+            Sarkari <span style={{ color: '#A5D6A7' }}>Naukri</span>
           </div>
-          <form action="/sarkari" method="get" style={{ display: 'flex', gap: 8 }}>
-            <input name="search" defaultValue={search} placeholder="Search jobs..." style={{ padding: '9px 14px', border: 'none', borderRadius: 4, fontSize: 13, outline: 'none', width: 220 }} />
-            <button type="submit" style={{ background: '#C62828', color: 'white', border: 'none', padding: '9px 16px', borderRadius: 4, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Search</button>
-          </form>
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>Government Jobs • Answer Keys • Admit Cards • Results</div>
         </div>
       </header>
 
-      {/* Category Nav */}
-      <div style={{ background: '#145214', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', overflowX: 'auto', scrollbarWidth: 'none' }}>
-          {[{ label: 'All Jobs', value: '' }, ...Object.keys(CAT_ICONS).map(c => ({ label: c, value: c }))].map(c => (
-            <Link key={c.value} href={`/sarkari${c.value ? `?category=${c.value}` : ''}`}
-              style={{ padding: '10px 14px', color: category === c.value ? 'white' : 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 12, fontFamily: 'JetBrains Mono, monospace', whiteSpace: 'nowrap', borderBottom: category === c.value ? '3px solid #A5D6A7' : '3px solid transparent', flexShrink: 0 }}>
-              {CAT_ICONS[c.value] || '📌'} {c.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div style={{ background: 'white', borderBottom: '1px solid #E5E5E5' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 0 }}>
-          {[
-            { label: 'Latest Jobs', value: 'jobs', icon: '🏛' },
-            { label: 'Answer Keys', value: 'answer-key', icon: '📝' },
-            { label: 'Admit Cards', value: 'admit-card', icon: '🎫' },
-            { label: 'Results', value: 'result', icon: '✅' },
-            { label: 'Notifications', value: 'job-notification', icon: '📋' },
-          ].map(t => (
-            <Link key={t.value} href={`/sarkari?tab=${t.value}`}
-              style={{ padding: '12px 16px', color: tab === t.value ? '#1B5E20' : '#999', textDecoration: 'none', fontSize: 13, fontFamily: 'JetBrains Mono, monospace', whiteSpace: 'nowrap', borderBottom: tab === t.value ? '3px solid #1B5E20' : '3px solid transparent', flexShrink: 0, fontWeight: tab === t.value ? 600 : 400 }}>
-              {t.icon} {t.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <main style={{ maxWidth: 1200, margin: '0 auto' }} className="main-pad" style={{ padding: '24px 20px' }}>
-        {/* JOBS TAB */}
-        {tab === 'jobs' && (
-          <>
-            {/* Category Stats */}
-            {!category && !search && (
-              <div className="cat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 24 }}>
-                {counts.slice(0, 12).map((c: any) => (
-                  <Link key={c._id} href={`/sarkari?category=${c._id}`}
-                    style={{ background: 'white', borderRadius: 6, padding: '14px 12px', textAlign: 'center', textDecoration: 'none', border: '1px solid #E8E8E4', borderTop: `3px solid ${CAT_COLORS[c._id] || '#888'}` }}>
-                    <div style={{ fontSize: 22, marginBottom: 4 }}>{CAT_ICONS[c._id] || '📌'}</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#0D1B2A' }}>{c._id}</div>
-                    <div style={{ fontSize: 11, color: '#888', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>{c.count} jobs</div>
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {/* Featured Jobs */}
-            {!category && !search && featured.length > 0 && (
-              <div style={{ marginBottom: 28 }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#888', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ background: '#E65100', color: 'white', padding: '2px 8px', borderRadius: 2, fontSize: 9 }}>FEATURED</span>
-                  Hot Jobs
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-                  {featured.map((j: any) => {
-                    const fmt = (d: any) => d ? format(new Date(d), 'd MMM yyyy') : '—'
-                    const daysLeft = (d: any) => {
-                      if (!d) return null
-                      const diff = Math.ceil((new Date(d).getTime() - Date.now()) / 86400000)
-                      return diff
-                    }
-                    const dl = daysLeft(j.importantDates?.lastDate)
-                    return (
-                      <Link key={String(j._id)} href={`/sarkari/${j.slug}`} className="job-card"
-                        style={{ background: 'white', borderRadius: 6, padding: 16, textDecoration: 'none', border: '1px solid #E8E8E4', borderLeft: `4px solid ${CAT_COLORS[j.category] || '#888'}`, display: 'block' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                          <span style={{ background: CAT_COLORS[j.category] || '#888', color: 'white', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>{j.category}</span>
-                          {dl !== null && dl >= 0 && <span style={{ background: dl <= 7 ? '#FFEBEE' : '#E8F5E9', color: dl <= 7 ? '#C62828' : '#2E7D32', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>{dl === 0 ? 'Last Day' : `${dl}d left`}</span>}
-                        </div>
-                        <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0D1B2A', marginBottom: 4, lineHeight: 1.3, fontFamily: 'Playfair Display, serif' }}>{j.title}</h3>
-                        <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{j.organization}</div>
-                        <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#666', fontFamily: 'JetBrains Mono, monospace' }}>
-                          {j.totalVacancy > 0 && <span>📋 {j.totalVacancy} posts</span>}
-                          {j.salaryText && <span>💰 {j.salaryText}</span>}
-                        </div>
-                        <div style={{ marginTop: 8, fontSize: 11, color: '#C62828', fontFamily: 'JetBrains Mono, monospace' }}>Last Date: {fmt(j.importantDates?.lastDate)}</div>
-                      </Link>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* All Jobs */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#888' }}>
-                {search ? `Results for "${search}"` : category ? `${category} Jobs` : 'Latest Jobs'} — {jobs.length} found
-              </div>
-              {(search || category) && (
-                <Link href="/sarkari" style={{ fontSize: 11, color: '#C62828', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace' }}>Clear Filter ×</Link>
-              )}
+      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 20px' }}>
+        {/* SECTION 1: EXAM NOTIFICATIONS */}
+        {examNotifications.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 24 }}>📋</span>
+              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Exam Notifications</h2>
+              <span style={{ background: '#1565C0', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{examNotifications.length} New</span>
             </div>
-
-            {jobs.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 6 }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#aaa' }}>No jobs found</div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {jobs.map((j: any) => {
-                  const fmt = (d: any) => d ? format(new Date(d), 'd MMM yyyy') : '—'
-                  const daysLeft = (d: any) => {
-                    if (!d) return null
-                    const diff = Math.ceil((new Date(d).getTime() - Date.now()) / 86400000)
-                    return diff
-                  }
-                  const dl = daysLeft(j.importantDates?.lastDate)
-                  return (
-                    <Link key={String(j._id)} href={`/sarkari/${j.slug}`} className="job-card"
-                      style={{ background: 'white', borderRadius: 6, padding: '16px 20px', textDecoration: 'none', border: '1px solid #E8E8E4', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                      <div style={{ width: 44, height: 44, background: CAT_COLORS[j.category] || '#888', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-                        {CAT_ICONS[j.category] || '📌'}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4, flexWrap: 'wrap' }}>
-                          <span style={{ background: CAT_COLORS[j.category] || '#888', color: 'white', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>{j.category}</span>
-                          {j.state !== 'All India' && <span style={{ background: '#F0F0EC', color: '#666', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>{j.state}</span>}
-                          {j.isFeatured && <span style={{ background: '#FFF8E1', color: '#E65100', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>⭐ FEATURED</span>}
-                        </div>
-                        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0D1B2A', marginBottom: 2, fontFamily: 'Playfair Display, serif', lineHeight: 1.3 }}>{j.title}</h3>
-                        <div style={{ fontSize: 12, color: '#888', marginBottom: 6 }}>{j.organization}</div>
-                        <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#666', fontFamily: 'JetBrains Mono, monospace', flexWrap: 'wrap' }}>
-                          {j.totalVacancy > 0 && <span>📋 {j.totalVacancy.toLocaleString('en-IN')} Vacancies</span>}
-                          {j.salaryText && <span>💰 {j.salaryText}</span>}
-                          {j.qualification?.length > 0 && <span>🎓 {j.qualification.slice(0, 2).join(', ')}</span>}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ fontSize: 11, color: '#C62828', fontFamily: 'JetBrains Mono, monospace', marginBottom: 4 }}>Last Date</div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: '#0D1B2A', fontFamily: 'JetBrains Mono, monospace' }}>{fmt(j.importantDates?.lastDate)}</div>
-                        {dl !== null && dl >= 0 && (
-                          <div style={{ marginTop: 4, background: dl <= 7 ? '#FFEBEE' : '#E8F5E9', color: dl <= 7 ? '#C62828' : '#2E7D32', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace', display: 'inline-block' }}>
-                            {dl === 0 ? 'Last Day' : `${dl} days left`}
-                          </div>
-                        )}
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            )}
-          </>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+              {examNotifications.slice(0, 6).map((item: any) => {
+                const dl = daysLeft(item.importantDates?.registrationEnd)
+                return (
+                  <div key={String(item._id)} className="item-card" style={{ background: 'white', borderRadius: 8, padding: 16, border: '1px solid #E8E8E4', borderLeft: `4px solid #1565C0` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <span style={{ background: '#1565C0', color: 'white', padding: '4px 8px', borderRadius: 3, fontSize: 10, fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>{item.category}</span>
+                      {dl !== null && dl >= 0 && <span style={{ background: dl <= 3 ? '#FFEBEE' : '#E8F5E9', color: dl <= 3 ? '#C62828' : '#2E7D32', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>{dl === 0 ? 'Today' : `${dl}d`}</span>}
+                    </div>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0D1B2A', marginBottom: 4, lineHeight: 1.3, fontFamily: 'Playfair Display, serif' }}>{item.title}</h3>
+                    <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{item.organization}</div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                      {item.applyLink && <a href={item.applyLink} target="_blank" rel="noopener noreferrer" style={{ flex: 1, background: '#1565C0', color: 'white', padding: '8px 12px', borderRadius: 4, textDecoration: 'none', fontSize: 11, fontWeight: 600, textAlign: 'center' }}>Apply</a>}
+                      {item.notificationPdf && <a href={item.notificationPdf} target="_blank" rel="noopener noreferrer" style={{ flex: 1, background: '#666', color: 'white', padding: '8px 12px', borderRadius: 4, textDecoration: 'none', fontSize: 11, fontWeight: 600, textAlign: 'center' }}>PDF</a>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         )}
 
-        {/* EXAM ITEMS TABS (Answer Keys, Admit Cards, Results, Notifications) */}
-        {['answer-key', 'admit-card', 'result', 'job-notification'].includes(tab) && (
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#888' }}>
-                {EXAM_TYPE_LABELS[tab]} — {examItems.filter((e: any) => e.type === tab).length} found
-              </div>
+        {/* SECTION 2: LATEST VACANCY */}
+        {latestJobs.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 24 }}>💼</span>
+              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Latest Vacancy</h2>
+              <span style={{ background: '#E65100', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{latestJobs.length} Jobs</span>
             </div>
-
-            {examItems.filter((e: any) => e.type === tab).length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 60, background: 'white', borderRadius: 6 }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#aaa' }}>No {EXAM_TYPE_LABELS[tab].toLowerCase()} found</div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {examItems.filter((e: any) => e.type === tab).map((item: any) => {
-                  const fmt = (d: any) => d ? format(new Date(d), 'd MMM yyyy') : '—'
-                  const daysLeft = (d: any) => {
-                    if (!d) return null
-                    const diff = Math.ceil((new Date(d).getTime() - Date.now()) / 86400000)
-                    return diff
-                  }
-                  const dl = daysLeft(item.importantDates?.examDate)
-                  return (
-                    <div key={String(item._id)} className="job-card"
-                      style={{ background: 'white', borderRadius: 6, padding: '16px 20px', border: '1px solid #E8E8E4', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                      <div style={{ width: 44, height: 44, background: EXAM_TYPE_COLORS[item.type], borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-                        {EXAM_TYPE_ICONS[item.type]}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4, flexWrap: 'wrap' }}>
-                          <span style={{ background: EXAM_TYPE_COLORS[item.type], color: 'white', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>{item.category}</span>
-                          {item.isFeatured && <span style={{ background: '#FFF8E1', color: '#E65100', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>⭐ FEATURED</span>}
-                        </div>
-                        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0D1B2A', marginBottom: 2, fontFamily: 'Playfair Display, serif', lineHeight: 1.3 }}>{item.title}</h3>
-                        <div style={{ fontSize: 12, color: '#888', marginBottom: 6 }}>{item.organization}</div>
-                        <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#666', fontFamily: 'JetBrains Mono, monospace', flexWrap: 'wrap' }}>
-                          {item.examName && <span>📚 {item.examName}</span>}
-                          {item.importantDates?.examDate && <span>📅 {fmt(item.importantDates.examDate)}</span>}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {dl !== null && dl >= 0 && (
-                          <div style={{ background: dl <= 3 ? '#FFEBEE' : '#E8F5E9', color: dl <= 3 ? '#C62828' : '#2E7D32', padding: '4px 8px', borderRadius: 3, fontSize: 10, fontFamily: 'JetBrains Mono, monospace', fontWeight: 600, textAlign: 'center' }}>
-                            {dl === 0 ? 'Today' : `${dl} days`}
-                          </div>
-                        )}
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {item.applyLink && <a href={item.applyLink} target="_blank" rel="noopener noreferrer" style={{ background: EXAM_TYPE_COLORS[item.type], color: 'white', padding: '4px 8px', borderRadius: 3, textDecoration: 'none', fontSize: 10, fontWeight: 600 }}>Apply</a>}
-                          {item.admitCardLink && <a href={item.admitCardLink} target="_blank" rel="noopener noreferrer" style={{ background: '#E65100', color: 'white', padding: '4px 8px', borderRadius: 3, textDecoration: 'none', fontSize: 10, fontWeight: 600 }}>Card</a>}
-                          {item.answerKeyLink && <a href={item.answerKeyLink} target="_blank" rel="noopener noreferrer" style={{ background: '#6A1B9A', color: 'white', padding: '4px 8px', borderRadius: 3, textDecoration: 'none', fontSize: 10, fontWeight: 600 }}>Key</a>}
-                          {item.resultLink && <a href={item.resultLink} target="_blank" rel="noopener noreferrer" style={{ background: '#2E7D32', color: 'white', padding: '4px 8px', borderRadius: 3, textDecoration: 'none', fontSize: 10, fontWeight: 600 }}>Result</a>}
-                        </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {latestJobs.slice(0, 8).map((job: any) => {
+                const dl = daysLeft(job.importantDates?.lastDate)
+                return (
+                  <Link key={String(job._id)} href={`/sarkari/${job.slug}`} className="item-card" style={{ background: 'white', borderRadius: 6, padding: '14px 16px', textDecoration: 'none', border: '1px solid #E8E8E4', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <div style={{ width: 40, height: 40, background: '#E65100', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>💼</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0D1B2A', marginBottom: 2, fontFamily: 'Playfair Display, serif' }}>{job.title}</h3>
+                      <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>{job.organization}</div>
+                      <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#666', fontFamily: 'JetBrains Mono, monospace' }}>
+                        {job.totalVacancy > 0 && <span>📋 {job.totalVacancy} posts</span>}
+                        {job.salaryText && <span>💰 {job.salaryText}</span>}
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            )}
-          </>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: 11, color: '#C62828', fontFamily: 'JetBrains Mono, monospace', marginBottom: 4, fontWeight: 600 }}>Last Date</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#0D1B2A', fontFamily: 'JetBrains Mono, monospace' }}>{fmt(job.importantDates?.lastDate)}</div>
+                      {dl !== null && dl >= 0 && <div style={{ marginTop: 4, background: dl <= 7 ? '#FFEBEE' : '#E8F5E9', color: dl <= 7 ? '#C62828' : '#2E7D32', padding: '2px 6px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace', fontWeight: 600 }}>{dl === 0 ? 'Last Day' : `${dl}d left`}</div>}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </main>
+
+        {/* SECTION 3: ADMIT CARDS */}
+        {admitCards.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 24 }}>🎫</span>
+              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Admit Cards</h2>
+              <span style={{ background: '#E65100', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{admitCards.length} Available</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
+              {admitCards.slice(0, 6).map((item: any) => (
+                <div key={String(item._id)} className="item-card" style={{ background: 'white', borderRadius: 8, padding: 16, border: '1px solid #E8E8E4', borderTop: '4px solid #E65100' }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0D1B2A', marginBottom: 4, fontFamily: 'Playfair Display, serif' }}>{item.title}</h3>
+                  <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{item.organization}</div>
+                  <div style={{ fontSize: 11, color: '#666', marginBottom: 12, fontFamily: 'JetBrains Mono, monospace' }}>📅 {fmt(item.importantDates?.admitCardDate)}</div>
+                  {item.admitCardLink && <a href={item.admitCardLink} target="_blank" rel="noopener noreferrer" style={{ display: 'block', background: '#E65100', color: 'white', padding: '10px 12px', borderRadius: 4, textDecoration: 'none', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>Download Admit Card</a>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SECTION 4: ANSWER KEYS */}
+        {answerKeys.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 24 }}>📝</span>
+              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Answer Keys</h2>
+              <span style={{ background: '#6A1B9A', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{answerKeys.length} Available</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
+              {answerKeys.slice(0, 6).map((item: any) => (
+                <div key={String(item._id)} className="item-card" style={{ background: 'white', borderRadius: 8, padding: 16, border: '1px solid #E8E8E4', borderTop: '4px solid #6A1B9A' }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0D1B2A', marginBottom: 4, fontFamily: 'Playfair Display, serif' }}>{item.title}</h3>
+                  <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{item.organization}</div>
+                  <div style={{ fontSize: 11, color: '#666', marginBottom: 12, fontFamily: 'JetBrains Mono, monospace' }}>📅 {fmt(item.importantDates?.answerKeyDate)}</div>
+                  {item.answerKeyLink && <a href={item.answerKeyLink} target="_blank" rel="noopener noreferrer" style={{ display: 'block', background: '#6A1B9A', color: 'white', padding: '10px 12px', borderRadius: 4, textDecoration: 'none', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>View Answer Key</a>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SECTION 5: RESULTS */}
+        {results.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 24 }}>✅</span>
+              <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Results</h2>
+              <span style={{ background: '#2E7D32', color: 'white', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, marginLeft: 'auto' }}>{results.length} Available</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 12 }}>
+              {results.slice(0, 6).map((item: any) => (
+                <div key={String(item._id)} className="item-card" style={{ background: 'white', borderRadius: 8, padding: 16, border: '1px solid #E8E8E4', borderTop: '4px solid #2E7D32' }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0D1B2A', marginBottom: 4, fontFamily: 'Playfair Display, serif' }}>{item.title}</h3>
+                  <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>{item.organization}</div>
+                  <div style={{ fontSize: 11, color: '#666', marginBottom: 12, fontFamily: 'JetBrains Mono, monospace' }}>📅 {fmt(item.importantDates?.resultDate)}</div>
+                  {item.resultLink && <a href={item.resultLink} target="_blank" rel="noopener noreferrer" style={{ display: 'block', background: '#2E7D32', color: 'white', padding: '10px 12px', borderRadius: 4, textDecoration: 'none', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>Check Result</a>}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </main>
 
