@@ -55,53 +55,58 @@ export default async function HomePage({ searchParams }: any) {
       <LoadingBar />
       <WelcomePopup />
 
-      {/* ── TOP BAR — desktop only ── */}
-      <div style={{ background: '#0D1B2A', color: '#4A6080', fontSize: 11, padding: '6px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'JetBrains Mono, monospace' }} className="topbar-desktop">
-        <ISTClock />
+      {/* ── TOP BAR — Date, Time, Navigation ── */}
+      <div style={{ background: '#1A1A1A', color: '#999', fontSize: 11, padding: '8px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'JetBrains Mono, monospace', borderBottom: '1px solid #333' }}>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+          <ISTClock />
+          <span style={{ color: '#C62828', fontWeight: 700 }}>NEWSFLASH IST</span>
+        </div>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          {['India','World','Business','Tech','Sports'].map(c => (
-            <Link key={c} href={`/feed/${c.toLowerCase()}`} style={{ color: '#4A6080', textDecoration: 'none', fontSize: 11, transition: 'color 0.2s' }}>{c}</Link>
+          {['Home', 'World', 'Business', 'Tech', 'Sports'].map(c => (
+            <Link key={c} href={`/?category=${c}`} style={{ color: '#999', textDecoration: 'none', fontSize: 10, transition: 'color 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')} onMouseLeave={(e) => (e.currentTarget.style.color = '#999')}>
+              {c}
+            </Link>
           ))}
         </div>
       </div>
 
-      {/* ── HEADER ── */}
-      <header style={{ background: 'white', borderBottom: '3px solid #0D1B2A', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 200 }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', gap: 12, flexWrap: 'wrap' }}>
-            {/* Logo */}
-            <Link href="/" className="logo" style={{ fontFamily: 'Playfair Display, serif', fontSize: 36, fontWeight: 900, color: '#0D1B2A', textDecoration: 'none', letterSpacing: -1, display: 'flex', alignItems: 'baseline', gap: 0 }}>
-              NEWS<span style={{ color: '#C62828' }}>FLASH</span>
-              <span style={{ width: 6, height: 6, background: '#D4A017', borderRadius: '50%', display: 'inline-block', marginLeft: 3, marginBottom: 6 }} />
-            </Link>
-            {/* Right */}
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <form action="/" method="get" style={{ display: 'flex', border: '1.5px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-                <input name="search" defaultValue={search} placeholder="Search news..." style={{ border: 'none', background: '#FAFAF8', padding: '8px 14px', fontSize: 13, width: 190, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
-                <button type="submit" style={{ background: '#0D1B2A', color: 'white', border: 'none', padding: '8px 14px', cursor: 'pointer', fontSize: 14 }}>🔍</button>
-              </form>
-              <DarkModeToggle />
-            </div>
-          </div>
+      {/* ── HEADER — Logo, Search, Dark Mode ── */}
+      <header style={{ background: 'white', borderBottom: '2px solid #0D1B2A', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', padding: '12px 20px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20 }}>
+          {/* Logo */}
+          <Link href="/" className="logo" style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, fontWeight: 900, color: '#0D1B2A', textDecoration: 'none', letterSpacing: -1, display: 'flex', alignItems: 'baseline', gap: 0, flexShrink: 0 }}>
+            NEWS<span style={{ color: '#C62828' }}>FLASH</span>
+          </Link>
+
+          {/* Search Bar */}
+          <form action="/" method="get" style={{ display: 'flex', flex: 1, maxWidth: 400, border: '1.5px solid #E5E7EB', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <input name="search" defaultValue={search} placeholder="Search news..." style={{ border: 'none', background: '#FAFAF8', padding: '10px 14px', fontSize: 13, flex: 1, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+            <button type="submit" style={{ background: '#0D1B2A', color: 'white', border: 'none', padding: '10px 14px', cursor: 'pointer', fontSize: 14 }}>🔍</button>
+          </form>
+
+          {/* Dark Mode Toggle */}
+          <DarkModeToggle />
         </div>
       </header>
 
-      {/* ── CATEGORY BUTTONS NAV — 3 portals ── */}
-      <div style={{ background: 'white', borderBottom: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '10px 20px', display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'thin', alignItems: 'center', WebkitOverflowScrolling: 'touch' }}>
+      {/* ── PORTAL BUTTONS — Cricket, Sarkari, Education ── */}
+      <div style={{ background: 'white', borderBottom: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: '12px 20px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link href="/cricket" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(27,94,32,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24, background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(27,94,32,0.35)', transition: 'all 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')} onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
               🏏 Cricket Live
-              <span style={{ background: 'rgba(255,255,255,0.25)', padding: '1px 7px', borderRadius: 8, fontSize: 9, letterSpacing: 1, fontFamily: 'JetBrains Mono, monospace' }}>LIVE</span>
+              <span style={{ background: 'rgba(255,255,255,0.3)', padding: '2px 8px', borderRadius: 6, fontSize: 9, letterSpacing: 1, fontFamily: 'JetBrains Mono, monospace', fontWeight: 700 }}>LIVE</span>
             </div>
           </Link>
+
           <Link href="/exam-portal" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#E65100,#F57C00)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(230,81,0,0.35)' }}>
-              🏛 Exam Portal
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24, background: 'linear-gradient(135deg,#E65100,#F57C00)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(230,81,0,0.35)', transition: 'all 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')} onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
+              🏛 Sarkari Naukri
             </div>
           </Link>
+
           <Link href="/feed/education" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#283593,#3949AB)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(40,53,147,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24, background: 'linear-gradient(135deg,#283593,#3949AB)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(40,53,147,0.35)', transition: 'all 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')} onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
               🎓 Education
             </div>
           </Link>
@@ -123,13 +128,13 @@ export default async function HomePage({ searchParams }: any) {
         </div>
       </div>
 
-      {/* ── LIVE DASHBOARD BAR ── */}
-      <LiveDashboard />
-
       {/* ── WEATHER WIDGET ── */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 20px' }}>
         <WeatherWidget />
       </div>
+
+      {/* ── LIVE DASHBOARD BAR ── */}
+      <LiveDashboard />
 
       {/* ── HEADER LEADERBOARD AD ── */}
       <AdSlotServer slotId="banner-728x90" style={{ padding: '8px 0', background: '#F8F8F6', textAlign: 'center' }} />
