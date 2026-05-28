@@ -9,7 +9,7 @@ const MODEL = 'llama-3.3-70b-versatile' // Current Groq model (replaces decommis
 
 // Cache to avoid repeated API calls for same item
 const cache: Record<string, { data: any; ts: number }> = {}
-const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+const CACHE_TTL = 5 * 60 * 60 * 1000 // 5 hours
 
 export async function POST(req: NextRequest) {
   const API_KEY = process.env.GROQ_API_KEY
@@ -36,27 +36,35 @@ export async function POST(req: NextRequest) {
     'answer-key': 'answer key',
   }[type] || 'sarkari notification'
 
-  const prompt = `You are an expert on Indian government jobs and sarkari notifications. 
-A user wants complete details about this ${typeLabel}:
+  const prompt = `You are an expert on Indian government jobs and sarkari notifications with access to current recruitment information.
+A user wants comprehensive details about this ${typeLabel}:
 
 Title: ${title}
 Organisation: ${org || 'Not specified'}
 ${extra ? `Posts/Vacancies: ${extra}` : ''}
 ${date ? `Date: ${date}` : ''}
 
-Based on your knowledge of Indian government recruitment, provide comprehensive details in this EXACT JSON format (no markdown, just raw JSON):
+IMPORTANT: Do deep research using your knowledge of:
+- Official government recruitment portals (SSC, UPSC, Railway, Bank, Police websites)
+- Common eligibility criteria for similar positions
+- Typical selection processes for government jobs
+- Standard application procedures
+- Current salary scales and pay commissions
+
+Provide comprehensive, well-researched details in this EXACT JSON format (no markdown, just raw JSON):
 
 {
-  "overview": "2-3 sentence summary of what this notification is about",
+  "overview": "2-3 sentence summary of what this notification is about and its significance",
   "organisation": "Full official name of the organisation",
-  "postName": "Name of the post(s)",
-  "totalVacancy": "Total number of vacancies if known",
+  "postName": "Name of the post(s) being recruited",
+  "totalVacancy": "Total number of vacancies",
   "eligibility": {
-    "education": "Educational qualification required",
-    "age": "Age limit (min-max)",
-    "experience": "Experience required if any"
+    "education": "Educational qualification required (e.g., Bachelor's degree, 12th pass)",
+    "age": "Age limit (min-max years) with relaxation for SC/ST/OBC if applicable",
+    "experience": "Years of experience required if any",
+    "nationality": "Nationality requirement"
   },
-  "salary": "Pay scale or salary range",
+  "salary": "Pay scale or salary range with grade pay if applicable",
   "importantDates": {
     "notificationDate": "When notification was released",
     "applicationStart": "Application start date",
@@ -64,24 +72,24 @@ Based on your knowledge of Indian government recruitment, provide comprehensive 
     "examDate": "Exam date if known",
     "resultDate": "Result date if known"
   },
-  "selectionProcess": ["Step 1", "Step 2", "Step 3"],
+  "selectionProcess": ["Written exam", "Interview", "Document verification", "Medical test"],
   "applicationFee": {
-    "general": "Fee for General/OBC",
-    "scSt": "Fee for SC/ST/PH",
+    "general": "Fee for General/OBC candidates",
+    "scSt": "Fee for SC/ST/PH candidates",
     "paymentMode": "Online/Offline/Both"
   },
-  "howToApply": ["Step 1", "Step 2", "Step 3"],
+  "howToApply": ["Visit official website", "Register and fill application form", "Upload documents", "Pay application fee", "Submit application"],
   "officialWebsite": "Official website URL",
   "importantLinks": {
-    "notification": "PDF notification link if known",
-    "applyOnline": "Online application link if known",
+    "notification": "PDF notification link",
+    "applyOnline": "Online application link",
     "officialSite": "Official website"
   },
-  "additionalInfo": "Any other important information candidates should know",
-  "disclaimer": "Information based on AI knowledge, verify from official sources"
+  "additionalInfo": "Important information like document requirements, exam pattern, negative marking, etc.",
+  "disclaimer": "Information based on AI research, always verify from official sources before applying"
 }
 
-If you don't know specific details, use "Check official notification" as the value. Always respond with valid JSON only.`
+If specific details are not available, use "Check official notification" as the value. Always respond with valid JSON only, no markdown formatting.`
 
   try {
     const res = await fetch(GROQ_API_URL, {
