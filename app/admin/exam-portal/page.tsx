@@ -130,7 +130,11 @@ export default function ExamPortalPage() {
                         {TYPE_ICONS[item.type]} {item.type}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 500, color: '#0D1B2A', maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 13, fontWeight: 500, color: '#0D1B2A', maxWidth: 250 }}>
+                      <Link href={`/exam-portal/${item._id}`} style={{ color: '#1565C0', textDecoration: 'none', cursor: 'pointer' }}>
+                        {item.title}
+                      </Link>
+                    </td>
                     <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.organization}</td>
                     <td style={{ padding: '12px 16px', fontSize: 13, color: '#666' }}>{item.category}</td>
                     <td style={{ padding: '12px 16px', fontSize: 13, color: '#666', fontFamily: 'JetBrains Mono, monospace' }}>{fmt(item.importantDates?.examDate)}</td>
