@@ -176,9 +176,6 @@ function DetailModal({ item, tab, onClose }: { item: any; tab: string; onClose: 
             <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '2px 8px', borderRadius: 3, letterSpacing: 1 }}>
               {TYPE_LABELS[tab] || tab}
             </span>
-            <span style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.8)', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '2px 8px', borderRadius: 3, letterSpacing: 1 }}>
-              🤖 AI Powered
-            </span>
           </div>
           <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 17, fontWeight: 700, color: 'white', margin: 0, lineHeight: 1.4, paddingRight: 36 }}>
             {item.title}
@@ -215,7 +212,7 @@ function DetailModal({ item, tab, onClose }: { item: any; tab: string; onClose: 
                 ))}
               </div>
               <div style={{ marginTop: 20, fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#bbb' }}>
-                Powered by Groq AI · LLaMA 3 70B
+                Powered by Sarkari Result
               </div>
             </div>
           ) : aiError ? (
@@ -268,7 +265,6 @@ export default function SarkariResultWidget() {
   const [items, setItems]       = useState<any[]>([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState('')
-  const [selected, setSelected] = useState<any>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -282,12 +278,16 @@ export default function SarkariResultWidget() {
   const activeTab = TAB_CONFIG.find(t => t.key === tab)!
   const shimmer = { backgroundImage: 'linear-gradient(90deg,#f0f0ec 25%,#e4e4e0 50%,#f0f0ec 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite' }
 
-  return (
-    <>
-      {selected && <DetailModal item={selected} tab={tab} onClose={() => setSelected(null)} />}
+  const handleViewClick = (item: any) => {
+    // Store item data in sessionStorage for the detail page
+    sessionStorage.setItem(`sarkari-result-${item.id || item.title}`, JSON.stringify({ ...item, tab }))
+    // Navigate to dedicated page
+    window.location.href = `/sarkari-result/${item.id || item.title.replace(/\s+/g, '-').toLowerCase()}`
+  }
 
-      <div style={{ background: 'white', borderRadius: 12, border: '1px solid #E5E7EB', overflow: 'hidden', marginBottom: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-        <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
+  return (
+    <div style={{ background: 'white', borderRadius: 12, border: '1px solid #E5E7EB', overflow: 'hidden', marginBottom: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+      <style>{`@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`}</style>
 
         {/* Header */}
         <div style={{ background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -327,7 +327,7 @@ export default function SarkariResultWidget() {
           <div>
             {items.slice(0, 10).map((item: any, i: number) => (
               <div key={item.id || i}
-                onClick={() => setSelected(item)}
+                onClick={() => handleViewClick(item)}
                 style={{ display: 'flex', gap: 12, padding: '11px 20px', borderBottom: '1px solid #F8F8F6', alignItems: 'center', cursor: 'pointer', transition: 'background 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.background = '#F8FFF8')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
@@ -340,8 +340,8 @@ export default function SarkariResultWidget() {
                     {item.date && <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#C62828' }}>{item.date}</span>}
                   </div>
                 </div>
-                <span style={{ background: activeTab.color + '15', color: activeTab.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '4px 10px', borderRadius: 4, flexShrink: 0, fontWeight: 600, border: `1px solid ${activeTab.color}30`, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  🤖 View
+                <span style={{ background: activeTab.color + '15', color: activeTab.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 9, padding: '4px 10px', borderRadius: 4, flexShrink: 0, fontWeight: 600, border: `1px solid ${activeTab.color}30` }}>
+                  View
                 </span>
               </div>
             ))}
@@ -349,10 +349,10 @@ export default function SarkariResultWidget() {
         )}
 
         <div style={{ padding: '10px 16px', background: '#F8FFF8', borderTop: '1px solid #E8F5E9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>AI-powered details · Click any item to view full info</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>Powered by Sarkari Result · Click any item to view full info</span>
           <Link href="/exam-portal" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#1B5E20', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
         </div>
       </div>
-    </>
+    </div>
   )
 }
