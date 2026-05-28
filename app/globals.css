@@ -236,13 +236,7 @@ img, video, iframe { max-width: 100%; height: auto; }
 .article-body ul li { margin-bottom: 0.5em; font-size: 15px; line-height: 1.8; }
 .article-body a    { color: var(--red); text-decoration: underline; }
 
-/* ── Light theme text color fixes (removed dark theme) ── */
-h1, h2, h3, h4, h5, h6 { color: #0D1B2A !important; }
-p, span, div, td, li { color: #333333 !important; }
-a { color: #1565C0 !important; }
-.text-dark { color: #333333 !important; }
-.text-muted { color: #666666 !important; }
-.text-secondary { color: #555555 !important; }
+/* ── Table styling ── */
 table th { color: #0D1B2A !important; background: #F8F8F8 !important; }
 table td { color: #333333 !important; }
 table tbody tr { background: #FFFFFF !important; }
