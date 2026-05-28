@@ -31,9 +31,9 @@ function MatchCard({ match }: { match: any }) {
             {isLive && <span style={{ background: '#C62828', color: 'white', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1, animation: 'pulse 1.5s infinite' }}>● LIVE</span>}
             {isCompleted && <span style={{ background: '#E8F5E9', color: '#1B5E20', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>COMPLETED</span>}
             {!isLive && !isCompleted && <span style={{ background: '#E3F2FD', color: '#1565C0', padding: '2px 8px', borderRadius: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>UPCOMING</span>}
-            <span style={{ fontSize: 10, color: '#aaa', fontFamily: 'JetBrains Mono, monospace' }}>{match.matchType?.toUpperCase()}</span>
+            <span style={{ fontSize: 10, color: '#999999', fontFamily: 'JetBrains Mono, monospace' }}>{match.matchType?.toUpperCase()}</span>
           </div>
-          <span style={{ fontSize: 10, color: '#aaa', fontFamily: 'JetBrains Mono, monospace' }}>{match.venue?.split(',')[0]}</span>
+          <span style={{ fontSize: 10, color: '#999999', fontFamily: 'JetBrains Mono, monospace' }}>{match.venue?.split(',')[0]}</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {match.teams?.map((team: string, i: number) => {
@@ -52,12 +52,12 @@ function MatchCard({ match }: { match: any }) {
                     <span style={{ fontSize: 18, fontWeight: 700, color: '#0D1B2A', fontFamily: 'JetBrains Mono, monospace' }}>{score.r}/{score.w}</span>
                     <span style={{ fontSize: 11, color: '#888', fontFamily: 'JetBrains Mono, monospace', marginLeft: 4 }}>({score.o})</span>
                   </div>
-                ) : <span style={{ fontSize: 12, color: '#aaa' }}>Yet to bat</span>}
+                ) : <span style={{ fontSize: 12, color: '#999999' }}>Yet to bat</span>}
               </div>
             )
           })}
         </div>
-        <div style={{ marginTop: 10, fontSize: 12, color: isLive ? '#C62828' : '#888', fontFamily: 'JetBrains Mono, monospace', fontWeight: isLive ? 600 : 400 }}>
+        <div style={{ marginTop: 10, fontSize: 12, color: isLive ? '#C62828' : '#999999', fontFamily: 'JetBrains Mono, monospace', fontWeight: isLive ? 600 : 400 }}>
           {match.status}
         </div>
       </div>
@@ -77,7 +77,7 @@ function PointsTable({ seriesId }: { seriesId: string }) {
       .catch(() => setLoading(false))
   }, [seriesId])
 
-  if (loading) return <div style={{ padding: 40, textAlign: 'center', color: '#aaa', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>Loading points table...</div>
+  if (loading) return <div style={{ padding: 40, textAlign: 'center', color: '#999999', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>Loading points table...</div>
 
   // Fallback demo table when API not available
   const demoTable = IPL_TEAMS.map((t, i) => ({

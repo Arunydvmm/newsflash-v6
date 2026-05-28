@@ -244,7 +244,7 @@ function DetailModal({ item, tab, onClose }: { item: any; tab: string; onClose: 
               Official Link →
             </a>
           )}
-          <Link href="/sarkari"
+          <Link href="/exam-portal"
             style={{ background: '#F0F0EC', color: '#444', padding: '9px 16px', borderRadius: 6, textDecoration: 'none', fontSize: 12, fontFamily: 'JetBrains Mono, monospace' }}>
             All Jobs
           </Link>
@@ -296,7 +296,7 @@ export default function SarkariResultWidget() {
             <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 700, color: 'white' }}>Sarkari Result</span>
             <span style={{ background: 'rgba(255,255,255,0.2)', color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: 1, padding: '2px 8px', borderRadius: 3, textTransform: 'uppercase' }}>Live</span>
           </div>
-          <Link href="/sarkari" style={{ color: 'rgba(255,255,255,0.85)', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, textDecoration: 'none' }}>All Jobs →</Link>
+          <Link href="/exam-portal" style={{ color: 'rgba(255,255,255,0.85)', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, textDecoration: 'none' }}>All Jobs →</Link>
         </div>
 
         {/* Tabs */}
@@ -350,7 +350,7 @@ export default function SarkariResultWidget() {
 
         <div style={{ padding: '10px 16px', background: '#F8FFF8', borderTop: '1px solid #E8F5E9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#aaa' }}>AI-powered details · Click any item to view full info</span>
-          <Link href="/sarkari" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#1B5E20', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
+          <Link href="/exam-portal" style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#1B5E20', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
         </div>
       </div>
     </>

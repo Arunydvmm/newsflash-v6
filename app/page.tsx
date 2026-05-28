@@ -94,9 +94,9 @@ export default async function HomePage({ searchParams }: any) {
               <span style={{ background: 'rgba(255,255,255,0.25)', padding: '1px 7px', borderRadius: 8, fontSize: 9, letterSpacing: 1, fontFamily: 'JetBrains Mono, monospace' }}>LIVE</span>
             </div>
           </Link>
-          <Link href="/sarkari" style={{ textDecoration: 'none', flexShrink: 0 }}>
+          <Link href="/exam-portal" style={{ textDecoration: 'none', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#E65100,#F57C00)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(230,81,0,0.35)' }}>
-              🏛 Sarkari Naukri
+              🏛 Exam Portal
             </div>
           </Link>
           <Link href="/feed/education" style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -286,7 +286,7 @@ export default async function HomePage({ searchParams }: any) {
                 <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 700, color: '#0D1B2A', marginBottom: 14 }}>Quick Links</h3>
                 {[
                   { label: '🏏 Cricket Live Scores', href: '/cricket', color: '#1B5E20' },
-                  { label: '🏛 Sarkari Naukri 2026', href: '/sarkari', color: '#E65100' },
+                  { label: '🏛 Exam Portal 2026', href: '/exam-portal', color: '#E65100' },
                   { label: '🎓 Education News', href: '/?category=Education', color: '#283593' },
                   { label: '📧 Contact Us', href: '/contact', color: '#1565C0' },
                   { label: 'ℹ About NewsFlash', href: '/about', color: '#888' },
@@ -328,7 +328,7 @@ export default async function HomePage({ searchParams }: any) {
             <div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#D4A017', marginBottom: 16, fontWeight: 700 }}>Portals</div>
               <Link href="/cricket" className="footer-link">🏏 Cricket Live</Link>
-              <Link href="/sarkari" className="footer-link">🏛 Sarkari Naukri</Link>
+              <Link href="/exam-portal" className="footer-link">🏛 Exam Portal</Link>
               <Link href="/?category=Education" className="footer-link">🎓 Education</Link>
               <Link href="/sitemap.xml" className="footer-link">🗺 Sitemap</Link>
             </div>

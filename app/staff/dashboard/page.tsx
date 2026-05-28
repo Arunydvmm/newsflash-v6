@@ -78,9 +78,9 @@ export default function StaffDashboardPage() {
             <Link href="/staff/articles" style={{ fontSize: 11, color: '#C62828', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace' }}>View All →</Link>
           </div>
           {loading ? (
-            <div style={{ padding: 40, textAlign: 'center', color: '#aaa', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>Loading...</div>
+            <div style={{ padding: 40, textAlign: 'center', color: '#999999', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>Loading...</div>
           ) : articles.length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: '#aaa', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>No articles yet</div>
+            <div style={{ padding: 40, textAlign: 'center', color: '#999999', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>No articles yet</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -104,7 +104,7 @@ export default function StaffDashboardPage() {
                         {a.status === 'pending_review' ? 'Pending' : a.status}
                       </span>
                     </td>
-                    <td style={{ padding: '10px 16px', fontSize: 11, color: '#aaa', fontFamily: 'JetBrains Mono, monospace' }}>{fmt(a.createdAt)}</td>
+                    <td style={{ padding: '10px 16px', fontSize: 11, color: '#999999', fontFamily: 'JetBrains Mono, monospace' }}>{fmt(a.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

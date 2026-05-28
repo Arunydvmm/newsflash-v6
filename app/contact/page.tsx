@@ -43,14 +43,14 @@ export default function ContactPage() {
       <main style={{ maxWidth: 680, margin: '0 auto', padding: '48px 20px' }}>
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 36, fontWeight: 700, color: '#1A1A1A', margin: '0 0 8px' }}>Contact Us</h1>
-          <p style={{ fontSize: 15, color: '#6B6B6B', lineHeight: 1.7 }}>Have a news tip, feedback, or partnership inquiry? We'd love to hear from you.</p>
+          <p style={{ fontSize: 15, color: '#555555', lineHeight: 1.7 }}>Have a news tip, feedback, or partnership inquiry? We'd love to hear from you.</p>
         </div>
 
         {sent ? (
           <div style={{ background: '#E8F5E9', border: '1px solid #C5E1A5', borderRadius: 8, padding: 32, textAlign: 'center' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
             <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: 22, color: '#1B5E20', marginBottom: 8 }}>Message Sent!</h2>
-            <p style={{ color: '#555', fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>
+            <p style={{ color: '#333333', fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>
               Thank you for reaching out. We've received your message and sent a confirmation to <strong>{form.email}</strong>. We'll get back to you within 24–48 hours.
             </p>
             <Link href="/" style={{ background: '#C62828', color: 'white', padding: '10px 24px', borderRadius: 4, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
@@ -98,8 +98,8 @@ export default function ContactPage() {
             <div key={c.label} style={{ background: 'white', borderRadius: 6, padding: '16px 20px', border: '1px solid #E0DDD5', display: 'flex', gap: 12, alignItems: 'center' }}>
               <span style={{ fontSize: 24 }}>{c.icon}</span>
               <div>
-                <div style={{ fontSize: 11, color: '#888', fontFamily: 'JetBrains Mono, monospace', textTransform: 'uppercase', letterSpacing: 1 }}>{c.label}</div>
-                <div style={{ fontSize: 13, color: '#555', marginTop: 2 }}>{c.value}</div>
+                <div style={{ fontSize: 11, color: '#666666', fontFamily: 'JetBrains Mono, monospace', textTransform: 'uppercase', letterSpacing: 1 }}>{c.label}</div>
+                <div style={{ fontSize: 13, color: '#333333', marginTop: 2 }}>{c.value}</div>
               </div>
             </div>
           ))}

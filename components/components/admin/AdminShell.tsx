@@ -17,7 +17,7 @@ const NAV_GROUPS = [
   {
     label: 'Portals',
     items: [
-      { label: 'Sarkari Naukri', href: '/admin/sarkari',         icon: '🏛' },
+      { label: 'Exam Portal',    href: '/admin/exam-portal',     icon: '🏛' },
       { label: 'Cricket',        href: '/admin/cricket',         icon: '🏏' },
     ],
   },

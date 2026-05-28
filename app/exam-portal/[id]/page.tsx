@@ -28,8 +28,8 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
           <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: '#0D1B2A', marginBottom: 8 }}>Item Not Found</h1>
           <p style={{ fontSize: 14, color: '#555', marginBottom: 24 }}>The exam portal item you're looking for doesn't exist.</p>
-          <Link href="/sarkari" style={{ display: 'inline-block', background: '#1B5E20', color: 'white', padding: '10px 20px', borderRadius: 6, textDecoration: 'none', fontWeight: 600 }}>
-            ← Back to Sarkari Naukri
+          <Link href="/exam-portal" style={{ display: 'inline-block', background: '#1B5E20', color: 'white', padding: '10px 20px', borderRadius: 6, textDecoration: 'none', fontWeight: 600 }}>
+            ← Back to Exam Portal
           </Link>
         </div>
       </div>
@@ -73,7 +73,7 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
       {/* Header */}
       <header style={{ background: '#1B5E20', color: 'white' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 20px' }}>
-          <Link href="/sarkari" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }}>← Sarkari Naukri</Link>
+          <Link href="/exam-portal" style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }}>← Exam Portal</Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
             <span style={{ fontSize: 32 }}>{TYPE_ICONS[item.type]}</span>
             <div>
@@ -193,8 +193,8 @@ export default async function ExamPortalDetailPage({ params }: { params: { id: s
         </div>
 
         {/* Back Button */}
-        <Link href="/sarkari" style={{ display: 'inline-block', background: '#1B5E20', color: 'white', padding: '10px 20px', borderRadius: 6, textDecoration: 'none', fontWeight: 600 }}>
-          ← Back to Sarkari Naukri
+        <Link href="/exam-portal" style={{ display: 'inline-block', background: '#1B5E20', color: 'white', padding: '10px 20px', borderRadius: 6, textDecoration: 'none', fontWeight: 600 }}>
+          ← Back to Exam Portal
         </Link>
       </main>
 
