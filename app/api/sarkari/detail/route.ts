@@ -19,62 +19,28 @@ async function fetchFromRapidAPI(jobId: string, apiKey: string) {
       cache: 'no-store',
     })
 
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.error('RapidAPI error:', res.status, res.statusText)
+      return null
+    }
     return await res.json()
   } catch (err) {
-    console.error('RapidAPI error:', err)
+    console.error('RapidAPI fetch error:', err)
     return null
   }
 }
 
-async function searchExternalSources(title: string, org: string) {
-  try {
-    // Search for official job details from government portals
-    const searchQueries = [
-      `${title} ${org} official notification eligibility`,
-      `${org} recruitment ${title} salary qualification`,
-      `${title} government job age limit experience`,
-    ]
-
-    const results: string[] = []
-    
-    for (const query of searchQueries) {
-      try {
-        const res = await fetch(
-          `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-          { headers: { 'User-Agent': 'Mozilla/5.0' } }
-        )
-        if (res.ok) {
-          const text = await res.text()
-          // Extract relevant snippets (basic parsing)
-          const snippets = text.match(/(?:<span[^>]*>|>)([^<]*(?:eligibility|qualification|age|salary|experience)[^<]*)/gi) || []
-          results.push(...snippets.slice(0, 3))
-        }
-      } catch (err) {
-        console.error('Search error:', err)
-      }
-    }
-
-    return results.join(' ')
-  } catch (err) {
-    console.error('External search error:', err)
-    return ''
-  }
-}
-
-async function analyzeWithGroqAI(basicData: any, externalInfo: string, groqApiKey: string) {
+async function analyzeWithGroqAI(basicData: any, groqApiKey: string) {
   try {
     const prompt = `Analyze and structure this job notification data into a comprehensive format:
 
 Job Title: ${basicData.title}
 Organization: ${basicData.organization}
 Type: ${basicData.type}
-Basic Info: ${JSON.stringify(basicData)}
-External Info Found: ${externalInfo}
 
 Please provide a structured JSON response with:
 1. overview: A 2-3 sentence summary of the job
-2. totalVacancy: Number of posts
+2. totalVacancy: Number of posts (if available)
 3. salary: Salary/pay scale details
 4. eligibility: {education, age, experience}
 5. importantDates: {notificationDate, applicationStart, lastDate, examDate, resultDate}
@@ -83,7 +49,7 @@ Please provide a structured JSON response with:
 8. howToApply: Array of application steps
 9. additionalInfo: Any other relevant information
 
-Return ONLY valid JSON, no markdown or extra text.`
+Return ONLY valid JSON, no markdown or extra text. If information is not available, use empty strings or empty arrays.`
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -95,7 +61,7 @@ Return ONLY valid JSON, no markdown or extra text.`
         model: 'mixtral-8x7b-32768',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
-        max_tokens: 2000,
+        max_tokens: 1500,
       }),
     })
 
@@ -135,47 +101,47 @@ export async function POST(req: NextRequest) {
   const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY
   const GROQ_API_KEY = process.env.GROQ_API_KEY
 
-  if (!RAPIDAPI_KEY || !GROQ_API_KEY) {
-    return NextResponse.json(
-      { error: 'API keys not configured' },
-      { status: 503 }
-    )
-  }
-
   try {
-    // Step 1: Fetch from RapidAPI
-    const rapidData = await fetchFromRapidAPI(jobId, RAPIDAPI_KEY)
-
-    // Step 2: Search external sources
-    const externalInfo = await searchExternalSources(title, org)
-
-    // Step 3: Prepare basic data
+    // Step 1: Prepare basic data
     const basicData = {
-      title: rapidData?.title || title,
-      organization: rapidData?.organization || org,
-      type: rapidData?.type || type,
-      description: rapidData?.description || rapidData?.overview || '',
-      ...rapidData,
+      title: title || 'Job Notification',
+      organization: org || 'Government Organization',
+      type: type || 'jobs',
+      description: '',
     }
 
-    // Step 4: Use Groq AI to analyze and structure
-    const aiAnalysis = await analyzeWithGroqAI(basicData, externalInfo, GROQ_API_KEY)
+    // Step 2: Try to fetch from RapidAPI (optional, may fail)
+    let rapidData = null
+    if (RAPIDAPI_KEY) {
+      rapidData = await fetchFromRapidAPI(jobId, RAPIDAPI_KEY)
+      if (rapidData) {
+        basicData.title = rapidData.title || basicData.title
+        basicData.organization = rapidData.organization || basicData.organization
+        basicData.description = rapidData.description || rapidData.overview || ''
+      }
+    }
 
-    // Step 5: Merge and normalize
+    // Step 3: Use Groq AI to analyze and structure (if available)
+    let aiAnalysis = null
+    if (GROQ_API_KEY) {
+      aiAnalysis = await analyzeWithGroqAI(basicData, GROQ_API_KEY)
+    }
+
+    // Step 4: Merge and normalize
     const detail = {
       id: jobId,
       title: aiAnalysis?.title || basicData.title,
       organization: aiAnalysis?.organization || basicData.organization,
       type: aiAnalysis?.type || basicData.type,
-      overview: aiAnalysis?.overview || basicData.description || '',
+      overview: aiAnalysis?.overview || basicData.description || 'Government job notification. Please visit the official website for complete details.',
       
       totalVacancy: aiAnalysis?.totalVacancy || rapidData?.totalVacancy || rapidData?.vacancy || '',
-      salary: aiAnalysis?.salary || rapidData?.salary || rapidData?.salaryText || '',
+      salary: aiAnalysis?.salary || rapidData?.salary || rapidData?.salaryText || 'As per government norms',
       officialWebsite: rapidData?.officialWebsite || rapidData?.website || rapidData?.link || '',
       
       eligibility: {
-        education: aiAnalysis?.eligibility?.education || rapidData?.qualification || '',
-        age: aiAnalysis?.eligibility?.age || rapidData?.ageLimit || '',
+        education: aiAnalysis?.eligibility?.education || rapidData?.qualification || 'Check official notification',
+        age: aiAnalysis?.eligibility?.age || rapidData?.ageLimit || 'Check official notification',
         experience: aiAnalysis?.eligibility?.experience || '',
       },
       
@@ -188,21 +154,21 @@ export async function POST(req: NextRequest) {
       },
       
       applicationFee: {
-        general: aiAnalysis?.applicationFee?.general || rapidData?.fee?.general || '',
-        scSt: aiAnalysis?.applicationFee?.scSt || rapidData?.fee?.scSt || '',
+        general: aiAnalysis?.applicationFee?.general || rapidData?.fee?.general || 'Check official notification',
+        scSt: aiAnalysis?.applicationFee?.scSt || rapidData?.fee?.scSt || 'Check official notification',
         paymentMode: aiAnalysis?.applicationFee?.paymentMode || rapidData?.fee?.paymentMode || '',
       },
       
-      selectionProcess: aiAnalysis?.selectionProcess || rapidData?.selectionProcess || [],
-      howToApply: aiAnalysis?.howToApply || rapidData?.howToApply || [],
-      additionalInfo: aiAnalysis?.additionalInfo || rapidData?.notes || '',
+      selectionProcess: aiAnalysis?.selectionProcess || rapidData?.selectionProcess || ['Check official notification for selection process'],
+      howToApply: aiAnalysis?.howToApply || rapidData?.howToApply || ['Visit official website', 'Fill online application form', 'Submit required documents'],
+      additionalInfo: aiAnalysis?.additionalInfo || rapidData?.notes || 'For more details, visit the official website',
     }
 
     // Cache the result
     cache[cacheKey] = { data: detail, ts: Date.now() }
 
     return NextResponse.json(
-      { detail, cached: false, aiEnhanced: !!aiAnalysis },
+      { detail, cached: false, aiEnhanced: !!aiAnalysis, rapidDataAvailable: !!rapidData },
       { headers: { 'X-Cache': 'MISS', 'Cache-Control': 'public, max-age=18000' } }
     )
   } catch (err: any) {
@@ -216,6 +182,41 @@ export async function POST(req: NextRequest) {
       )
     }
     
-    return NextResponse.json({ error: err.message }, { status: 502 })
+    // Return basic fallback data
+    const fallbackDetail = {
+      id: jobId,
+      title: title || 'Job Notification',
+      organization: org || 'Government Organization',
+      type: type || 'jobs',
+      overview: 'Government job notification. Please visit the official website for complete details.',
+      totalVacancy: '',
+      salary: 'As per government norms',
+      officialWebsite: '',
+      eligibility: {
+        education: 'Check official notification',
+        age: 'Check official notification',
+        experience: '',
+      },
+      importantDates: {
+        notificationDate: '',
+        applicationStart: '',
+        lastDate: '',
+        examDate: '',
+        resultDate: '',
+      },
+      applicationFee: {
+        general: 'Check official notification',
+        scSt: 'Check official notification',
+        paymentMode: '',
+      },
+      selectionProcess: ['Check official notification for selection process'],
+      howToApply: ['Visit official website', 'Fill online application form', 'Submit required documents'],
+      additionalInfo: 'For more details, visit the official website',
+    }
+    
+    return NextResponse.json(
+      { detail: fallbackDetail, error: 'Using fallback data - API unavailable' },
+      { status: 200 }
+    )
   }
 }
