@@ -85,18 +85,13 @@ export default async function HomePage({ searchParams }: any) {
         </div>
       </header>
 
-      {/* ── CATEGORY BUTTONS NAV — 3 portals only ── */}
+      {/* ── CATEGORY BUTTONS NAV — 2 portals only ── */}
       <div style={{ background: 'white', borderBottom: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '10px 20px', display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'thin', alignItems: 'center', WebkitOverflowScrolling: 'touch' }}>
           <Link href="/cricket" style={{ textDecoration: 'none', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(27,94,32,0.35)' }}>
               🏏 Cricket Live
               <span style={{ background: 'rgba(255,255,255,0.25)', padding: '1px 7px', borderRadius: 8, fontSize: 9, letterSpacing: 1, fontFamily: 'JetBrains Mono, monospace' }}>LIVE</span>
-            </div>
-          </Link>
-          <Link href="/exam-portal" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 22px', borderRadius: 24, background: 'linear-gradient(135deg,#E65100,#F57C00)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(230,81,0,0.35)' }}>
-              🏛 Exam Portal
             </div>
           </Link>
           <Link href="/feed/education" style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -284,9 +279,8 @@ export default async function HomePage({ searchParams }: any) {
               {/* Quick Links */}
               <div style={{ background: 'white', borderRadius: 12, padding: '18px 16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', marginBottom: 20, border: '1px solid #E5E7EB' }}>
                 <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 700, color: '#0D1B2A', marginBottom: 14 }}>Quick Links</h3>
-                {[
+              {[
                   { label: '🏏 Cricket Live Scores', href: '/cricket', color: '#1B5E20' },
-                  { label: '🏛 Exam Portal 2026', href: '/exam-portal', color: '#E65100' },
                   { label: '🎓 Education News', href: '/?category=Education', color: '#283593' },
                   { label: '📧 Contact Us', href: '/contact', color: '#1565C0' },
                   { label: 'ℹ About NewsFlash', href: '/about', color: '#888' },
@@ -328,7 +322,6 @@ export default async function HomePage({ searchParams }: any) {
             <div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: '#D4A017', marginBottom: 16, fontWeight: 700 }}>Portals</div>
               <Link href="/cricket" className="footer-link">🏏 Cricket Live</Link>
-              <Link href="/exam-portal" className="footer-link">🏛 Exam Portal</Link>
               <Link href="/?category=Education" className="footer-link">🎓 Education</Link>
               <Link href="/sitemap.xml" className="footer-link">🗺 Sitemap</Link>
             </div>
