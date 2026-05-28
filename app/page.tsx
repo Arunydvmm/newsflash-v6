@@ -5,12 +5,13 @@ import Article from './models/Article'
 import { LoadingBar, WelcomePopup, HeroSlider, ArticleCard, CategoryButton } from './components/HomeClient'
 import DarkModeToggle from './components/DarkModeToggle'
 import PortalCards from './components/PortalCards'
+import InteractiveNav from './components/InteractiveNav'
+import PortalNav from './components/PortalNav'
 import ScrollReveal from './components/ScrollReveal'
 import CricketNewsWidget from './components/CricketNewsWidget'
 import LiveDashboard from './components/LiveDashboard'
 import NewsFeedWidget from './components/NewsFeedWidget'
 import WeatherWidget from './components/WeatherWidget'
-import ISTClock from './components/ISTClock'
 import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
 import AdSlotServer from './components/AdSlotServer'
@@ -56,19 +57,7 @@ export default async function HomePage({ searchParams }: any) {
       <WelcomePopup />
 
       {/* ── TOP BAR — Date, Time, Navigation ── */}
-      <div style={{ background: '#1A1A1A', color: '#999', fontSize: 11, padding: '8px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'JetBrains Mono, monospace', borderBottom: '1px solid #333' }}>
-        <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-          <ISTClock />
-          <span style={{ color: '#C62828', fontWeight: 700 }}>NEWSFLASH IST</span>
-        </div>
-        <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-          {['Home', 'World', 'Business', 'Tech', 'Sports'].map(c => (
-            <Link key={c} href={`/?category=${c}`} style={{ color: '#999', textDecoration: 'none', fontSize: 10, transition: 'color 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')} onMouseLeave={(e) => (e.currentTarget.style.color = '#999')}>
-              {c}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <InteractiveNav />
 
       {/* ── HEADER — Logo, Search, Dark Mode ── */}
       <header style={{ background: 'white', borderBottom: '2px solid #0D1B2A', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', padding: '12px 20px' }}>
@@ -90,28 +79,7 @@ export default async function HomePage({ searchParams }: any) {
       </header>
 
       {/* ── PORTAL BUTTONS — Cricket, Sarkari, Education ── */}
-      <div style={{ background: 'white', borderBottom: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: '12px 20px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/cricket" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24, background: 'linear-gradient(135deg,#1B5E20,#2E7D32)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(27,94,32,0.35)', transition: 'all 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')} onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
-              🏏 Cricket Live
-              <span style={{ background: 'rgba(255,255,255,0.3)', padding: '2px 8px', borderRadius: 6, fontSize: 9, letterSpacing: 1, fontFamily: 'JetBrains Mono, monospace', fontWeight: 700 }}>LIVE</span>
-            </div>
-          </Link>
-
-          <Link href="/exam-portal" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24, background: 'linear-gradient(135deg,#E65100,#F57C00)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(230,81,0,0.35)', transition: 'all 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')} onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
-              🏛 Sarkari Naukri
-            </div>
-          </Link>
-
-          <Link href="/feed/education" style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 24, background: 'linear-gradient(135deg,#283593,#3949AB)', color: 'white', fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 14px rgba(40,53,147,0.35)', transition: 'all 0.2s' }} onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-2px)')} onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}>
-              🎓 Education
-            </div>
-          </Link>
-        </div>
-      </div>
+      <PortalNav />
 
       {/* ── BREAKING TICKER ── */}
       <div style={{ display: 'flex', overflow: 'hidden', alignItems: 'center', background: 'linear-gradient(90deg,#C62828,#B71C1C)' }}>
