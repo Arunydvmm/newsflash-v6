@@ -15,7 +15,7 @@ export default function AboutPage() {
           <Link href="/" style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 900, color: '#0D1B2A', textDecoration: 'none' }}>
             NEWS<span style={{ color: '#C62828' }}>FLASH</span>
           </Link>
-          <Link href="/" style={{ fontSize: 12, color: '#888', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace' }}>← Back to Home</Link>
+          <Link href="/" style={{ fontSize: 12, color: '#333333', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace' }}>← Back to Home</Link>
         </div>
       </header>
 

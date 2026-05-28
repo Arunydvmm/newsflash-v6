@@ -55,7 +55,7 @@ export default function StaffArticlesPage() {
                       {a.status === 'pending_review' ? 'Pending Review' : a.status}
                     </span>
                   </td>
-                  <td style={{ padding: '10px 16px', fontSize: 12, color: '#888', fontFamily: 'JetBrains Mono, monospace' }}>{(a.views || 0).toLocaleString('en-IN')}</td>
+                  <td style={{ padding: '10px 16px', fontSize: 12, color: '#555555', fontFamily: 'JetBrains Mono, monospace' }}>{(a.views || 0).toLocaleString('en-IN')}</td>
                   <td style={{ padding: '10px 16px', fontSize: 11, color: '#aaa', fontFamily: 'JetBrains Mono, monospace' }}>{fmt(a.createdAt)}</td>
                   <td style={{ padding: '10px 16px' }}>
                     <div style={{ display: 'flex', gap: 6 }}>

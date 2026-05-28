@@ -36,7 +36,7 @@ export default function ContactPage() {
           <Link href="/" style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, fontWeight: 900, color: '#1A1A1A', textDecoration: 'none' }}>
             NEWS<span style={{ color: '#C62828' }}>FLASH</span>
           </Link>
-          <Link href="/" style={{ fontSize: 12, color: '#888', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace' }}>← Back to Home</Link>
+          <Link href="/" style={{ fontSize: 12, color: '#333333', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace' }}>← Back to Home</Link>
         </div>
       </header>
 
@@ -63,22 +63,22 @@ export default function ContactPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <div>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#444', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Name *</label>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#333333', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Name *</label>
                 <input name="name" value={form.name} onChange={set} required placeholder="Your full name" style={inp} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#444', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Email *</label>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#333333', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Email *</label>
                 <input name="email" type="email" value={form.email} onChange={set} required placeholder="your@email.com" style={inp} />
               </div>
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#444', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Subject *</label>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#333333', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Subject *</label>
               <input name="subject" value={form.subject} onChange={set} required placeholder="What's this about?" style={inp} />
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#444', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Message *</label>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#333333', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 0.5, textTransform: 'uppercase' }}>Message *</label>
               <textarea name="message" value={form.message} onChange={set} required placeholder="Your message..." rows={6} style={{ ...inp, resize: 'vertical' }} />
             </div>
 

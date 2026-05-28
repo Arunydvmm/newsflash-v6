@@ -21,7 +21,7 @@ export default function StaffEditArticlePage() {
       <div style={{ padding: 28 }}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>Edit Article</h1>
-          <p style={{ color: '#888', fontSize: 12, marginTop: 4, fontFamily: 'JetBrains Mono, monospace' }}>Changes will be submitted for review</p>
+          <p style={{ color: '#555555', fontSize: 12, marginTop: 4, fontFamily: 'JetBrains Mono, monospace' }}>Changes will be submitted for review</p>
         </div>
         {loading ? (
           <div style={{ padding: 60, textAlign: 'center', color: '#aaa', fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>Loading...</div>

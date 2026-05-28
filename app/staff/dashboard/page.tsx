@@ -35,7 +35,7 @@ export default function StaffDashboardPage() {
           <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A', margin: 0 }}>
             Welcome, {employee?.name || '...'}
           </h1>
-          <p style={{ color: '#666666', fontSize: 12, marginTop: 4, fontFamily: 'JetBrains Mono, monospace' }}>
+          <p style={{ color: '#555555', fontSize: 12, marginTop: 4, fontFamily: 'JetBrains Mono, monospace' }}>
             Role: {employee?.role} · {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
@@ -43,7 +43,7 @@ export default function StaffDashboardPage() {
         {/* Permissions */}
         {employee?.permissions && (
           <div style={{ background: 'white', borderRadius: 6, padding: 16, marginBottom: 20, border: '1px solid #E8E8E4' }}>
-            <div style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1, textTransform: 'uppercase', color: '#666666', marginBottom: 10 }}>Your Permissions</div>
+            <div style={{ fontSize: 11, fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1, textTransform: 'uppercase', color: '#555555', marginBottom: 10 }}>Your Permissions</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {Object.entries(employee.permissions).filter(([, v]) => v).map(([k]) => (
                 <span key={k} style={{ background: '#E8F5E9', color: '#1B5E20', padding: '3px 10px', borderRadius: 3, fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }}>
@@ -86,7 +86,7 @@ export default function StaffDashboardPage() {
               <thead>
                 <tr style={{ background: '#F8F8F6' }}>
                   {['Title','Category','Status','Date'].map(h => (
-                    <th key={h} style={{ padding: '8px 16px', textAlign: 'left', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1, textTransform: 'uppercase', color: '#666666', fontWeight: 600 }}>{h}</th>
+                    <th key={h} style={{ padding: '8px 16px', textAlign: 'left', fontSize: 10, fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1, textTransform: 'uppercase', color: '#555555', fontWeight: 600 }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -97,7 +97,7 @@ export default function StaffDashboardPage() {
                       <div style={{ fontSize: 13, fontWeight: 500, color: '#0D1B2A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</div>
                     </td>
                     <td style={{ padding: '10px 16px' }}>
-                      <span style={{ background: '#F0EFE8', padding: '2px 8px', borderRadius: 2, fontSize: 10, fontFamily: 'JetBrains Mono, monospace', color: '#666' }}>{a.category}</span>
+                      <span style={{ background: '#F0EFE8', padding: '2px 8px', borderRadius: 2, fontSize: 10, fontFamily: 'JetBrains Mono, monospace', color: '#333333' }}>{a.category}</span>
                     </td>
                     <td style={{ padding: '10px 16px' }}>
                       <span style={{ background: STATUS_COLORS[a.status] + '20', color: STATUS_COLORS[a.status], padding: '2px 8px', borderRadius: 2, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}>

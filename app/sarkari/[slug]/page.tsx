@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
 const CAT_COLORS: Record<string, string> = {
   Railway: '#1565C0', SSC: '#6A1B9A', UPSC: '#C62828', Police: '#1B5E20',
   Defence: '#0D1B2A', Bank: '#D4A017', Teaching: '#E65100', State: '#2E7D32',
-  PSU: '#1565C0', Internship: '#00838F', Private: '#555', Other: '#888',
+  PSU: '#1565C0', Internship: '#00838F', Private: '#333333', Other: '#555555',
 }
 
 export default async function SarkariJobPage({ params }: any) {
@@ -73,7 +73,7 @@ export default async function SarkariJobPage({ params }: any) {
             <div style={{ background: 'white', borderRadius: 8, padding: 24, marginBottom: 16, border: '1px solid #E8E8E4', borderTop: `4px solid ${CAT_COLORS[job.category] || '#888'}` }}>
               <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
                 <span style={{ background: CAT_COLORS[job.category] || '#888', color: 'white', padding: '3px 10px', borderRadius: 3, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}>{job.category}</span>
-                {job.state !== 'All India' && <span style={{ background: '#F0F0EC', color: '#666', padding: '3px 10px', borderRadius: 3, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}>{job.state}</span>}
+                {job.state !== 'All India' && <span style={{ background: '#F0F0EC', color: '#333333', padding: '3px 10px', borderRadius: 3, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}>{job.state}</span>}
                 {job.isExpired && <span style={{ background: '#FFEBEE', color: '#C62828', padding: '3px 10px', borderRadius: 3, fontSize: 10, fontFamily: 'JetBrains Mono, monospace' }}>EXPIRED</span>}
               </div>
               <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 26, fontWeight: 700, color: '#0D1B2A', marginBottom: 6, lineHeight: 1.3 }}>{job.title}</h1>
@@ -109,7 +109,7 @@ export default async function SarkariJobPage({ params }: any) {
                     { label: 'Result Date', value: fmt(job.importantDates?.resultDate) },
                   ].map(r => (
                     <tr key={r.label} style={{ borderBottom: '1px solid #F0F0EC' }}>
-                      <td style={{ padding: '10px 0', fontSize: 13, color: '#555', width: '50%' }}>{r.label}</td>
+                      <td style={{ padding: '10px 0', fontSize: 13, color: '#333333', width: '50%' }}>{r.label}</td>
                       <td style={{ padding: '10px 0', fontSize: 13, fontWeight: r.highlight ? 700 : 500, color: r.highlight ? '#C62828' : '#0D1B2A' }}>{r.value}</td>
                     </tr>
                   ))}

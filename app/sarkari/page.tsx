@@ -51,7 +51,7 @@ export default async function SarkariPage() {
       {items.length === 0 ? (
         <div style={{ background: 'white', borderRadius: 8, padding: 40, textAlign: 'center', border: '1px solid #E8E8E4' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
-          <div style={{ fontSize: 14, color: '#666666' }}>No items available</div>
+          <div style={{ fontSize: 14, color: '#333333' }}>No items available</div>
         </div>
       ) : (
         <div style={{ background: 'white', borderRadius: 8, overflow: 'auto', border: '1px solid #E8E8E4' }}>
@@ -86,14 +86,14 @@ export default async function SarkariPage() {
                         {item.title}
                       </Link>
                     </td>
-                    <td style={{ padding: '14px 16px', fontSize: 13, color: '#666666', minWidth: '150px' }}>{item.organization}</td>
+                    <td style={{ padding: '14px 16px', fontSize: 13, color: '#333333', minWidth: '150px' }}>{item.organization}</td>
                     {type === 'vacancy' ? (
                       <>
-                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#666666', textAlign: 'center', minWidth: '80px' }}>{item.totalVacancy || '—'}</td>
-                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#666666', minWidth: '120px' }}>{item.salaryText || '—'}</td>
+                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#333333', textAlign: 'center', minWidth: '80px' }}>{item.totalVacancy || '—'}</td>
+                        <td style={{ padding: '14px 16px', fontSize: 13, color: '#333333', minWidth: '120px' }}>{item.salaryText || '—'}</td>
                       </>
                     ) : (
-                      <td style={{ padding: '14px 16px', fontSize: 13, color: '#666666', minWidth: '100px' }}>{item.category || '—'}</td>
+                      <td style={{ padding: '14px 16px', fontSize: 13, color: '#333333', minWidth: '100px' }}>{item.category || '—'}</td>
                     )}
                     <td style={{ padding: '14px 16px', fontSize: 13, fontFamily: 'JetBrains Mono, monospace', textAlign: 'center', minWidth: '120px' }}>
                       <div style={{ fontWeight: 600, color: '#0D1B2A' }}>{fmt(item.importantDates?.lastDate || item.importantDates?.registrationEnd || item.importantDates?.admitCardDate || item.importantDates?.answerKeyDate || item.importantDates?.resultDate)}</div>

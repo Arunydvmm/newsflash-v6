@@ -29,9 +29,9 @@ export default function ISTClock() {
   if (!time) return null
 
   return (
-    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#6A8099', display: 'flex', alignItems: 'center', gap: 6 }}>
+    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#555555', display: 'flex', alignItems: 'center', gap: 6 }}>
       <span>{date}</span>
-      <span style={{ color: '#4A6080' }}>·</span>
+      <span style={{ color: '#999999' }}>·</span>
       <span style={{ color: '#D4A017', fontWeight: 600 }}>{time}</span>
       <span style={{ color: '#4A6080' }}>IST</span>
     </span>
