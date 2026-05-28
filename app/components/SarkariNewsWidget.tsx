@@ -23,6 +23,7 @@ export default function SarkariNewsWidget() {
   }
 
   return (
+    <>
     <div style={{ background: 'white', borderRadius: 12, border: '1px solid #E5E7EB', overflow: 'hidden', marginBottom: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#E65100,#F57C00)', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -74,6 +75,6 @@ export default function SarkariNewsWidget() {
           View All Jobs →
         </Link>
       </div>
-    </div>
+    </>
   )
 }

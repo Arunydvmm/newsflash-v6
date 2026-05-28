@@ -255,12 +255,12 @@ export default async function ArticlePage({ params }: Props) {
                 { label:'Facebook', color:'#1877F2', href:`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL+'/article/'+a.slug)}` },
                 { label:'LinkedIn', color:'#0A66C2', href:`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL+'/article/'+a.slug)}` },
               ].map(s => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                  style={{ background:s.color, color:'white', padding:'10px 16px', fontFamily:'JetBrains Mono, monospace', fontSize:12, letterSpacing:0.5, textDecoration:'none', borderRadius:4, textTransform:'uppercase', fontWeight: 600, transition: 'opacity 0.2s', cursor: 'pointer' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}>
-                  {s.label}
-                </a>
+                <div key={s.label}>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer"
+                    style={{ background:s.color, color:'white', padding:'10px 16px', fontFamily:'JetBrains Mono, monospace', fontSize:12, letterSpacing:0.5, textDecoration:'none', borderRadius:4, textTransform:'uppercase', fontWeight: 600, transition: 'opacity 0.2s', cursor: 'pointer', display: 'inline-block' }}>
+                    {s.label}
+                  </a>
+                </div>
               ))}
             </div>
           </div>
@@ -285,9 +285,7 @@ export default async function ArticlePage({ params }: Props) {
               <div className="rel-grid">
                 {related.map(r => (
                   <Link key={String(r._id)} href={`/article/${r.slug}`} style={{ textDecoration:'none', color:'inherit' }}>
-                    <div style={{ aspectRatio:'16/9', background:'linear-gradient(135deg,#E0E0E0,#D0D0D0)', borderRadius:8, marginBottom:12, overflow:'hidden', cursor: 'pointer', transition: 'transform 0.3s' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}>
+                    <div style={{ aspectRatio:'16/9', background:'linear-gradient(135deg,#E0E0E0,#D0D0D0)', borderRadius:8, marginBottom:12, overflow:'hidden', cursor: 'pointer', transition: 'transform 0.3s' }}>
                       {r.featuredImage && <img src={r.featuredImage} alt={r.title} style={{ width:'100%', height:'100%', objectFit:'cover' }} />}
                     </div>
                     <h4 style={{ fontFamily:'Playfair Display, serif', fontSize:16, fontWeight:700, lineHeight:1.4, color:'#0D1B2A', marginBottom: 8 }}>{r.title}</h4>
@@ -311,12 +309,12 @@ export default async function ArticlePage({ params }: Props) {
             <div style={{ background: 'white', borderRadius: 8, padding: 24, border: '1px solid #E5E5E5' }}>
               <div style={{ fontFamily:'Playfair Display, serif', fontSize:16, fontWeight:700, color:'#0D1B2A', marginBottom:20 }}>More from {a.category}</div>
               {related.map((r, idx) => (
-                <Link key={String(r._id)} href={`/article/${r.slug}`} style={{ display:'block', padding:`12px 0 ${idx < related.length - 1 ? '12px' : '0'}`, borderBottom: idx < related.length - 1 ? '1px solid #E5E5E5' : 'none', textDecoration:'none', transition: 'color 0.2s' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#C62828'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'inherit'}>
-                  <div style={{ fontSize:13, fontWeight:600, color:'#0D1B2A', lineHeight:1.4 }}>{r.title}</div>
-                  <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, color:'#999', marginTop:6 }}>{fmt(r.createdAt)}</div>
-                </Link>
+                <div key={String(r._id)}>
+                  <Link href={`/article/${r.slug}`} style={{ display:'block', padding:`12px 0 ${idx < related.length - 1 ? '12px' : '0'}`, borderBottom: idx < related.length - 1 ? '1px solid #E5E5E5' : 'none', textDecoration:'none', transition: 'color 0.2s' }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:'#0D1B2A', lineHeight:1.4 }}>{r.title}</div>
+                    <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, color:'#999', marginTop:6 }}>{fmt(r.createdAt)}</div>
+                  </Link>
+                </div>
               ))}
             </div>
           </div>
@@ -334,19 +332,34 @@ export default async function ArticlePage({ params }: Props) {
             <div>
               <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing: 1.5, textTransform: 'uppercase', color: '#C62828', marginBottom: 12, fontWeight: 700 }}>Sections</div>
               {['India', 'World', 'Business', 'Technology'].map(c => (
-                <Link key={c} href={`/?category=${c}`} style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s' }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#C62828'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#888'}>{c}</Link>
+                <div key={c}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#C62828')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#888')}
+                  style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>
+                  <Link href={`/?category=${c}`} style={{ display: 'block', fontSize: 13, color: 'inherit', textDecoration: 'none' }}>{c}</Link>
+                </div>
               ))}
             </div>
             <div>
               <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing: 1.5, textTransform: 'uppercase', color: '#C62828', marginBottom: 12, fontWeight: 700 }}>Portals</div>
               {[['Cricket', '/cricket'], ['Sarkari', '/sarkari']].map(([l, h]) => (
-                <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s' }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#C62828'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#888'}>{l}</Link>
+                <div key={l}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#C62828')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#888')}
+                  style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>
+                  <Link href={h} style={{ display: 'block', fontSize: 13, color: 'inherit', textDecoration: 'none' }}>{l}</Link>
+                </div>
               ))}
             </div>
             <div>
               <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing: 1.5, textTransform: 'uppercase', color: '#C62828', marginBottom: 12, fontWeight: 700 }}>Company</div>
               {[['About', '/about'], ['Contact', '/contact'], ['Privacy', '/privacy-policy']].map(([l, h]) => (
-                <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s' }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#C62828'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#888'}>{l}</Link>
+                <div key={l}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#C62828')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#888')}
+                  style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>
+                  <Link href={h} style={{ display: 'block', fontSize: 13, color: 'inherit', textDecoration: 'none' }}>{l}</Link>
+                </div>
               ))}
             </div>
           </div>
