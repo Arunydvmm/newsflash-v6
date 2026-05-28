@@ -332,34 +332,19 @@ export default async function ArticlePage({ params }: Props) {
             <div>
               <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing: 1.5, textTransform: 'uppercase', color: '#C62828', marginBottom: 12, fontWeight: 700 }}>Sections</div>
               {['India', 'World', 'Business', 'Technology'].map(c => (
-                <div key={c}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#C62828')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#888')}
-                  style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>
-                  <Link href={`/?category=${c}`} style={{ display: 'block', fontSize: 13, color: 'inherit', textDecoration: 'none' }}>{c}</Link>
-                </div>
+                <Link key={c} href={`/?category=${c}`} style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>{c}</Link>
               ))}
             </div>
             <div>
               <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing: 1.5, textTransform: 'uppercase', color: '#C62828', marginBottom: 12, fontWeight: 700 }}>Portals</div>
               {[['Cricket', '/cricket'], ['Sarkari', '/sarkari']].map(([l, h]) => (
-                <div key={l}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#C62828')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#888')}
-                  style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>
-                  <Link href={h} style={{ display: 'block', fontSize: 13, color: 'inherit', textDecoration: 'none' }}>{l}</Link>
-                </div>
+                <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>{l}</Link>
               ))}
             </div>
             <div>
               <div style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, letterSpacing: 1.5, textTransform: 'uppercase', color: '#C62828', marginBottom: 12, fontWeight: 700 }}>Company</div>
               {[['About', '/about'], ['Contact', '/contact'], ['Privacy', '/privacy-policy']].map(([l, h]) => (
-                <div key={l}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#C62828')}
-                  onMouseLeave={e => (e.currentTarget.style.color = '#888')}
-                  style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>
-                  <Link href={h} style={{ display: 'block', fontSize: 13, color: 'inherit', textDecoration: 'none' }}>{l}</Link>
-                </div>
+                <Link key={l} href={h} style={{ display: 'block', fontSize: 13, color: '#888', textDecoration: 'none', marginBottom: 8, transition: 'color 0.2s', cursor: 'pointer' }}>{l}</Link>
               ))}
             </div>
           </div>
