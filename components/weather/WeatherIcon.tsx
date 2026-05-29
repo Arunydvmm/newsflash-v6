@@ -17,21 +17,21 @@ export function WeatherIcon({ name, className = 'w-20 h-20' }: WeatherIconProps)
   const sunVariants = {
     animate: {
       rotate: 360,
-      transition: { duration: 25, repeat: Infinity, ease: 'linear' },
+      transition: { duration: 25, repeat: Infinity, ease: 'linear' as const },
     },
   };
 
   const rainBreakVariants = {
     animate: {
       y: [0, 4, 0],
-      transition: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' },
+      transition: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' as const },
     },
   };
 
   const cloudVariants = {
     animate: {
       x: [-2, 2, -2],
-      transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+      transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' as const },
     },
   };
 
