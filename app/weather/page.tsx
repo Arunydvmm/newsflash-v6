@@ -50,13 +50,14 @@ export default function WeatherPage() {
       const res = await fetch('/api/weather')
       if (res.ok) {
         const ipLocation = await res.json()
-        fetchWeather(ipLocation.lat, ipLocation.lon, ipLocation.city)
+        const cityName = ipLocation.city || ipLocation.region || 'Your Location'
+        fetchWeather(ipLocation.lat, ipLocation.lon, cityName)
       } else {
-        fetchWeather(20.5937, 78.9629, 'India')
+        fetchWeather(20.5937, 78.9629, 'Your Location')
       }
     } catch (err) {
       console.error('IP location error:', err)
-      fetchWeather(20.5937, 78.9629, 'India')
+      fetchWeather(20.5937, 78.9629, 'Your Location')
     }
   }
 
@@ -145,31 +146,31 @@ export default function WeatherPage() {
       {/* Main Content */}
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
         {/* Current Weather Card */}
-        <div style={{ background: 'linear-gradient(135deg,#1565C0,#0D47A1)', borderRadius: 16, padding: '32px', color: 'white', marginBottom: 32, boxShadow: '0 8px 32px rgba(21,101,192,0.3)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'center' }}>
+        <div style={{ background: 'linear-gradient(135deg,#1565C0,#0D47A1)', borderRadius: 16, padding: 'clamp(16px, 5vw, 32px)', color: 'white', marginBottom: 32, boxShadow: '0 8px 32px rgba(21,101,192,0.3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'clamp(1fr, 100%, 1fr 1fr)', gap: 'clamp(16px, 4vw, 32px)', alignItems: 'center' }}>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: 1, textTransform: 'uppercase', opacity: 0.8, marginBottom: 8 }}>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 'clamp(10px, 2vw, 12px)', letterSpacing: 1, textTransform: 'uppercase', opacity: 0.8, marginBottom: 8 }}>
                 📍 Current Location
               </div>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 48, fontWeight: 900, marginBottom: 8, wordBreak: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(28px, 6vw, 48px)', fontWeight: 900, marginBottom: 8, wordBreak: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {location}
               </div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, opacity: 0.7, marginBottom: 16, wordBreak: 'break-word' }}>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 'clamp(9px, 1.5vw, 11px)', opacity: 0.7, marginBottom: 16, wordBreak: 'break-word' }}>
                 Lat: {lat.toFixed(4)}° | Lon: {lon.toFixed(4)}°
               </div>
-              <div style={{ fontSize: 18, opacity: 0.9, marginBottom: 16, wordBreak: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: 'clamp(14px, 3vw, 18px)', opacity: 0.9, marginBottom: 16, wordBreak: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {current.condition}
               </div>
             </div>
 
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 96, marginBottom: 16 }}>
+              <div style={{ fontSize: 'clamp(60px, 12vw, 96px)', marginBottom: 16 }}>
                 {icon}
               </div>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 64, fontWeight: 900 }}>
+              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(40px, 10vw, 64px)', fontWeight: 900 }}>
                 {Math.round(current.temperature)}°C
               </div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, opacity: 0.8, marginTop: 8 }}>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 'clamp(10px, 2vw, 12px)', opacity: 0.8, marginTop: 8 }}>
                 Feels like {Math.round(current.feelsLike)}°C
               </div>
             </div>
@@ -182,7 +183,7 @@ export default function WeatherPage() {
             <span style={{ width: 4, height: 24, background: 'linear-gradient(180deg,#1565C0,#0D47A1)', borderRadius: 2 }} />
             Detailed Metrics
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(150px, 40vw, 200px), 1fr))', gap: 'clamp(12px, 3vw, 16px)' }}>
             {[
               { label: 'Temperature', value: `${Math.round(current.temperature)}°C`, icon: '🌡️' },
               { label: 'Feels Like', value: `${Math.round(current.feelsLike)}°C`, icon: '🤔' },
@@ -195,14 +196,14 @@ export default function WeatherPage() {
               { label: 'Visibility', value: `${Math.round(current.visibility)} km`, icon: '👁️' },
               { label: 'UV Index', value: current.uvIndex, icon: '☀️' },
             ].map((metric, i) => (
-              <div key={i} style={{ background: 'white', borderRadius: 12, padding: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #E5E7EB' }}>
+              <div key={i} style={{ background: 'white', borderRadius: 12, padding: 'clamp(12px, 3vw, 16px)', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #E5E7EB' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{ fontSize: 20 }}>{metric.icon}</span>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#666', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: 'clamp(16px, 4vw, 20px)' }}>{metric.icon}</span>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 'clamp(9px, 2vw, 11px)', color: '#666', letterSpacing: 0.5, textTransform: 'uppercase' }}>
                     {metric.label}
                   </div>
                 </div>
-                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 700, color: '#0D1B2A' }}>
+                <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: 700, color: '#0D1B2A' }}>
                   {metric.value}
                 </div>
               </div>
