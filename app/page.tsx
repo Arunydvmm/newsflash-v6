@@ -203,28 +203,33 @@ export default async function HomePage({ searchParams }: any) {
                 </>
               )}
 
-              {/* Native Banner Ad — below article grid */}
+              {/* Native Banner Ad — between article sections */}
               {!search && !category && (
-                <AdSlotServer slotId="native-banner" style={{ marginBottom: 32 }} />
+                <AdSlotServer slotId="native-banner" style={{ marginBottom: 32, marginTop: 32 }} />
               )}
 
               {/* Category Sections */}
               {!search && !category && catSections.map(({ cat, articles: catArts }, si) => {                const catData = CATEGORIES.find(c => c.label === cat)
                 return (
-                  <ScrollReveal key={cat} delay={si * 80}>
-                    <div style={{ marginBottom: 40 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                        <h2 className="sec-title" style={{ margin: 0, flex: 1 }}>
-                          <span style={{ width: 4, height: 20, background: catData?.color || '#888', borderRadius: 2, display: 'inline-block', flexShrink: 0 }} />
-                          {catData?.icon} {cat}
-                        </h2>
-                        <Link href={`/feed/${cat.toLowerCase()}`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: catData?.color || '#888', textDecoration: 'none', letterSpacing: 1, flexShrink: 0, marginLeft: 12 }}>View All →</Link>
+                  <div key={cat}>
+                    <ScrollReveal delay={si * 80}>
+                      <div style={{ marginBottom: 40 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                          <h2 className="sec-title" style={{ margin: 0, flex: 1 }}>
+                            <span style={{ width: 4, height: 20, background: catData?.color || '#888', borderRadius: 2, display: 'inline-block', flexShrink: 0 }} />
+                            {catData?.icon} {cat}
+                          </h2>
+                          <Link href={`/feed/${cat.toLowerCase()}`} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: catData?.color || '#888', textDecoration: 'none', letterSpacing: 1, flexShrink: 0, marginLeft: 12 }}>View All →</Link>
+                        </div>
+                        <div className="cat-sec-grid">
+                          {catArts.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
+                        </div>
                       </div>
-                      <div className="cat-sec-grid">
-                        {catArts.map((a: any) => <ArticleCard key={String(a._id)} a={a} size="sm" />)}
-                      </div>
-                    </div>
-                  </ScrollReveal>
+                    </ScrollReveal>
+                    {si === 1 && (
+                      <AdSlotServer slotId="banner-728x90" style={{ marginBottom: 32, padding: '8px 0', background: '#F8F8F6', textAlign: 'center' }} />
+                    )}
+                  </div>
                 )
               })}
             </div>
@@ -267,9 +272,6 @@ export default async function HomePage({ searchParams }: any) {
                   </Link>
                 ))}
               </div>
-
-              {/* Sidebar Ad 2 */}
-              <AdSlotServer slotId="banner-300x250" style={{ marginTop: 8 }} />
             </aside>
           </div>
         )}
