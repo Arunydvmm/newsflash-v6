@@ -120,7 +120,8 @@ function getUVLevel(uvIndex: number): string {
  */
 function formatDateDisplay(isoString: string): string {
   try {
-    if (!isoString) return 'Unknown';
+    if (!isoString || typeof isoString !== 'string') return 'Unknown';
+    
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return 'Unknown';
     
@@ -140,7 +141,8 @@ function formatDateDisplay(isoString: string): string {
 function getDayName(isoString: string, isToday: boolean = false): string {
   if (isToday) return 'Today';
   try {
-    if (!isoString) return 'Unknown';
+    if (!isoString || typeof isoString !== 'string') return 'Unknown';
+    
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return 'Unknown';
     
@@ -156,7 +158,8 @@ function getDayName(isoString: string, isToday: boolean = false): string {
 function getDayShort(isoString: string, isToday: boolean = false): string {
   if (isToday) return 'TODAY';
   try {
-    if (!isoString) return 'UNKNOWN';
+    if (!isoString || typeof isoString !== 'string') return 'UNKNOWN';
+    
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return 'UNKNOWN';
     
@@ -171,7 +174,8 @@ function getDayShort(isoString: string, isToday: boolean = false): string {
  */
 function formatTime(isoString: string): string {
   try {
-    if (!isoString) return '00:00';
+    if (!isoString || typeof isoString !== 'string') return '00:00';
+    
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return '00:00';
     
@@ -186,7 +190,8 @@ function formatTime(isoString: string): string {
  */
 function formatDate(isoString: string): string {
   try {
-    if (!isoString) return 'Unknown';
+    if (!isoString || typeof isoString !== 'string') return 'Unknown';
+    
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return 'Unknown';
     
@@ -200,10 +205,24 @@ function formatDate(isoString: string): string {
  * Transform hourly forecast data
  */
 function transformHourlyForecast(hourlyData: any[]): HourlyForecast[] {
-  return (hourlyData || []).slice(0, 12).map((hour) => {
-    const temp = hour.temperature || hour.Temperature?.Metric?.Value || 0;
+  if (!hourlyData || hourlyData.length === 0) {
+    return [];
+  }
+
+  return hourlyData.slice(0, 12).map((hour) => {
+    // Handle both mock and API data formats
+    let temp = hour.temperature || hour.Temperature?.Metric?.Value || 0;
+    
+    // Ensure temperature is valid (not 0 or negative unrealistic values)
+    if (temp === 0 || temp < -50) {
+      temp = 20; // Default fallback
+    }
+
+    const timeStr = hour.time || hour.DateTime;
+    const formattedTime = formatTime(timeStr);
+
     return {
-      time: formatTime(hour.time || hour.DateTime),
+      time: formattedTime,
       temp: Math.round(temp),
       condition: mapWeatherIcon(hour.icon || hour.WeatherIcon),
       pop: hour.humidity || hour.RelativeHumidity || 0,
@@ -220,18 +239,40 @@ function transformDailyForecast(
   lat: number,
   lon: number
 ): DayForecast[] {
-  return (forecastData || []).slice(0, 5).map((day, index) => {
+  if (!forecastData || forecastData.length === 0) {
+    return [];
+  }
+
+  return forecastData.slice(0, 5).map((day, index) => {
     const isToday = index === 0;
     const dayHourly = isToday ? transformHourlyForecast(hourlyData) : [];
     
-    // Ensure valid temperatures
-    const tempMax = day.high || day.Temperature?.Maximum?.Value || 25;
-    const tempMin = day.low || day.Temperature?.Minimum?.Value || 15;
+    // Ensure valid temperatures - reject 0 or unrealistic values
+    let tempMax = day.high || day.Temperature?.Maximum?.Value || 25;
+    let tempMin = day.low || day.Temperature?.Minimum?.Value || 15;
+
+    // Validate temperatures
+    if (tempMax === 0 || tempMax < -50 || tempMax > 60) {
+      tempMax = 25; // Default fallback
+    }
+    if (tempMin === 0 || tempMin < -50 || tempMin > 60) {
+      tempMin = 15; // Default fallback
+    }
+
+    // Ensure min is less than max
+    if (tempMin > tempMax) {
+      [tempMin, tempMax] = [tempMax, tempMin];
+    }
+
+    const dateStr = day.date || day.Date;
+    const formattedDate = formatDate(dateStr);
+    const dayName = getDayName(dateStr, isToday);
+    const dayShort = getDayShort(dateStr, isToday);
 
     return {
-      dayName: getDayName(day.date || day.Date, isToday),
-      dayShort: getDayShort(day.date || day.Date, isToday),
-      date: formatDate(day.date || day.Date),
+      dayName,
+      dayShort,
+      date: formattedDate,
       tempMax: Math.round(tempMax),
       tempMin: Math.round(tempMin),
       condition: day.condition || day.Day?.IconPhrase || 'Unknown',

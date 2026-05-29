@@ -7,12 +7,28 @@ const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
 
 let cache: Record<string, { data: any; ts: number }> = {}
 
-// Mock weather data for fallback - realistic data for India
+// Mock weather data for fallback - realistic data based on location
 const getMockWeatherData = (locationName: string, lat: number = 20.5937, lon: number = 78.9629) => {
   // Realistic temperature based on location
   let baseTemp = 25;
-  if (lat > 30) baseTemp = 15; // Northern India - cooler
-  if (lat < 15) baseTemp = 28; // Southern India - warmer
+  let condition = 'Partly Cloudy';
+  let icon = 2;
+  
+  // Temperature ranges by latitude
+  if (lat > 30) {
+    baseTemp = 18; // Northern regions - cooler
+  } else if (lat > 20) {
+    baseTemp = 25; // Central regions
+  } else if (lat > 10) {
+    baseTemp = 28; // Southern regions - warmer
+  } else {
+    baseTemp = 30; // Tropical regions
+  }
+  
+  // Ensure temperature is never 0 or unrealistic
+  if (baseTemp <= 0 || baseTemp > 50) {
+    baseTemp = 25;
+  }
   
   return {
     location: locationName || 'Your Location',
@@ -20,8 +36,8 @@ const getMockWeatherData = (locationName: string, lat: number = 20.5937, lon: nu
     lon,
     current: {
       temperature: baseTemp,
-      condition: 'Partly Cloudy',
-      icon: 2,
+      condition,
+      icon,
       humidity: 65,
       windSpeed: 12,
       windDirection: 'NE',
@@ -39,14 +55,17 @@ const getMockWeatherData = (locationName: string, lat: number = 20.5937, lon: nu
       { date: new Date(Date.now() + 259200000).toISOString(), high: baseTemp, low: baseTemp - 8, condition: 'Rainy', icon: 5, precipitation: 5, precipitationProbability: 60, wind: 16 },
       { date: new Date(Date.now() + 345600000).toISOString(), high: baseTemp + 1, low: baseTemp - 7, condition: 'Partly Cloudy', icon: 2, precipitation: 1, precipitationProbability: 15, wind: 11 },
     ],
-    hourly: Array.from({ length: 12 }, (_, i) => ({
-      time: new Date(Date.now() + i * 3600000).toISOString(),
-      temperature: baseTemp - i * 0.5,
-      condition: 'Partly Cloudy',
-      icon: 2,
-      precipitation: 0,
-      humidity: 65 + i * 2,
-    })),
+    hourly: Array.from({ length: 12 }, (_, i) => {
+      const hourTemp = Math.max(baseTemp - 5, baseTemp - i * 0.5); // Ensure temp doesn't go too low
+      return {
+        time: new Date(Date.now() + i * 3600000).toISOString(),
+        temperature: hourTemp,
+        condition: 'Partly Cloudy',
+        icon: 2,
+        precipitation: 0,
+        humidity: 65 + i * 2,
+      };
+    }),
   }
 }
 
