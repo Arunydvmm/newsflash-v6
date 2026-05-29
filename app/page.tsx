@@ -93,9 +93,6 @@ export default async function HomePage({ searchParams }: any) {
         </div>
       </div>
 
-      {/* ── HEADER NATIVE AD ── */}
-      <AdSlotServer slotId="native-banner" style={{ padding: '12px 0', background: 'white', textAlign: 'center' }} />
-
       {/* ── LIVE DASHBOARD BAR ── */}
       <LiveDashboard />
 

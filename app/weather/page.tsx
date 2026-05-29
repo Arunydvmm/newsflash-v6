@@ -122,17 +122,17 @@ export default function WeatherPage() {
         {/* Current Weather Card */}
         <div style={{ background: 'linear-gradient(135deg,#1565C0,#0D47A1)', borderRadius: 16, padding: '32px', color: 'white', marginBottom: 32, boxShadow: '0 8px 32px rgba(21,101,192,0.3)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'center' }}>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: 1, textTransform: 'uppercase', opacity: 0.8, marginBottom: 8 }}>
                 📍 Current Location
               </div>
-              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 48, fontWeight: 900, marginBottom: 8 }}>
+              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 48, fontWeight: 900, marginBottom: 8, wordBreak: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {location}
               </div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, opacity: 0.7, marginBottom: 16 }}>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, opacity: 0.7, marginBottom: 16, wordBreak: 'break-word' }}>
                 Lat: {lat.toFixed(4)}° | Lon: {lon.toFixed(4)}°
               </div>
-              <div style={{ fontSize: 18, opacity: 0.9, marginBottom: 16 }}>
+              <div style={{ fontSize: 18, opacity: 0.9, marginBottom: 16, wordBreak: 'break-word', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {current.condition}
               </div>
             </div>

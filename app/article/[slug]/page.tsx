@@ -102,18 +102,24 @@ export default async function ArticlePage({ params }: Props) {
         body { margin: 0; padding: 0; }
         .art-grid { display: grid; grid-template-columns: 1fr 320px; gap: 40px; max-width: 1200px; margin: 0 auto; padding: 48px 20px; }
         .rel-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .art-title { font-size: 42px; font-weight: 800; line-height: 1.15; letter-spacing: -0.5px; }
+        .art-title { font-size: 42px; font-weight: 800; line-height: 1.15; letter-spacing: -0.5px; word-break: break-word; }
         .art-meta { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; font-size: 13px; }
         .art-content { font-size: 17px; line-height: 1.9; color: #1a1a1a; }
-        .art-content p { margin: 20px 0; }
-        .art-content h2 { font-size: 28px; font-weight: 700; margin: 32px 0 16px; }
-        .art-content h3 { font-size: 22px; font-weight: 700; margin: 24px 0 12px; }
+        .art-content p { margin: 20px 0; word-break: break-word; overflow-wrap: break-word; }
+        .art-content h2 { font-size: 28px; font-weight: 700; margin: 32px 0 16px; word-break: break-word; }
+        .art-content h3 { font-size: 22px; font-weight: 700; margin: 24px 0 12px; word-break: break-word; }
+        .art-content h1 { font-size: 32px; font-weight: 700; margin: 24px 0 12px; word-break: break-word; }
         .art-content ul, .art-content ol { margin: 16px 0; padding-left: 24px; }
-        .art-content li { margin: 8px 0; }
-        .art-content blockquote { border-left: 4px solid #C62828; padding-left: 20px; margin: 24px 0; font-style: italic; color: #666; }
+        .art-content li { margin: 8px 0; word-break: break-word; }
+        .art-content blockquote { border-left: 4px solid #C62828; padding-left: 20px; margin: 24px 0; font-style: italic; color: #666; word-break: break-word; }
         .art-content table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-        .art-content th, .art-content td { border: 1px solid #E5E5E5; padding: 12px; text-align: left; }
+        .art-content th, .art-content td { border: 1px solid #E5E5E5; padding: 12px; text-align: left; word-break: break-word; }
         .art-content th { background: #F8F8F8; font-weight: 600; }
+        .art-content img { max-width: 100%; height: auto; display: block; margin: 20px 0; border-radius: 8px; }
+        .art-content a { color: #1565C0; text-decoration: none; }
+        .art-content a:hover { text-decoration: underline; }
+        .art-content strong { font-weight: 700; }
+        .art-content em { font-style: italic; }
         @media (max-width: 768px) {
           .art-grid { grid-template-columns: 1fr !important; gap: 24px; padding: 24px 16px !important; }
           .sidebar-col { display: none; }
