@@ -20,9 +20,20 @@ export default function WeatherPage() {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords
-          fetchWeather(latitude, longitude)
+          // Try to get city name from IP location
+          try {
+            const geoRes = await fetch('/api/weather')
+            if (geoRes.ok) {
+              const geoData = await geoRes.json()
+              fetchWeather(latitude, longitude, geoData.city || 'Your Location')
+            } else {
+              fetchWeather(latitude, longitude)
+            }
+          } catch (e) {
+            fetchWeather(latitude, longitude)
+          }
         },
         (err) => {
           console.error('Geolocation error:', err)
@@ -54,10 +65,24 @@ export default function WeatherPage() {
       setLoading(true)
       setError('')
       
+      // If no locationName provided, try to get it from reverse geocoding or use default
+      let finalLocationName = locationName
+      if (!finalLocationName) {
+        try {
+          const geoRes = await fetch('/api/weather')
+          if (geoRes.ok) {
+            const geoData = await geoRes.json()
+            finalLocationName = geoData.city || 'Your Location'
+          }
+        } catch (e) {
+          finalLocationName = 'Your Location'
+        }
+      }
+      
       const res = await fetch('/api/weather', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lon, locationName }),
+        body: JSON.stringify({ lat, lon, locationName: finalLocationName }),
       })
 
       if (!res.ok) {
