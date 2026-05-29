@@ -116,24 +116,19 @@ function getUVLevel(uvIndex: number): string {
 }
 
 /**
- * Format time from ISO string to HH:MM format
+ * Format date from ISO string to readable format
  */
-function formatTime(isoString: string): string {
+function formatDateDisplay(isoString: string): string {
   try {
+    if (!isoString) return 'Unknown';
     const date = new Date(isoString);
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  } catch {
-    return '00:00';
-  }
-}
-
-/**
- * Format date from ISO string to "Mon DD" format
- */
-function formatDate(isoString: string): string {
-  try {
-    const date = new Date(isoString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (isNaN(date.getTime())) return 'Unknown';
+    
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short',
+      month: 'short', 
+      day: 'numeric' 
+    });
   } catch {
     return 'Unknown';
   }
@@ -145,7 +140,10 @@ function formatDate(isoString: string): string {
 function getDayName(isoString: string, isToday: boolean = false): string {
   if (isToday) return 'Today';
   try {
+    if (!isoString) return 'Unknown';
     const date = new Date(isoString);
+    if (isNaN(date.getTime())) return 'Unknown';
+    
     return date.toLocaleDateString('en-US', { weekday: 'long' });
   } catch {
     return 'Unknown';
@@ -158,7 +156,10 @@ function getDayName(isoString: string, isToday: boolean = false): string {
 function getDayShort(isoString: string, isToday: boolean = false): string {
   if (isToday) return 'TODAY';
   try {
+    if (!isoString) return 'UNKNOWN';
     const date = new Date(isoString);
+    if (isNaN(date.getTime())) return 'UNKNOWN';
+    
     return date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
   } catch {
     return 'UNKNOWN';
@@ -166,15 +167,48 @@ function getDayShort(isoString: string, isToday: boolean = false): string {
 }
 
 /**
+ * Format time from ISO string to HH:MM format
+ */
+function formatTime(isoString: string): string {
+  try {
+    if (!isoString) return '00:00';
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '00:00';
+    
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  } catch {
+    return '00:00';
+  }
+}
+
+/**
+ * Format date from ISO string to "Mon DD" format
+ */
+function formatDate(isoString: string): string {
+  try {
+    if (!isoString) return 'Unknown';
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return 'Unknown';
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch {
+    return 'Unknown';
+  }
+}
+
+/**
  * Transform hourly forecast data
  */
 function transformHourlyForecast(hourlyData: any[]): HourlyForecast[] {
-  return (hourlyData || []).slice(0, 12).map((hour) => ({
-    time: formatTime(hour.DateTime),
-    temp: Math.round(hour.Temperature?.Metric?.Value || 0),
-    condition: mapWeatherIcon(hour.WeatherIcon),
-    pop: hour.RelativeHumidity || 0,
-  }));
+  return (hourlyData || []).slice(0, 12).map((hour) => {
+    const temp = hour.temperature || hour.Temperature?.Metric?.Value || 0;
+    return {
+      time: formatTime(hour.time || hour.DateTime),
+      temp: Math.round(temp),
+      condition: mapWeatherIcon(hour.icon || hour.WeatherIcon),
+      pop: hour.humidity || hour.RelativeHumidity || 0,
+    };
+  });
 }
 
 /**
@@ -189,31 +223,35 @@ function transformDailyForecast(
   return (forecastData || []).slice(0, 5).map((day, index) => {
     const isToday = index === 0;
     const dayHourly = isToday ? transformHourlyForecast(hourlyData) : [];
+    
+    // Ensure valid temperatures
+    const tempMax = day.high || day.Temperature?.Maximum?.Value || 25;
+    const tempMin = day.low || day.Temperature?.Minimum?.Value || 15;
 
     return {
-      dayName: getDayName(day.Date, isToday),
-      dayShort: getDayShort(day.Date, isToday),
-      date: formatDate(day.Date),
-      tempMax: Math.round(day.Temperature?.Maximum?.Value || 0),
-      tempMin: Math.round(day.Temperature?.Minimum?.Value || 0),
-      condition: day.Day?.IconPhrase || 'Unknown',
-      description: `${day.Day?.IconPhrase || 'Unknown'} conditions expected.`,
-      iconName: mapWeatherIcon(day.Day?.Icon),
-      pop: day.Day?.PrecipitationProbability || 0,
+      dayName: getDayName(day.date || day.Date, isToday),
+      dayShort: getDayShort(day.date || day.Date, isToday),
+      date: formatDate(day.date || day.Date),
+      tempMax: Math.round(tempMax),
+      tempMin: Math.round(tempMin),
+      condition: day.condition || day.Day?.IconPhrase || 'Unknown',
+      description: `${day.condition || day.Day?.IconPhrase || 'Unknown'} conditions expected.`,
+      iconName: mapWeatherIcon(day.icon || day.Day?.Icon),
+      pop: day.precipitationProbability || day.Day?.PrecipitationProbability || 0,
       hourly: dayHourly,
-      humidity: 65, // Default - AccuWeather doesn't provide daily humidity
-      windSpeed: Math.round(day.Day?.Wind?.Speed?.Metric?.Value || 0),
-      windDirection: 'N', // Default - AccuWeather doesn't provide daily wind direction
-      uvIndex: 5, // Default - AccuWeather doesn't provide daily UV index
+      humidity: 65,
+      windSpeed: Math.round(day.wind || day.Day?.Wind?.Speed?.Metric?.Value || 0),
+      windDirection: 'N',
+      uvIndex: 5,
       uvLevel: getUVLevel(5),
-      visibility: 10, // Default - AccuWeather doesn't provide daily visibility
-      aqiValue: 50, // Default - AccuWeather doesn't provide daily AQI
+      visibility: 10,
+      aqiValue: 50,
       aqiLevel: getAQILevel(50),
       aqiColor: getAQIColor('GOOD'),
-      sunriseTime: '05:42', // Default - would need separate API call
-      sunsetTime: '18:30', // Default - would need separate API call
-      pressureValue: 1013, // Default - AccuWeather doesn't provide daily pressure
-      pressureTrend: 'Stable', // Default
+      sunriseTime: '05:42',
+      sunsetTime: '18:30',
+      pressureValue: 1013,
+      pressureTrend: 'Stable',
     };
   });
 }

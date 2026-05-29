@@ -7,39 +7,48 @@ const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
 
 let cache: Record<string, { data: any; ts: number }> = {}
 
-// Mock weather data for fallback
-const getMockWeatherData = (locationName: string) => ({
-  location: locationName || 'Your Location',
-  current: {
-    temperature: 25,
-    condition: 'Partly Cloudy',
-    icon: 2,
-    humidity: 65,
-    windSpeed: 12,
-    windDirection: 'NE',
-    uvIndex: 5,
-    visibility: 10,
-    dewPoint: 15,
-    feelsLike: 26,
-    pressure: 1013,
-    windGust: 18,
-  },
-  forecast: [
-    { date: new Date().toISOString(), high: 28, low: 20, condition: 'Sunny', icon: 1, precipitation: 0, precipitationProbability: 0, wind: 10 },
-    { date: new Date(Date.now() + 86400000).toISOString(), high: 27, low: 19, condition: 'Partly Cloudy', icon: 2, precipitation: 0, precipitationProbability: 10, wind: 12 },
-    { date: new Date(Date.now() + 172800000).toISOString(), high: 26, low: 18, condition: 'Cloudy', icon: 3, precipitation: 2, precipitationProbability: 20, wind: 14 },
-    { date: new Date(Date.now() + 259200000).toISOString(), high: 25, low: 17, condition: 'Rainy', icon: 5, precipitation: 5, precipitationProbability: 60, wind: 16 },
-    { date: new Date(Date.now() + 345600000).toISOString(), high: 26, low: 18, condition: 'Partly Cloudy', icon: 2, precipitation: 1, precipitationProbability: 15, wind: 11 },
-  ],
-  hourly: Array.from({ length: 12 }, (_, i) => ({
-    time: new Date(Date.now() + i * 3600000).toISOString(),
-    temperature: 25 - i * 0.5,
-    condition: 'Partly Cloudy',
-    icon: 2,
-    precipitation: 0,
-    humidity: 65 + i * 2,
-  })),
-})
+// Mock weather data for fallback - realistic data for India
+const getMockWeatherData = (locationName: string, lat: number = 20.5937, lon: number = 78.9629) => {
+  // Realistic temperature based on location
+  let baseTemp = 25;
+  if (lat > 30) baseTemp = 15; // Northern India - cooler
+  if (lat < 15) baseTemp = 28; // Southern India - warmer
+  
+  return {
+    location: locationName || 'Your Location',
+    lat,
+    lon,
+    current: {
+      temperature: baseTemp,
+      condition: 'Partly Cloudy',
+      icon: 2,
+      humidity: 65,
+      windSpeed: 12,
+      windDirection: 'NE',
+      uvIndex: 5,
+      visibility: 10,
+      dewPoint: 15,
+      feelsLike: baseTemp + 1,
+      pressure: 1013,
+      windGust: 18,
+    },
+    forecast: [
+      { date: new Date().toISOString(), high: baseTemp + 3, low: baseTemp - 5, condition: 'Sunny', icon: 1, precipitation: 0, precipitationProbability: 0, wind: 10 },
+      { date: new Date(Date.now() + 86400000).toISOString(), high: baseTemp + 2, low: baseTemp - 6, condition: 'Partly Cloudy', icon: 2, precipitation: 0, precipitationProbability: 10, wind: 12 },
+      { date: new Date(Date.now() + 172800000).toISOString(), high: baseTemp + 1, low: baseTemp - 7, condition: 'Cloudy', icon: 3, precipitation: 2, precipitationProbability: 20, wind: 14 },
+      { date: new Date(Date.now() + 259200000).toISOString(), high: baseTemp, low: baseTemp - 8, condition: 'Rainy', icon: 5, precipitation: 5, precipitationProbability: 60, wind: 16 },
+      { date: new Date(Date.now() + 345600000).toISOString(), high: baseTemp + 1, low: baseTemp - 7, condition: 'Partly Cloudy', icon: 2, precipitation: 1, precipitationProbability: 15, wind: 11 },
+    ],
+    hourly: Array.from({ length: 12 }, (_, i) => ({
+      time: new Date(Date.now() + i * 3600000).toISOString(),
+      temperature: baseTemp - i * 0.5,
+      condition: 'Partly Cloudy',
+      icon: 2,
+      precipitation: 0,
+      humidity: 65 + i * 2,
+    })),
+  }
+}
 
 async function getLocationKey(lat: number, lon: number) {
   try {
@@ -198,7 +207,7 @@ export async function POST(req: NextRequest) {
     const locationKey = await getLocationKey(lat, lon)
     if (!locationKey) {
       console.warn('Could not get location key, using mock data')
-      const mockData = getMockWeatherData(locationName)
+      const mockData = getMockWeatherData(locationName, lat, lon)
       cache[cacheKey] = { data: mockData, ts: Date.now() }
       return NextResponse.json(
         { ...mockData, mock: true },
@@ -210,7 +219,7 @@ export async function POST(req: NextRequest) {
     const current = await getCurrentWeather(locationKey)
     if (!current) {
       console.warn('Could not get current weather, using mock data')
-      const mockData = getMockWeatherData(locationName)
+      const mockData = getMockWeatherData(locationName, lat, lon)
       cache[cacheKey] = { data: mockData, ts: Date.now() }
       return NextResponse.json(
         { ...mockData, mock: true },
@@ -222,40 +231,54 @@ export async function POST(req: NextRequest) {
     const forecast = await getForecast(locationKey)
     const hourly = await getHourlyForecast(locationKey)
 
+    // Ensure we have valid temperature data
+    const currentTemp = current.Temperature?.Metric?.Value
+    const hasValidTemp = currentTemp !== null && currentTemp !== undefined && currentTemp !== 0
+
+    if (!hasValidTemp || !forecast || forecast.length === 0) {
+      console.warn('Invalid or missing weather data, using mock data')
+      const mockData = getMockWeatherData(locationName, lat, lon)
+      cache[cacheKey] = { data: mockData, ts: Date.now() }
+      return NextResponse.json(
+        { ...mockData, mock: true },
+        { status: 200 }
+      )
+    }
+
     const weatherData = {
       location: locationName || 'Your Location',
       lat,
       lon,
       current: {
-        temperature: current.Temperature?.Metric?.Value || 0,
+        temperature: Math.round(currentTemp),
         condition: current.WeatherText || 'Unknown',
         icon: current.WeatherIcon || 1,
         humidity: current.RelativeHumidity || 0,
-        windSpeed: current.Wind?.Speed?.Metric?.Value || 0,
+        windSpeed: Math.round(current.Wind?.Speed?.Metric?.Value || 0),
         windDirection: current.Wind?.Direction?.Localized || 'N/A',
         uvIndex: current.UVIndex || 0,
-        visibility: current.Visibility?.Metric?.Value || 0,
-        dewPoint: current.DewPoint?.Metric?.Value || 0,
-        feelsLike: current.ApparentTemperature?.Metric?.Value || current.Temperature?.Metric?.Value || 0,
-        pressure: current.Pressure?.Metric?.Value || 0,
-        windGust: current.WindGustSpeed?.Metric?.Value || 0,
+        visibility: Math.round(current.Visibility?.Metric?.Value || 0),
+        dewPoint: Math.round(current.DewPoint?.Metric?.Value || 0),
+        feelsLike: Math.round(current.ApparentTemperature?.Metric?.Value || currentTemp),
+        pressure: Math.round(current.Pressure?.Metric?.Value || 0),
+        windGust: Math.round(current.WindGustSpeed?.Metric?.Value || 0),
       },
       forecast: (forecast || []).slice(0, 5).map((day: any) => ({
         date: day.Date,
-        high: day.Temperature?.Maximum?.Value || 0,
-        low: day.Temperature?.Minimum?.Value || 0,
+        high: Math.round(day.Temperature?.Maximum?.Value || 0),
+        low: Math.round(day.Temperature?.Minimum?.Value || 0),
         condition: day.Day?.IconPhrase || 'Unknown',
         icon: day.Day?.Icon || 1,
-        precipitation: day.TotalLiquid?.Value || 0,
+        precipitation: Math.round(day.TotalLiquid?.Value || 0),
         precipitationProbability: day.Day?.PrecipitationProbability || 0,
-        wind: day.Day?.Wind?.Speed?.Metric?.Value || 0,
+        wind: Math.round(day.Day?.Wind?.Speed?.Metric?.Value || 0),
       })),
       hourly: (hourly || []).slice(0, 12).map((hour: any) => ({
         time: hour.DateTime,
-        temperature: hour.Temperature?.Metric?.Value || 0,
+        temperature: Math.round(hour.Temperature?.Metric?.Value || 0),
         condition: hour.IconPhrase || 'Unknown',
         icon: hour.WeatherIcon || 1,
-        precipitation: hour.TotalLiquid?.Value || 0,
+        precipitation: Math.round(hour.TotalLiquid?.Value || 0),
         humidity: hour.RelativeHumidity || 0,
       })),
     }
@@ -270,7 +293,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('Weather API error:', err.message)
     // Return mock data on error
-    const mockData = getMockWeatherData(locationName)
+    const mockData = getMockWeatherData(locationName, lat, lon)
     cache[cacheKey] = { data: mockData, ts: Date.now() }
     return NextResponse.json(
       { ...mockData, mock: true, error: err.message },
