@@ -111,12 +111,12 @@ export default function WeatherWidget() {
   const icon = WEATHER_ICONS[current.icon] || '🌤️'
 
   return (
-    <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={handleWeatherClick}>
-      <div style={{ fontSize: 20, marginBottom: 4 }}>{icon}</div>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#666', lineHeight: 1.3 }}>
-        <div>{Math.round(current.temperature)}°C</div>
-        <div style={{ fontSize: 9, opacity: 0.8 }}>{current.condition}</div>
-        <div style={{ fontSize: 8, opacity: 0.6, marginTop: 2 }}>{location}</div>
+    <div style={{ textAlign: 'center', cursor: 'pointer', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} onClick={handleWeatherClick}>
+      <div style={{ fontSize: 18, marginBottom: 2 }}>{icon}</div>
+      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#666', lineHeight: 1.2 }}>
+        <div style={{ fontWeight: 600 }}>{Math.round(current.temperature)}°C</div>
+        <div style={{ fontSize: 8, opacity: 0.8, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{current.condition}</div>
+        <div style={{ fontSize: 7, opacity: 0.6, marginTop: 1, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{location}</div>
       </div>
     </div>
   )

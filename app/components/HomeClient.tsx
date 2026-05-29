@@ -178,6 +178,12 @@ export function ArticleCard({ a, size = 'md', horizontal = false }: { a: any; si
   const [hov, setHov] = useState(false)
   const cat = CATEGORIES.find(c => c.label === a.category)
   const fmt = (d: any) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  
+  // Clean title - remove HTML tags if present
+  const cleanTitle = (text: string) => {
+    if (!text) return ''
+    return text.replace(/<[^>]+>/g, '').trim()
+  }
 
   if (horizontal) return (
     <div
@@ -188,7 +194,7 @@ export function ArticleCard({ a, size = 'md', horizontal = false }: { a: any; si
           {a.featuredImage && <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.3s' }} loading="lazy" />}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: hov ? T.red : T.dark, lineHeight: 1.4, marginBottom: 4, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: hov ? T.red : T.dark, lineHeight: 1.4, marginBottom: 4, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word' }}>{cleanTitle(a.title)}</div>
           <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#666' }}>{fmt(a.createdAt)} · {a.readTime || 1} min</div>
         </div>
       </Link>
@@ -201,18 +207,18 @@ export function ArticleCard({ a, size = 'md', horizontal = false }: { a: any; si
       onMouseLeave={() => setHov(false)}
       style={{ height: '100%' }}>
       <Link href={`/article/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}>
-        <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', height: '100%', boxShadow: hov ? '0 10px 36px rgba(0,0,0,0.13)' : '0 2px 12px rgba(0,0,0,0.06)', transform: hov ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.25s ease', border: `1px solid ${T.border}` }}>
-          <div style={{ aspectRatio: size === 'sm' ? '16/9' : '16/10', overflow: 'hidden', background: '#E8E8E4', position: 'relative' }}>
+        <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', height: '100%', boxShadow: hov ? '0 10px 36px rgba(0,0,0,0.13)' : '0 2px 12px rgba(0,0,0,0.06)', transform: hov ? 'translateY(-4px)' : 'translateY(0)', transition: 'all 0.25s ease', border: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ aspectRatio: size === 'sm' ? '16/9' : '16/10', overflow: 'hidden', background: '#E8E8E4', position: 'relative', flexShrink: 0 }}>
             {a.featuredImage
               ? <img src={a.featuredImage} alt={a.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: hov ? 'scale(1.05)' : 'scale(1)', transition: 'transform 0.4s ease' }} loading="lazy" />
               : <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg,${cat?.color || T.red}22,${T.navy}22)` }} />
             }
             {a.isBreaking && <div style={{ position: 'absolute', top: 8, left: 8, background: T.red, color: 'white', fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: 1.5, padding: '2px 8px', borderRadius: 3, textTransform: 'uppercase' }}>⚡ Breaking</div>}
           </div>
-          <div style={{ padding: size === 'sm' ? '10px 12px' : '14px 16px' }}>
-            {cat && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: cat.bg, color: cat.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, marginBottom: 8, fontWeight: 600 }}>{cat.icon} {cat.label}</span>}
-            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: size === 'sm' ? 14 : 16, fontWeight: 700, lineHeight: 1.35, color: hov ? T.red : T.dark, marginBottom: 8, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{a.title}</h3>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#666', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ padding: size === 'sm' ? '10px 12px' : '14px 16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+            {cat && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: cat.bg, color: cat.color, fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 4, marginBottom: 8, fontWeight: 600, width: 'fit-content' }}>{cat.icon} {cat.label}</span>}
+            <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: size === 'sm' ? 14 : 16, fontWeight: 700, lineHeight: 1.35, color: hov ? T.red : T.dark, marginBottom: 8, transition: 'color 0.2s', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word', margin: '0 0 8px 0' }}>{cleanTitle(a.title)}</h3>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#666', display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
               <span>{fmt(a.createdAt)}</span><span>·</span><span>{a.readTime || 1} min</span>
               {a.views > 0 && <><span>·</span><span>{a.views.toLocaleString('en-IN')} views</span></>}
             </div>

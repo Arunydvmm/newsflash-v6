@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { connectDB } from './lib/db'
 import Article from './models/Article'
-import { LoadingBar, WelcomePopup, HeroSlider, ArticleCard, CategoryButton } from './components/HomeClient'
+import { LoadingBar, HeroSlider, ArticleCard, CategoryButton } from './components/HomeClient'
 import DarkModeToggle from './components/DarkModeToggle'
 import PortalCards from './components/PortalCards'
 import InteractiveNav from './components/InteractiveNav'
@@ -53,7 +53,6 @@ export default async function HomePage({ searchParams }: any) {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: '#F4F4F0', minHeight: '100vh' }}>
       <LoadingBar />
-      <WelcomePopup />
 
       {/* ── TOP BAR — Date, Time, Navigation ── */}
       <InteractiveNav />
@@ -93,6 +92,9 @@ export default async function HomePage({ searchParams }: any) {
           </div>
         </div>
       </div>
+
+      {/* ── HEADER NATIVE AD ── */}
+      <AdSlotServer slotId="native-banner" style={{ padding: '12px 0', background: 'white', textAlign: 'center' }} />
 
       {/* ── LIVE DASHBOARD BAR ── */}
       <LiveDashboard />
@@ -275,6 +277,9 @@ export default async function HomePage({ searchParams }: any) {
           </div>
         )}
       </main>
+
+      {/* ── FOOTER AD ── */}
+      <AdSlotServer slotId="native-banner" style={{ padding: '12px 0', background: 'white', textAlign: 'center', marginBottom: 20 }} />
 
       {/* ── FOOTER ── */}
       <footer style={{ background: '#0D1B2A', color: '#4A6080', marginTop: 56 }}>
