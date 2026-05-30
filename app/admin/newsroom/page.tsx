@@ -43,16 +43,16 @@ export default function NewsroomPage() {
 
     fetchData()
 
-    // Auto-refresh monitoring data every 5 seconds if monitoring view is open
+    // Auto-refresh data every 5 seconds if watchlist or monitoring view is open
     let interval: NodeJS.Timeout
-    if (showMonitoring) {
+    if (showWatchlist || showMonitoring) {
       interval = setInterval(fetchData, 5000)
     }
 
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [showMonitoring])
+  }, [showWatchlist, showMonitoring])
 
   const triggerPipeline = async () => {
     if (!confirm('Trigger AI newsroom pipeline? This will fetch RSS feeds and add articles to watchlist.')) return
