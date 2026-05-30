@@ -318,7 +318,7 @@ export class PushNotificationService {
   /**
    * Start retry queue processor (runs every 5 minutes)
    */
-  static startRetryQueueProcessor(): NodeJS.Timer {
+  static startRetryQueueProcessor(): NodeJS.Timeout {
     console.log('[PushNotification] Starting retry queue processor');
 
     const interval = setInterval(() => {
@@ -331,7 +331,7 @@ export class PushNotificationService {
   /**
    * Stop retry queue processor
    */
-  static stopRetryQueueProcessor(interval: NodeJS.Timer): void {
+  static stopRetryQueueProcessor(interval: NodeJS.Timeout): void {
     clearInterval(interval);
     console.log('[PushNotification] Stopped retry queue processor');
   }
