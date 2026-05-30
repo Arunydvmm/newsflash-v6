@@ -37,6 +37,11 @@
       "name": "Education",
       "url": "/feed/education",
       "description": "Education news and exam updates"
+    },
+    {
+      "name": "Admin Panel",
+      "url": "/admin/newsroom",
+      "description": "AI Newsroom management"
     }
   ]
 }

@@ -48,6 +48,8 @@ model NfArticle {
   isBreaking        Boolean  @default(false)
   aiDisclosure      String   @default("This article was researched and drafted with AI assistance and reviewed by our editorial team.")
   metaDescription   String?
+  isGovernmentVerified Boolean @default(false)
+  governmentSource   String?
   ogTags            Json?
   schemaMarkup      Json?
   socialPosts       Json?
