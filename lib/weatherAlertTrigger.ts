@@ -233,7 +233,7 @@ export class WeatherAlertTrigger {
   /**
    * Stop the weather alert trigger
    */
-  static stopWeatherAlertTrigger(interval: NodeJS.Timer): void {
+  static stopWeatherAlertTrigger(interval: NodeJS.Timeout): void {
     clearInterval(interval);
     console.log('[WeatherAlertTrigger] Stopped weather alert trigger');
   }
