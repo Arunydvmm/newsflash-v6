@@ -135,7 +135,7 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
         where: { id: article.id },
         data: {
           currentStage: stage.name.toLowerCase(),
-          pipelineStatus: stage.status,
+          pipelineStatus: stage.status as any,
           content: result.modifiedContent
         }
       })
@@ -145,7 +145,7 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
         await prisma.nfArticle.update({
           where: { id: article.id },
           data: {
-            pipelineStatus: 'BLOCKED',
+            pipelineStatus: 'BLOCKED' as any,
             blockReason: `Blocked at ${stage.name} stage`
           }
         })
@@ -186,7 +186,7 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
     await prisma.nfWorkflow.update({
       where: { id: workflow.id },
       data: {
-        status: 'DRAFT_READY',
+        status: 'DRAFT_READY' as any,
         completedAt: new Date()
       }
     })
