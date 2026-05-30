@@ -5,7 +5,7 @@ import { getAuth } from '@/lib/auth'
 const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = getAuth(req)
+  const auth = getAuth()
   if (!auth || auth.role !== 'SuperAdmin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

@@ -24,4 +24,6 @@ const ArticleSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
-export default mongoose.models.Article || mongoose.model('Article', ArticleSchema)
+const ArticleModel = mongoose.models.Article || mongoose.model('Article', ArticleSchema)
+
+export default ArticleModel as any
