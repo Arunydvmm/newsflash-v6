@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
     // Get recent logs for each stage (last 10)
     const recentLogs = await prisma.nfStageLog.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { startTime: 'desc' },
       take: 100,
       include: {
         article: {
