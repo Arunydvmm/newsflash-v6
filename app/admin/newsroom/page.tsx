@@ -11,7 +11,7 @@ export default function NewsroomPage() {
   const [emergencyStop, setEmergencyStop] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showAgentReport, setShowAgentReport] = useState(false)
-  const [showWatchlist, setShowWatchlist] = useState(false)
+  const [showWatchlist, setShowWatchlist] = useState(true)
   const [showMonitoring, setShowMonitoring] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [customUrl, setCustomUrl] = useState('')
@@ -212,9 +212,21 @@ export default function NewsroomPage() {
               <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Published Today</div>
               <div style={{ fontSize: '24px', fontWeight: '700', color: '#2E7D32' }}>{stats.publishedToday}</div>
             </div>
-            <div style={{ background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Running</div>
-              <div style={{ fontSize: '32px', fontWeight: '700', color: '#1976D2' }}>{stats.pipelineRunning}</div>
+            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Pending</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#FF9800' }}>{watchlist?.filter((w: any) => w.status === 'PENDING').length || 0}</div>
+            </div>
+            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Processing</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#2196F3' }}>{watchlist?.filter((w: any) => w.status === 'PROCESSING').length || 0}</div>
+            </div>
+            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Completed</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#4CAF50' }}>{watchlist?.filter((w: any) => w.status === 'COMPLETED').length || 0}</div>
+            </div>
+            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Failed</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', color: '#F44336' }}>{watchlist?.filter((w: any) => w.status === 'FAILED').length || 0}</div>
             </div>
             <div style={{ background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
               <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Total Published</div>
