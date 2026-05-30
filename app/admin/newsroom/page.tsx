@@ -28,6 +28,9 @@ export default function NewsroomPage() {
           fetch('/api/newsroom/emergency-stop').then(res => res.json()),
           fetch('/api/pipeline/status').then(res => res.json()).catch(() => null)
         ])
+        console.log('Watchlist data received:', watchlistData)
+        console.log('Agent stats received:', agentsData)
+        console.log('Monitoring data received:', monitoringResponse)
         setStats(statusData)
         setAgentStats(agentsData)
         setWatchlist(watchlistData.watchlist || [])
