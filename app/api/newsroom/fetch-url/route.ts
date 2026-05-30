@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
 
     // Check for duplicates
     const existing = await prisma.nfArticle.findFirst({
-      where: { sourceUrl: url }
+      where: { sourceUrl: url },
+      select: { id: true }
     })
     
     if (existing) {
