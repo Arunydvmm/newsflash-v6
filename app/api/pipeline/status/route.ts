@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
                 'SENIOR_EDIT', 'BIAS_REVIEW', 'LEGAL_REVIEW', 'COPYRIGHT_REVIEW', 'SEO_REVIEW', 'CHIEF_EDITOR']
         }
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { id: 'desc' },
       take: 10,
       include: {
         article: {
