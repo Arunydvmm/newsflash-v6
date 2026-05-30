@@ -177,3 +177,20 @@ model NfSystemConfig {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+model NfWatchlist {
+  id          String   @id @default(cuid())
+  headline    String
+  sourceUrl   String
+  sourceName  String
+  region      String   @default("India")
+  priority    String   @default("STANDARD")
+  status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  errorMessage String?
+  articleId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

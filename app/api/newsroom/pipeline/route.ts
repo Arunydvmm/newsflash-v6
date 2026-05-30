@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fetchRSSFeeds } from '@/lib/newsroom/rss.service'
 import { checkDuplicate } from '@/lib/newsroom/duplicate.service'
-import { runPipeline } from '@/lib/newsroom/pipeline.service'
+import { PrismaClient } from '@prisma/client'
 import { getAuth } from '@/lib/auth'
+
+const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest) {
   const auth = getAuth()
@@ -22,25 +24,38 @@ export async function POST(req: NextRequest) {
     // Pick top 5 by newsworthiness (simplified - just take first 5)
     const top5 = feeds.slice(0, 5)
 
-    const triggered = []
+    const addedToWatchlist = []
 
     for (const story of top5) {
-      // Check for duplicates
+      // Check for duplicates in watchlist and articles
       const duplicateCheck = await checkDuplicate(story.headline)
-      if (duplicateCheck.isDuplicate) {
+      const watchlistDuplicate = await prisma.nfWatchlist.findFirst({
+        where: { headline: story.headline, status: { in: ['PENDING', 'PROCESSING'] } }
+      })
+
+      if (duplicateCheck.isDuplicate || watchlistDuplicate) {
         console.log(`Skipping duplicate: ${story.headline}`)
         continue
       }
 
-      // Run pipeline (don't await - run in background)
-      runPipeline(story).catch(error => console.error('Pipeline error for story:', story.headline, error))
-      triggered.push(story.headline)
+      // Add to watchlist instead of running immediately
+      await prisma.nfWatchlist.create({
+        data: {
+          headline: story.headline,
+          sourceUrl: story.sourceUrl,
+          sourceName: story.sourceName,
+          region: story.region || 'India',
+          priority: 'STANDARD',
+          status: 'PENDING'
+        }
+      })
+      addedToWatchlist.push(story.headline)
     }
 
-    console.log(`Triggered ${triggered.length} articles for processing`)
-    return NextResponse.json({ triggered: triggered.length, articles: triggered })
+    console.log(`Added ${addedToWatchlist.length} articles to watchlist`)
+    return NextResponse.json({ added: addedToWatchlist.length, articles: addedToWatchlist, message: 'Articles added to watchlist for sequential processing' })
   } catch (error) {
     console.error('Pipeline trigger error:', error)
-    return NextResponse.json({ error: 'Failed to trigger pipeline', details: String(error) }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to add articles to watchlist', details: String(error) }, { status: 500 })
   }
 }
