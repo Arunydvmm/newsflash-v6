@@ -31,6 +31,8 @@ export default function NewsroomPage() {
         console.log('Watchlist data received:', watchlistData)
         console.log('Agent stats received:', agentsData)
         console.log('Monitoring data received:', monitoringResponse)
+        console.log('Setting watchlist state with:', watchlistData.watchlist || [])
+        console.log('Current showWatchlist state:', showWatchlist)
         setStats(statusData)
         setAgentStats(agentsData)
         setWatchlist(watchlistData.watchlist || [])
