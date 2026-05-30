@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest) {
 
     // Update preferences
     const preferences = await UserPreference.findOneAndUpdate(
-      { userId: new mongoose.Types.ObjectId(auth.userId) },
+      { userId: new mongoose.Types.ObjectId(auth.adminId) },
       body,
       { new: true, upsert: true }
     );

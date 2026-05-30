@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get unread count
-    const count = await NotificationService.getUnreadCount(auth.userId);
+    const count = await NotificationService.getUnreadCount(auth.adminId);
 
     return NextResponse.json({
       success: true,

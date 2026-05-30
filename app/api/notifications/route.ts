@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     // Get notifications
     const { notifications, total } = await NotificationService.getUserNotifications(
-      auth.userId,
+      auth.adminId,
       limit,
       skip
     );
