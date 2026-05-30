@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { callGroq } from './groq.service'
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_STUDIO_API_KEY!)
 
@@ -95,8 +96,19 @@ export async function callGeminiPro(
           data,
           tokensUsed: Math.floor((prompt.length + cleanText.length) / 4)
         })
-      } catch (error) {
-        reject(error)
+      } catch (error: any) {
+        // Fallback to Groq if Google AI quota exceeded
+        if (error.status === 429 || error.message?.includes('quota')) {
+          console.warn('[Gemini Pro] Quota exceeded, falling back to Groq')
+          try {
+            const groqResponse = await callGroq(prompt, temperature, 2000)
+            resolve(groqResponse)
+          } catch (groqError) {
+            reject(error)
+          }
+        } else {
+          reject(error)
+        }
       }
     })
   })
@@ -131,8 +143,19 @@ export async function callGeminiFlash(
           data,
           tokensUsed: Math.floor((prompt.length + cleanText.length) / 4)
         })
-      } catch (error) {
-        reject(error)
+      } catch (error: any) {
+        // Fallback to Groq if Google AI quota exceeded
+        if (error.status === 429 || error.message?.includes('quota')) {
+          console.warn('[Gemini Flash] Quota exceeded, falling back to Groq')
+          try {
+            const groqResponse = await callGroq(prompt, temperature, 2000)
+            resolve(groqResponse)
+          } catch (groqError) {
+            reject(error)
+          }
+        } else {
+          reject(error)
+        }
       }
     })
   })
