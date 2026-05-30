@@ -101,7 +101,13 @@ export default function NewsroomPage() {
       }
       
       const data = await res.json()
-      alert(`Processed: ${data.article}`)
+      if (data.article) {
+        alert(`Processed: ${data.article}`)
+      } else if (data.message) {
+        alert(data.message)
+      } else {
+        alert('Processed successfully')
+      }
       window.location.reload()
     } catch (err) {
       alert('Failed to process item')
