@@ -35,6 +35,24 @@ export default function NewsroomPage() {
     }
   }
 
+  const toggleEmergencyStop = async () => {
+    if (!confirm('EMERGENCY KILL SWITCH: This will stop all pipeline jobs. Are you sure?')) return
+    try {
+      const res = await fetch('/api/newsroom/emergency-stop', {
+        method: 'POST'
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert('Emergency kill switch activated')
+        window.location.reload()
+      } else {
+        alert(data.error || 'Failed to activate kill switch')
+      }
+    } catch (err) {
+      alert('Failed to activate kill switch')
+    }
+  }
+
 
   return (
     <AdminShell>
@@ -92,6 +110,21 @@ export default function NewsroomPage() {
               }}
             >
               Trigger Pipeline (RSS)
+            </button>
+            <button
+              onClick={toggleEmergencyStop}
+              style={{
+                background: '#000000',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              🚨 EMERGENCY KILL SWITCH
             </button>
           </div>
         </div>
