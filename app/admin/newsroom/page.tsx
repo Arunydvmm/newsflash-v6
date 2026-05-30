@@ -7,28 +7,45 @@ export default function NewsroomPage() {
   const [stats, setStats] = useState(null)
   const [agentStats, setAgentStats] = useState(null)
   const [watchlist, setWatchlist] = useState(null)
+  const [monitoringData, setMonitoringData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showAgentReport, setShowAgentReport] = useState(false)
   const [showWatchlist, setShowWatchlist] = useState(false)
+  const [showMonitoring, setShowMonitoring] = useState(false)
   const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/newsroom/status').then(res => res.json()),
-      fetch('/api/newsroom/agents').then(res => res.json()),
-      fetch('/api/newsroom/queue/process').then(res => res.json())
-    ])
-      .then(([statusData, agentsData, watchlistData]) => {
+    const fetchData = async () => {
+      try {
+        const [statusData, agentsData, watchlistData, monitoringResponse] = await Promise.all([
+          fetch('/api/newsroom/status').then(res => res.json()),
+          fetch('/api/newsroom/agents').then(res => res.json()),
+          fetch('/api/newsroom/queue/process').then(res => res.json()),
+          fetch('/api/newsroom/monitoring').then(res => res.json())
+        ])
         setStats(statusData)
         setAgentStats(agentsData)
         setWatchlist(watchlistData.watchlist || [])
+        setMonitoringData(monitoringResponse)
         setLoading(false)
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Failed to fetch newsroom stats:', err)
         setLoading(false)
-      })
-  }, [])
+      }
+    }
+
+    fetchData()
+
+    // Auto-refresh monitoring data every 5 seconds if monitoring view is open
+    let interval: NodeJS.Timeout
+    if (showMonitoring) {
+      interval = setInterval(fetchData, 5000)
+    }
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [showMonitoring])
 
   const triggerPipeline = async () => {
     if (!confirm('Trigger AI newsroom pipeline? This will fetch RSS feeds and add articles to watchlist.')) return
@@ -78,6 +95,28 @@ export default function NewsroomPage() {
       alert('Failed to process item')
       console.error(err)
       setProcessing(false)
+    }
+  }
+
+  const controlArticle = async (articleId: string, action: string, reason?: string) => {
+    try {
+      const res = await fetch(`/api/newsroom/articles/${articleId}/control`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, reason })
+      })
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        alert(`Failed: ${errorData.error || 'Unknown error'}`)
+        return
+      }
+      
+      alert('Action completed successfully')
+      window.location.reload()
+    } catch (err) {
+      alert('Failed to control article')
+      console.error(err)
     }
   }
 
@@ -186,6 +225,21 @@ export default function NewsroomPage() {
               }}
             >
               📋 Watchlist ({watchlist?.filter((w: any) => w.status === 'PENDING').length || 0})
+            </button>
+            <button
+              onClick={() => setShowMonitoring(!showMonitoring)}
+              style={{
+                background: '#E65100',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              🔴 Live Monitor
             </button>
             <button
               onClick={toggleEmergencyStop}
@@ -342,6 +396,202 @@ export default function NewsroomPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {showMonitoring && monitoringData && (
+          <div style={{ marginTop: '32px', background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>🔴 Live Pipeline Monitor</h2>
+              <div style={{ fontSize: '12px', color: '#666' }}>Auto-refreshing every 5s</div>
+            </div>
+
+            {/* Watchlist Status */}
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#FFF3E0', borderRadius: '4px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Watchlist Status</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>Pending</div>
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#FF9800' }}>{monitoringData.watchlistStatus.pending}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>Processing</div>
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#2196F3' }}>{monitoringData.watchlistStatus.processing}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>Completed</div>
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#4CAF50' }}>{monitoringData.watchlistStatus.completed}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>Failed</div>
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#F44336' }}>{monitoringData.watchlistStatus.failed}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Currently Processing */}
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Currently Processing</h3>
+              {monitoringData.processingArticles.length === 0 ? (
+                <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '4px', color: '#666', fontSize: '12px' }}>
+                  No articles currently processing
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {monitoringData.processingArticles.map((article: any) => (
+                    <div key={article.id} style={{ border: '1px solid #2196F3', borderRadius: '4px', padding: '12px', background: '#E3F2FD' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>{article.title}</div>
+                          <div style={{ fontSize: '12px', color: '#666' }}>
+                            {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
+                          </div>
+                        </div>
+                        <span style={{
+                          fontSize: '11px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontWeight: '600',
+                          background: '#2196F3',
+                          color: 'white'
+                        }}>
+                          {article.currentStage}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#1976D2', marginBottom: '8px' }}>
+                        Status: {article.pipelineStatus}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <button
+                          onClick={() => {
+                            const reason = prompt('Enter reason for stopping:')
+                            if (reason) controlArticle(article.id, 'stop', reason)
+                          }}
+                          style={{
+                            background: '#F44336',
+                            color: 'white',
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
+                          ⏹ Stop
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm('Delete this article? This cannot be undone.')) {
+                              controlArticle(article.id, 'delete')
+                            }
+                          }}
+                          style={{
+                            background: '#9E9E9E',
+                            color: 'white',
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
+                          🗑 Delete
+                        </button>
+                        <button
+                          onClick={() => {
+                            const suggestion = prompt('Enter edit suggestion for the agent:')
+                            if (suggestion) controlArticle(article.id, 'suggest_edit', suggestion)
+                          }}
+                          style={{
+                            background: '#FF9800',
+                            color: 'white',
+                            border: 'none',
+                            padding: '6px 12px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            fontWeight: '600'
+                          }}
+                        >
+                          ✏ Suggest Edit
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Blocked Articles */}
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Blocked Articles</h3>
+              {monitoringData.blockedArticles.length === 0 ? (
+                <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '4px', color: '#666', fontSize: '12px' }}>
+                  No blocked articles
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {monitoringData.blockedArticles.map((article: any) => (
+                    <div key={article.id} style={{ border: '1px solid #F44336', borderRadius: '4px', padding: '12px', background: '#FFEBEE' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>{article.title}</div>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+                        {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#C62828' }}>
+                        Reason: {article.blockReason}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Recent Activity */}
+            <div>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Recent Activity</h3>
+              {monitoringData.recentActivity.length === 0 ? (
+                <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '4px', color: '#666', fontSize: '12px' }}>
+                  No recent activity
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {monitoringData.recentActivity.map((log: any) => (
+                    <div key={log.id} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>{log.article.title}</div>
+                          <div style={{ fontSize: '11px', color: '#666' }}>
+                            Stage: {log.stageName} • {new Date(log.startTime).toLocaleString()}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '11px', color: '#666' }}>
+                            Confidence: {(log.confidence * 100).toFixed(0)}%
+                          </div>
+                          <span style={{
+                            fontSize: '10px',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontWeight: '600',
+                            background: log.stageStatus === 'COMPLETED' ? '#4CAF50' : '#FF9800',
+                            color: 'white'
+                          }}>
+                            {log.stageStatus}
+                          </span>
+                        </div>
+                      </div>
+                      {log.recommendation && (
+                        <div style={{ fontSize: '11px', color: '#666' }}>
+                          Recommendation: {log.recommendation}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
