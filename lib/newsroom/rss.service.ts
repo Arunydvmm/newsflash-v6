@@ -1,17 +1,46 @@
 import Parser from 'rss-parser'
 
 const FEEDS = [
-  // India
-  { url: 'https://feeds.feedburner.com/ndtvnews-top-stories', region: 'India', name: 'NDTV' },
-  { url: 'https://timesofindia.indiatimes.com/rssfeeds/-2128936835.xml', region: 'India', name: 'Times of India' },
-  { url: 'https://www.thehindu.com/news/national/?service=rss', region: 'India', name: 'The Hindu' },
-  { url: 'https://feeds.bbci.co.uk/news/world/asia/india/rss.xml', region: 'India', name: 'BBC India' },
-  { url: 'https://www.hindustantimes.com/rss/top-news.xml', region: 'India', name: 'Hindustan Times' },
-  // International
-  { url: 'https://feeds.reuters.com/reuters/topNews', region: 'International', name: 'Reuters' },
-  { url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', region: 'International', name: 'NYT World' },
-  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml', region: 'International', name: 'BBC World' },
-  { url: 'https://www.aljazeera.com/xml/rss/all.xml', region: 'International', name: 'Al Jazeera' }
+  {
+    url: 'https://feeds.feedburner.com/ndtvnews-top-stories',
+    region: 'India',
+    source: 'NDTV'
+  },
+  {
+    url: 'https://www.thehindu.com/news/feeder/default.rss',
+    region: 'India',
+    source: 'The Hindu'
+  },
+  {
+    url: 'https://feeds.bbci.co.uk/news/world/asia/india/rss.xml',
+    region: 'India',
+    source: 'BBC India'
+  },
+  {
+    url: 'https://feeds.bbci.co.uk/news/world/rss.xml',
+    region: 'International',
+    source: 'BBC World'
+  },
+  {
+    url: 'https://www.aljazeera.com/xml/rss/all.xml',
+    region: 'International',
+    source: 'Al Jazeera'
+  },
+  {
+    url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
+    region: 'International',
+    source: 'NY Times'
+  },
+  {
+    url: 'https://timesofindia.indiatimes.com/rssfeeds/296589292.cms',
+    region: 'India',
+    source: 'Times of India'
+  },
+  {
+    url: 'https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml',
+    region: 'India',
+    source: 'Hindustan Times'
+  }
 ]
 
 export interface RSSItem {
@@ -38,14 +67,14 @@ export async function fetchRSSFeeds(): Promise<RSSItem[]> {
           results.push({
             headline: item.title || '',
             sourceUrl: item.link || '',
-            sourceName: feed.name,
+            sourceName: feed.source,
             publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
             contentSnippet: item.contentSnippet || item.content || ''
           })
         }
       }
     } catch (error) {
-      console.error(`Failed to fetch feed ${feed.name}:`, error)
+      console.error(`Failed to fetch feed ${feed.source}:`, error)
       // Skip failed feeds - continue with rest
     }
   }
