@@ -14,6 +14,7 @@ export default function NewsroomPage() {
   const [showWatchlist, setShowWatchlist] = useState(false)
   const [showMonitoring, setShowMonitoring] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [customUrl, setCustomUrl] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,6 +97,40 @@ export default function NewsroomPage() {
       window.location.reload()
     } catch (err) {
       alert('Failed to process item')
+      console.error(err)
+      setProcessing(false)
+    }
+  }
+
+  const fetchFromUrl = async () => {
+    if (!customUrl.trim()) {
+      alert('Please enter a URL')
+      return
+    }
+    
+    if (!confirm(`Fetch article from URL: ${customUrl}?`)) return
+    
+    setProcessing(true)
+    try {
+      const res = await fetch('/api/newsroom/fetch-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: customUrl })
+      })
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        alert(`Failed: ${errorData.error || 'Unknown error'}`)
+        setProcessing(false)
+        return
+      }
+      
+      const data = await res.json()
+      alert(`Added article to watchlist: ${data.headline}`)
+      setCustomUrl('')
+      window.location.reload()
+    } catch (err) {
+      alert('Failed to fetch from URL')
       console.error(err)
       setProcessing(false)
     }
@@ -190,7 +225,7 @@ export default function NewsroomPage() {
 
         <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
           <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Actions</h2>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
             <button
               onClick={triggerPipeline}
               style={{
@@ -259,10 +294,28 @@ export default function NewsroomPage() {
             >
               🔴 Live Monitor
             </button>
-            <button
-              onClick={toggleEmergencyStop}
+          </div>
+          
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              placeholder="Paste article URL to fetch..."
+              value={customUrl}
+              onChange={(e) => setCustomUrl(e.target.value)}
               style={{
-                background: emergencyStop ? '#4CAF50' : '#000000',
+                flex: '1',
+                minWidth: '200px',
+                padding: '10px 12px',
+                borderRadius: '4px',
+                border: '1px solid #e0e0e0',
+                fontSize: '12px'
+              }}
+            />
+            <button
+              onClick={fetchFromUrl}
+              disabled={processing}
+              style={{
+                background: '#2E7D32',
                 color: 'white',
                 border: 'none',
                 padding: '10px 16px',
@@ -270,11 +323,10 @@ export default function NewsroomPage() {
                 cursor: 'pointer',
                 fontSize: '12px',
                 fontWeight: '600',
-                flex: '1 1 auto',
-                minWidth: '120px'
+                minWidth: '100px'
               }}
             >
-              🚨 Emergency ({emergencyStop ? 'ON' : 'OFF'})
+              {processing ? 'Fetching...' : 'Fetch URL'}
             </button>
           </div>
         </div>
