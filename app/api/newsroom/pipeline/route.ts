@@ -12,6 +12,11 @@ export async function POST(req: NextRequest) {
   try {
     // Fetch RSS feeds
     const feeds = await fetchRSSFeeds()
+    console.log(`Fetched ${feeds.length} articles from RSS feeds`)
+
+    if (feeds.length === 0) {
+      return NextResponse.json({ triggered: 0, articles: [], message: 'No articles fetched from RSS feeds' })
+    }
 
     // Pick top 5 by newsworthiness (simplified - just take first 5)
     const top5 = feeds.slice(0, 5)
@@ -27,13 +32,14 @@ export async function POST(req: NextRequest) {
       }
 
       // Run pipeline (don't await - run in background)
-      runPipeline(story).catch(console.error)
+      runPipeline(story).catch(error => console.error('Pipeline error for story:', story.headline, error))
       triggered.push(story.headline)
     }
 
+    console.log(`Triggered ${triggered.length} articles for processing`)
     return NextResponse.json({ triggered: triggered.length, articles: triggered })
   } catch (error) {
     console.error('Pipeline trigger error:', error)
-    return NextResponse.json({ error: 'Failed to trigger pipeline' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to trigger pipeline', details: String(error) }, { status: 500 })
   }
 }
