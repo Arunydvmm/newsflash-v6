@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     // Log to audit
     await prisma.nfAuditLog.create({
       data: {
-        articleId: 'SYSTEM',
+        articleId: null,
         action: 'EMERGENCY_STOP',
         performedBy: auth.username,
         reason: 'Emergency kill switch activated by admin',

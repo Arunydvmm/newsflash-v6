@@ -156,13 +156,13 @@ model NfSource {
 
 model NfAuditLog {
   id          String   @id @default(cuid())
-  articleId   String
+  articleId   String?
   action      String
   performedBy String
   reason      String?
   metadata    Json?
   createdAt   DateTime @default(now())
-  article     NfArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  article     NfArticle? @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@index([articleId])
   @@index([action])

@@ -25,13 +25,21 @@ export default function NewsroomPage() {
     try {
       const res = await fetch('/api/newsroom/pipeline', {
         method: 'POST',
-        headers: { 'x-scheduler-secret': process.env.SCHEDULER_SECRET || 'dev-secret' }
+        headers: { 'x-scheduler-secret': 'dev-secret' }
       })
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        alert(`Failed: ${errorData.error || 'Unknown error'}`)
+        return
+      }
+      
       const data = await res.json()
-      alert(`Triggered: ${data.triggered} articles`)
+      alert(`Triggered: ${data.triggered || 0} articles`)
       window.location.reload()
     } catch (err) {
       alert('Failed to trigger pipeline')
+      console.error(err)
     }
   }
 
