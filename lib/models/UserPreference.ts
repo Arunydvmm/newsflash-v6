@@ -139,6 +139,5 @@ const UserPreferenceSchema = new Schema<IUserPreference>(
   }
 );
 
-export const UserPreference =
-  mongoose.models.UserPreference ||
+export default mongoose.models.UserPreference ||
   mongoose.model<IUserPreference>('UserPreference', UserPreferenceSchema);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserPreference } from '@/lib/models/UserPreference';
+import UserPreference from '@/lib/models/UserPreference';
 import { verifyAuth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import mongoose from 'mongoose';
