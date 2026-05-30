@@ -15,22 +15,25 @@ export default function NewsroomPage() {
   const [showMonitoring, setShowMonitoring] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [customUrl, setCustomUrl] = useState('')
+  const [pipelineStatus, setPipelineStatus] = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statusData, agentsData, watchlistData, monitoringResponse, emergencyResponse] = await Promise.all([
+        const [statusData, agentsData, watchlistData, monitoringResponse, emergencyResponse, pipelineStatusResponse] = await Promise.all([
           fetch('/api/newsroom/status').then(res => res.json()),
           fetch('/api/newsroom/agents').then(res => res.json()),
           fetch('/api/newsroom/queue/process').then(res => res.json()),
           fetch('/api/newsroom/monitoring').then(res => res.json()),
-          fetch('/api/newsroom/emergency-stop').then(res => res.json())
+          fetch('/api/newsroom/emergency-stop').then(res => res.json()),
+          fetch('/api/pipeline/status').then(res => res.json()).catch(() => null)
         ])
         setStats(statusData)
         setAgentStats(agentsData)
         setWatchlist(watchlistData.watchlist || [])
         setMonitoringData(monitoringResponse)
         setEmergencyStop(emergencyResponse.emergencyStop || false)
+        setPipelineStatus(pipelineStatusResponse)
         setLoading(false)
       } catch (err) {
         console.error('Failed to fetch newsroom stats:', err)
@@ -107,6 +110,13 @@ export default function NewsroomPage() {
       alert('Please enter a URL')
       return
     }
+
+    // Validate URL format
+    const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/
+    if (!urlRegex.test(customUrl.trim())) {
+      alert('Invalid URL format. URL must start with http:// or https://')
+      return
+    }
     
     if (!confirm(`Fetch article from URL: ${customUrl}?`)) return
     
@@ -115,7 +125,7 @@ export default function NewsroomPage() {
       const res = await fetch('/api/newsroom/fetch-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: customUrl })
+        body: JSON.stringify({ url: customUrl.trim() })
       })
       
       if (!res.ok) {
@@ -234,6 +244,57 @@ export default function NewsroomPage() {
             </div>
           </div>
         ) : null}
+
+        {/* Pipeline Stage Tiles */}
+        {pipelineStatus && (
+          <div style={{ marginTop: '24px', background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>Pipeline Stages</h2>
+              <div style={{ fontSize: '11px', color: '#666' }}>
+                {pipelineStatus.isRunning ? '🔄 Running' : '⏸️ Idle'}
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' }}>
+              {pipelineStatus.stageStatuses?.map((stage: any) => (
+                <div
+                  key={stage.name}
+                  style={{
+                    padding: '12px',
+                    borderRadius: '6px',
+                    border: '1px solid #e0e0e0',
+                    background: stage.status === 'running' ? '#E3F2FD' : 
+                              stage.status === 'done' ? '#E8F5E9' : '#F5F5F5',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onClick={() => {
+                    alert(`Stage: ${stage.name}\nStatus: ${stage.status}\nLast Article: ${stage.lastArticle || 'None'}`)
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: '#333' }}>{stage.name}</div>
+                    <span style={{
+                      fontSize: '9px',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontWeight: '600',
+                      background: stage.status === 'running' ? '#2196F3' : 
+                                stage.status === 'done' ? '#4CAF50' : '#9E9E9E',
+                      color: 'white'
+                    }}>
+                      {stage.status}
+                    </span>
+                  </div>
+                  {stage.lastArticle && (
+                    <div style={{ fontSize: '10px', color: '#666', marginTop: '4px' }}>
+                      {stage.lastArticle.substring(0, 30)}...
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
           <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Actions</h2>
