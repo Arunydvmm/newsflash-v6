@@ -106,6 +106,7 @@ WeatherAlertSchema.index({ userId: 1, alertType: 1 });
 WeatherAlertSchema.index({ userId: 1, severity: 1 });
 WeatherAlertSchema.index({ createdAt: 1 }, { expireAfterSeconds: 2592000 }); // 30 days TTL
 
-export const WeatherAlert =
-  mongoose.models.WeatherAlert ||
+const WeatherAlertModel = mongoose.models.WeatherAlert ||
   mongoose.model<IWeatherAlert>('WeatherAlert', WeatherAlertSchema);
+
+export default WeatherAlertModel as any;

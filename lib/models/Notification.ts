@@ -78,6 +78,7 @@ NotificationSchema.index({ userId: 1, createdAt: -1 });
 NotificationSchema.index({ userId: 1, read: 1 });
 NotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 2592000 }); // 30 days TTL
 
-export const Notification =
-  mongoose.models.Notification ||
+const NotificationModel = mongoose.models.Notification ||
   mongoose.model<INotification>('Notification', NotificationSchema);
+
+export default NotificationModel as any;

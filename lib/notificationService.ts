@@ -1,6 +1,7 @@
-import { Notification, INotification } from './models/Notification';
+import { INotification } from './models/Notification';
+import Notification from './models/Notification';
 import UserPreference from './models/UserPreference';
-import { WeatherAlert } from './models/WeatherAlert';
+import WeatherAlert from './models/WeatherAlert';
 import mongoose from 'mongoose';
 
 export interface WeatherChangeData {
