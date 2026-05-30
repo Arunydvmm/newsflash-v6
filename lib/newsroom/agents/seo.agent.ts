@@ -1,4 +1,4 @@
-import { callGroq } from '../groq.service'
+import { callAIProvider } from '../provider.service'
 
 interface AgentInput {
   articleId: string
@@ -44,7 +44,7 @@ Return JSON:
 }
 `
 
-  const result = await callGroq(prompt, 0.3)
+  const result = await callAIProvider('SEO_REVIEW', prompt, 0.3, 2000)
   const processingMs = Date.now() - startTime
 
   return {

@@ -1,4 +1,4 @@
-import { callGeminiPro } from '../gemini.service'
+import { callAIProvider } from '../provider.service'
 
 interface AgentInput {
   articleId: string
@@ -43,7 +43,7 @@ Return JSON:
 }
 `
 
-  const result = await callGeminiPro(prompt, 0.3)
+  const result = await callAIProvider('CHIEF_EDITOR', prompt, 0.3, 2000)
   const processingMs = Date.now() - startTime
 
   return {

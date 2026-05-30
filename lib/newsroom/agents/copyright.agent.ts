@@ -1,4 +1,4 @@
-import { callGeminiPro } from '../gemini.service'
+import { callAIProvider } from '../provider.service'
 
 interface AgentInput {
   articleId: string
@@ -44,7 +44,7 @@ Return JSON:
 }
 `
 
-  const result = await callGeminiPro(prompt, 0.2)
+  const result = await callAIProvider('COPYRIGHT', prompt, 0.2, 1000)
   const processingMs = Date.now() - startTime
 
   // HARD RULE: If plagiarism score > 0.60 or copyright verdict is BLOCKED, BLOCK the pipeline

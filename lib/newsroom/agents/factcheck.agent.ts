@@ -1,4 +1,4 @@
-import { callGeminiPro } from '../gemini.service'
+import { callAIProvider } from '../provider.service'
 
 interface AgentInput {
   articleId: string
@@ -48,7 +48,7 @@ Return JSON:
 }
 `
 
-  const result = await callGeminiPro(prompt, 0.2)
+  const result = await callAIProvider('FACT_CHECK', prompt, 0.2, 2000)
   const processingMs = Date.now() - startTime
 
   const falseClaims = result.data.stageReport.claims?.filter((c: any) => c.verdict === 'FALSE').length || 0

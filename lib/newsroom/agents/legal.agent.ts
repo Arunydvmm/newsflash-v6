@@ -1,4 +1,4 @@
-import { callGeminiPro } from '../gemini.service'
+import { callAIProvider } from '../provider.service'
 
 interface AgentInput {
   articleId: string
@@ -42,7 +42,7 @@ Return JSON:
 }
 `
 
-  const result = await callGeminiPro(prompt, 0.2)
+  const result = await callAIProvider('LEGAL_REVIEW', prompt, 0.2, 2000)
   const processingMs = Date.now() - startTime
 
   // HARD RULE: If legal verdict is BLOCKED, BLOCK the pipeline
