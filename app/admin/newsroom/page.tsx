@@ -5,13 +5,18 @@ import AdminShell from '@/components/admin/AdminShell'
 
 export default function NewsroomPage() {
   const [stats, setStats] = useState(null)
+  const [agentStats, setAgentStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showAgentReport, setShowAgentReport] = useState(false)
 
   useEffect(() => {
-    fetch('/api/newsroom/status')
-      .then(res => res.json())
-      .then(data => {
-        setStats(data)
+    Promise.all([
+      fetch('/api/newsroom/status').then(res => res.json()),
+      fetch('/api/newsroom/agents').then(res => res.json())
+    ])
+      .then(([statusData, agentsData]) => {
+        setStats(statusData)
+        setAgentStats(agentsData)
         setLoading(false)
       })
       .catch(err => {
@@ -119,6 +124,21 @@ export default function NewsroomPage() {
               Trigger Pipeline (RSS)
             </button>
             <button
+              onClick={() => setShowAgentReport(!showAgentReport)}
+              style={{
+                background: '#1976D2',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              📊 Agent Report Cards
+            </button>
+            <button
               onClick={toggleEmergencyStop}
               style={{
                 background: '#000000',
@@ -135,6 +155,86 @@ export default function NewsroomPage() {
             </button>
           </div>
         </div>
+
+        {showAgentReport && agentStats && (
+          <div style={{ marginTop: '32px', background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Agent Report Cards</h2>
+            
+            {agentStats.overview && (
+              <div style={{ marginBottom: '24px', padding: '16px', background: '#f5f5f5', borderRadius: '4px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Pipeline Overview</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>Total Articles</div>
+                    <div style={{ fontSize: '20px', fontWeight: '700' }}>{agentStats.overview.totalArticles}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>Published</div>
+                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#2E7D32' }}>{agentStats.overview.publishedArticles}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>Draft Ready</div>
+                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#1976D2' }}>{agentStats.overview.draftReadyArticles}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>Blocked</div>
+                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#C62828' }}>{agentStats.overview.blockedArticles}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>Success Rate</div>
+                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#2E7D32' }}>{agentStats.overview.successRate}%</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+              {agentStats.agentStats.map((agent: any) => (
+                <div key={agent.stage} style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', margin: 0 }}>{agent.stage}</h3>
+                    <span style={{ fontSize: '12px', background: '#1976D2', color: 'white', padding: '4px 8px', borderRadius: '4px' }}>
+                      {agent.totalRuns} runs
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px' }}>
+                    <div>
+                      <div style={{ color: '#666' }}>Avg Confidence</div>
+                      <div style={{ fontSize: '16px', fontWeight: '600' }}>{(agent.avgConfidence * 100).toFixed(1)}%</div>
+                    </div>
+                    <div>
+                      <div style={{ color: '#666' }}>Avg Tokens</div>
+                      <div style={{ fontSize: '16px', fontWeight: '600' }}>{agent.avgTokens.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: '#666' }}>Avg Time</div>
+                      <div style={{ fontSize: '16px', fontWeight: '600' }}>{(agent.avgProcessingTime / 1000).toFixed(2)}s</div>
+                    </div>
+                    <div>
+                      <div style={{ color: '#666' }}>Total Tokens</div>
+                      <div style={{ fontSize: '16px', fontWeight: '600' }}>{agent.totalTokens.toLocaleString()}</div>
+                    </div>
+                  </div>
+
+                  {agent.recentLogs && agent.recentLogs.length > 0 && (
+                    <div style={{ marginTop: '12px', borderTop: '1px solid #e0e0e0', paddingTop: '12px' }}>
+                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>Recent Activity</div>
+                      {agent.recentLogs.slice(0, 3).map((log: any, idx: number) => (
+                        <div key={idx} style={{ fontSize: '11px', padding: '4px 0', borderBottom: idx < 2 ? '1px solid #f0f0f0' : 'none' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#666' }}>{log.stageStatus}</span>
+                            <span>{(log.confidence * 100).toFixed(0)}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div style={{ marginTop: '32px', background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
           <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Pipeline Stages</h2>
