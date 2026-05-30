@@ -1,8 +1,3 @@
-I have a Next.js 14 project using MongoDB + Mongoose.
-Create ONE new file only: /lib/newsroom/gemini.ts
-
-This file calls Google AI Studio API.
-
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
 export async function callGemini(
@@ -33,6 +28,3 @@ export async function callGemini(
     }
   }
 }
-
-Also run: npm install @google/generative-ai
-Do not touch any existing files.

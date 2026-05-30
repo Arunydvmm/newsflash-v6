@@ -1,9 +1,3 @@
-I have Next.js 14 + MongoDB + Mongoose.
-I have /lib/newsroom/agents.ts already built.
-I have /app/models/NfArticle.ts already created.
-Create ONE file only: /lib/newsroom/pipeline.ts
-Do not touch any existing files.
-
 // @ts-nocheck
 import { connectDB } from '@/lib/db'
 import NfArticle from '@/app/models/NfArticle'

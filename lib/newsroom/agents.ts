@@ -1,13 +1,3 @@
-I have Next.js 14 + MongoDB + Mongoose project.
-I have /lib/newsroom/gemini.ts and /lib/newsroom/groq.ts already.
-Create ONE new file only: /lib/newsroom/agents.ts
-Do not touch any existing files.
-
-This file exports 11 agent functions.
-Each agent takes (article: any) and returns:
-{ modifiedContent, report, confidence, recommendation }
-recommendation: 'PROCEED' | 'ESCALATE' | 'BLOCK'
-
 import { callGemini } from './gemini'
 import { callGroq } from './groq'
 

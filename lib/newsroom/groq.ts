@@ -1,9 +1,3 @@
-I have a Next.js 14 project using MongoDB + Mongoose.
-Create ONE new file only: /lib/newsroom/groq.ts
-
-My project already uses Groq in /app/api/sarkari/ai-detail/route.ts
-Follow the exact same fetch pattern.
-
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 export async function callGroq(
@@ -44,5 +38,3 @@ export async function callGroq(
     }
   }
 }
-
-Do not touch any existing files.

@@ -1,7 +1,3 @@
-I have a Next.js 14 project.
-Create ONE new file only: /lib/newsroom/rss.ts
-Run: npm install rss-parser
-
 import Parser from 'rss-parser'
 
 const FEEDS = [
@@ -49,5 +45,3 @@ export async function fetchRSSFeeds(): Promise<RSSItem[]> {
     return true
   }).slice(0, 20)
 }
-
-Do not touch any existing files.

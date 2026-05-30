@@ -1,8 +1,3 @@
-I have a Next.js 14 project using MongoDB + Mongoose.
-Existing models are in /app/models/ folder.
-Create ONE new file: /app/models/NfArticle.ts
-Do NOT touch any existing model files.
-
 // @ts-nocheck
 import mongoose, { Schema } from 'mongoose'
 
