@@ -518,9 +518,31 @@ export default function NewsroomPage() {
                       <div key={article.id} style={{ border: '1px solid #2196F3', borderRadius: '4px', padding: '10px', background: '#E3F2FD' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '6px' }}>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '3px' }}>{article.title}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+                              <div style={{ fontSize: '13px', fontWeight: '600' }}>{article.title}</div>
+                              {article.isGovernmentVerified && (
+                                <span style={{
+                                  fontSize: '9px',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  fontWeight: '600',
+                                  background: '#4CAF50',
+                                  color: 'white',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '2px'
+                                }}>
+                                  ✓ Verified
+                                </span>
+                              )}
+                            </div>
                             <div style={{ fontSize: '11px', color: '#666' }}>
                               {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
+                              {article.isGovernmentVerified && article.governmentSource && (
+                                <span style={{ color: '#4CAF50', marginLeft: '8px', fontWeight: '600' }}>
+                                  • {article.governmentSource}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <span style={{
