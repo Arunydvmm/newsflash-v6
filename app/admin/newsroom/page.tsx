@@ -8,6 +8,7 @@ export default function NewsroomPage() {
   const [agentStats, setAgentStats] = useState(null)
   const [watchlist, setWatchlist] = useState(null)
   const [monitoringData, setMonitoringData] = useState(null)
+  const [emergencyStop, setEmergencyStop] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showAgentReport, setShowAgentReport] = useState(false)
   const [showWatchlist, setShowWatchlist] = useState(false)
@@ -17,16 +18,18 @@ export default function NewsroomPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statusData, agentsData, watchlistData, monitoringResponse] = await Promise.all([
+        const [statusData, agentsData, watchlistData, monitoringResponse, emergencyResponse] = await Promise.all([
           fetch('/api/newsroom/status').then(res => res.json()),
           fetch('/api/newsroom/agents').then(res => res.json()),
           fetch('/api/newsroom/queue/process').then(res => res.json()),
-          fetch('/api/newsroom/monitoring').then(res => res.json())
+          fetch('/api/newsroom/monitoring').then(res => res.json()),
+          fetch('/api/newsroom/emergency-stop').then(res => res.json())
         ])
         setStats(statusData)
         setAgentStats(agentsData)
         setWatchlist(watchlistData.watchlist || [])
         setMonitoringData(monitoringResponse)
+        setEmergencyStop(emergencyResponse.emergencyStop || false)
         setLoading(false)
       } catch (err) {
         console.error('Failed to fetch newsroom stats:', err)
@@ -121,20 +124,27 @@ export default function NewsroomPage() {
   }
 
   const toggleEmergencyStop = async () => {
-    if (!confirm('EMERGENCY KILL SWITCH: This will stop all pipeline jobs. Are you sure?')) return
+    const action = emergencyStop ? 'deactivate' : 'activate'
+    const confirmMessage = emergencyStop 
+      ? 'Deactivate emergency kill switch? Pipeline will resume processing.' 
+      : 'EMERGENCY KILL SWITCH: This will stop all pipeline jobs. Are you sure?'
+    
+    if (!confirm(confirmMessage)) return
     try {
       const res = await fetch('/api/newsroom/emergency-stop', {
-        method: 'POST'
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
       })
       const data = await res.json()
       if (data.success) {
-        alert('Emergency kill switch activated')
-        window.location.reload()
+        setEmergencyStop(data.emergencyStop)
+        alert(emergencyStop ? 'Emergency kill switch deactivated' : 'Emergency kill switch activated')
       } else {
-        alert(data.error || 'Failed to activate kill switch')
+        alert(data.error || 'Failed to toggle kill switch')
       }
     } catch (err) {
-      alert('Failed to activate kill switch')
+      alert('Failed to toggle kill switch')
     }
   }
 
@@ -244,7 +254,7 @@ export default function NewsroomPage() {
             <button
               onClick={toggleEmergencyStop}
               style={{
-                background: '#000000',
+                background: emergencyStop ? '#4CAF50' : '#000000',
                 color: 'white',
                 border: 'none',
                 padding: '12px 24px',
@@ -254,7 +264,7 @@ export default function NewsroomPage() {
                 fontWeight: '600'
               }}
             >
-              🚨 EMERGENCY KILL SWITCH
+              🚨 EMERGENCY KILL SWITCH ({emergencyStop ? 'ON' : 'OFF'})
             </button>
           </div>
         </div>
@@ -438,37 +448,153 @@ export default function NewsroomPage() {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {monitoringData.processingArticles.map((article: any) => (
-                    <div key={article.id} style={{ border: '1px solid #2196F3', borderRadius: '4px', padding: '12px', background: '#E3F2FD' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>{article.title}</div>
-                          <div style={{ fontSize: '12px', color: '#666' }}>
-                            {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
+                  {monitoringData.processingArticles.map((article: any) => {
+                    const stages = ['MONITORING', 'RESEARCH', 'EXTRACTION', 'FACT_CHECK', 'JUNIOR_DRAFT', 'SENIOR_EDIT', 'BIAS_REVIEW', 'LEGAL_REVIEW', 'COPYRIGHT_REVIEW', 'SEO_REVIEW', 'CHIEF_EDITOR']
+                    const currentStageIndex = stages.indexOf(article.currentStage?.toUpperCase())
+                    
+                    return (
+                      <div key={article.id} style={{ border: '1px solid #2196F3', borderRadius: '4px', padding: '12px', background: '#E3F2FD' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>{article.title}</div>
+                            <div style={{ fontSize: '12px', color: '#666' }}>
+                              {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
+                            </div>
+                          </div>
+                          <span style={{
+                            fontSize: '11px',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontWeight: '600',
+                            background: '#2196F3',
+                            color: 'white'
+                          }}>
+                            {article.currentStage}
+                          </span>
+                        </div>
+                        
+                        {/* Horizontal Progress Bar */}
+                        <div style={{ marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
+                            {stages.map((stage, index) => {
+                              const isCompleted = index < currentStageIndex
+                              const isCurrent = index === currentStageIndex
+                              const isPending = index > currentStageIndex
+                              
+                              return (
+                                <div
+                                  key={stage}
+                                  style={{
+                                    flex: 1,
+                                    height: '8px',
+                                    borderRadius: '2px',
+                                    background: isCompleted ? '#4CAF50' : isCurrent ? '#2196F3' : '#E0E0E0',
+                                    transition: 'background 0.3s'
+                                  }}
+                                  title={stage}
+                                />
+                              )
+                            })}
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#666', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>MONITORING</span>
+                            <span>CHIEF_EDITOR</span>
                           </div>
                         </div>
-                        <span style={{
-                          fontSize: '11px',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontWeight: '600',
-                          background: '#2196F3',
-                          color: 'white'
-                        }}>
-                          {article.currentStage}
-                        </span>
+                        
+                        <div style={{ fontSize: '11px', color: '#1976D2', marginBottom: '8px' }}>
+                          Status: {article.pipelineStatus} • Stage {currentStageIndex + 1}/11
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                          <button
+                            onClick={() => {
+                              const reason = prompt('Enter reason for stopping:')
+                              if (reason) controlArticle(article.id, 'stop', reason)
+                            }}
+                            style={{
+                              background: '#F44336',
+                              color: 'white',
+                              border: 'none',
+                              padding: '6px 12px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '11px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            ⏹ Stop
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Delete this article? This cannot be undone.')) {
+                                controlArticle(article.id, 'delete')
+                              }
+                            }}
+                            style={{
+                              background: '#9E9E9E',
+                              color: 'white',
+                              border: 'none',
+                              padding: '6px 12px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '11px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            🗑 Delete
+                          </button>
+                          <button
+                            onClick={() => {
+                              const suggestion = prompt('Enter edit suggestion for the agent:')
+                              if (suggestion) controlArticle(article.id, 'suggest_edit', suggestion)
+                            }}
+                            style={{
+                              background: '#FF9800',
+                              color: 'white',
+                              border: 'none',
+                              padding: '6px 12px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '11px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            ✏ Suggest Edit
+                          </button>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '11px', color: '#1976D2', marginBottom: '8px' }}>
-                        Status: {article.pipelineStatus}
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Blocked Articles */}
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Blocked Articles</h3>
+              {monitoringData.blockedArticles.length === 0 ? (
+                <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '4px', color: '#666', fontSize: '12px' }}>
+                  No blocked articles
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {monitoringData.blockedArticles.map((article: any) => (
+                    <div key={article.id} style={{ border: '1px solid #F44336', borderRadius: '4px', padding: '12px', background: '#FFEBEE' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>{article.title}</div>
+                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
+                        {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
                       </div>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                      <div style={{ fontSize: '11px', color: '#C62828', marginBottom: '8px' }}>
+                        Reason: {article.blockReason}
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           onClick={() => {
-                            const reason = prompt('Enter reason for stopping:')
-                            if (reason) controlArticle(article.id, 'stop', reason)
+                            const reason = prompt('Enter reason for unblocking:')
+                            if (reason) controlArticle(article.id, 'unblock', reason)
                           }}
                           style={{
-                            background: '#F44336',
+                            background: '#4CAF50',
                             color: 'white',
                             border: 'none',
                             padding: '6px 12px',
@@ -478,7 +604,7 @@ export default function NewsroomPage() {
                             fontWeight: '600'
                           }}
                         >
-                          ⏹ Stop
+                          ✅ Unblock
                         </button>
                         <button
                           onClick={() => {
@@ -499,48 +625,6 @@ export default function NewsroomPage() {
                         >
                           🗑 Delete
                         </button>
-                        <button
-                          onClick={() => {
-                            const suggestion = prompt('Enter edit suggestion for the agent:')
-                            if (suggestion) controlArticle(article.id, 'suggest_edit', suggestion)
-                          }}
-                          style={{
-                            background: '#FF9800',
-                            color: 'white',
-                            border: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '11px',
-                            fontWeight: '600'
-                          }}
-                        >
-                          ✏ Suggest Edit
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Blocked Articles */}
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>Blocked Articles</h3>
-              {monitoringData.blockedArticles.length === 0 ? (
-                <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '4px', color: '#666', fontSize: '12px' }}>
-                  No blocked articles
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {monitoringData.blockedArticles.map((article: any) => (
-                    <div key={article.id} style={{ border: '1px solid #F44336', borderRadius: '4px', padding: '12px', background: '#FFEBEE' }}>
-                      <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '4px' }}>{article.title}</div>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
-                        {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#C62828' }}>
-                        Reason: {article.blockReason}
                       </div>
                     </div>
                   ))}

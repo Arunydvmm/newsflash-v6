@@ -94,6 +94,45 @@ export async function POST(
       return NextResponse.json({ success: true, message: 'Edit suggestion added' })
     }
 
+    if (action === 'unblock') {
+      // Unblock article - reset to MONITORING stage for reprocessing
+      await prisma.nfArticle.update({
+        where: { id: articleId },
+        data: {
+          pipelineStatus: 'MONITORING',
+          currentStage: 'monitoring',
+          blockReason: null,
+          humanDecision: 'UNBLOCK',
+          humanNotes: reason || 'Manually unblocked by admin',
+          reviewedBy: auth.username,
+          reviewedAt: new Date()
+        }
+      })
+
+      // Also update workflow if exists
+      await prisma.nfWorkflow.updateMany({
+        where: { articleId },
+        data: {
+          status: 'MONITORING',
+          error: null,
+          completedAt: null
+        }
+      })
+
+      // Log to audit
+      await prisma.nfAuditLog.create({
+        data: {
+          articleId,
+          action: 'UNBLOCK',
+          performedBy: auth.username,
+          reason: reason || 'Manually unblocked by admin',
+          metadata: { manualIntervention: true }
+        }
+      })
+
+      return NextResponse.json({ success: true, message: 'Article unblocked and reset to MONITORING stage' })
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
   } catch (error) {
     console.error('Error controlling article:', error)

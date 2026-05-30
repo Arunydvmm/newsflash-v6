@@ -85,15 +85,29 @@ export async function POST(req: NextRequest) {
 
     await runPipeline(storyData)
 
-    // Mark as completed
+    // Find the created article
+    const article = await prisma.nfArticle.findFirst({
+      where: {
+        title: nextItem.headline,
+        sourceName: nextItem.sourceName,
+        createdAt: { gte: new Date(Date.now() - 60000) } // Created in last minute
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    // Mark as completed with article ID
     await prisma.nfWatchlist.update({
       where: { id: nextItem.id },
-      data: { status: 'COMPLETED' }
+      data: { 
+        status: 'COMPLETED',
+        articleId: article?.id || null
+      }
     })
 
     return NextResponse.json({ 
       message: 'Processed article successfully',
-      article: nextItem.headline 
+      article: nextItem.headline,
+      articleId: article?.id
     })
   } catch (error) {
     console.error('Queue processing error:', error)

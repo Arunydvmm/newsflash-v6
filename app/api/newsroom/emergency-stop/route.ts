@@ -11,16 +11,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const { action } = await req.json()
+    const newState = action === 'activate'
+
     // Get or create system config
     let config = await prisma.nfSystemConfig.findFirst()
     if (!config) {
       config = await prisma.nfSystemConfig.create({
-        data: { emergencyStop: true, lastUpdatedBy: auth.username, lastUpdatedAt: new Date() }
+        data: { emergencyStop: newState, lastUpdatedBy: auth.username, lastUpdatedAt: new Date() }
       })
     } else {
       config = await prisma.nfSystemConfig.update({
         where: { id: config.id },
-        data: { emergencyStop: true, lastUpdatedBy: auth.username, lastUpdatedAt: new Date() }
+        data: { emergencyStop: newState, lastUpdatedBy: auth.username, lastUpdatedAt: new Date() }
       })
     }
 
@@ -28,16 +31,16 @@ export async function POST(req: NextRequest) {
     await prisma.nfAuditLog.create({
       data: {
         articleId: null,
-        action: 'EMERGENCY_STOP',
+        action: newState ? 'EMERGENCY_STOP' : 'EMERGENCY_RESUME',
         performedBy: auth.username,
-        reason: 'Emergency kill switch activated by admin',
+        reason: newState ? 'Emergency kill switch activated by admin' : 'Emergency kill switch deactivated by admin',
         metadata: { userId: auth.username }
       }
     })
 
-    return NextResponse.json({ success: true, emergencyStop: true })
+    return NextResponse.json({ success: true, emergencyStop: newState })
   } catch (error) {
     console.error('Emergency stop error:', error)
-    return NextResponse.json({ error: 'Failed to activate emergency stop' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to toggle emergency stop' }, { status: 500 })
   }
 }
