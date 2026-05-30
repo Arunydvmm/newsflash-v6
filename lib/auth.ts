@@ -1,6 +1,7 @@
 // @ts-nocheck
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
+import { NextRequest } from 'next/server'
 
 const SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production'
 export const AUTH_COOKIE    = 'nf_token'
@@ -54,4 +55,9 @@ export function hasPermission(auth: JWTPayload | null, permission: string): bool
   if (!auth) return false
   if (auth.role === 'SuperAdmin') return true
   return auth.permissions?.[permission] === true
+}
+
+// Verify auth from request (for API routes)
+export async function verifyAuth(req: NextRequest): Promise<JWTPayload | null> {
+  return getAuth()
 }
