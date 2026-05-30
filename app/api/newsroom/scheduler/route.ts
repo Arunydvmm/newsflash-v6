@@ -10,27 +10,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Check for stuck pipelines
-    const stuckWorkflows = await prisma.nfWorkflow.findMany({
-      where: {
-        status: { notIn: ['BLOCKED', 'DRAFT_READY', 'PUBLISHED', 'REJECTED'] as any },
-        updatedAt: { lt: new Date(Date.now() - 10 * 60 * 1000) } // 10 minutes ago
-      }
-    })
-
-    for (const workflow of stuckWorkflows) {
-      console.warn(`Stuck workflow detected: ${workflow.id}`)
-      await prisma.nfAuditLog.create({
-        data: {
-          articleId: workflow.articleId,
-          action: 'PIPELINE_STUCK',
-          performedBy: 'SCHEDULER',
-          reason: 'Pipeline stuck for >10 minutes',
-          metadata: { workflowId: workflow.id }
-        }
-      })
-    }
-
     // Call pipeline route internally
     const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/newsroom/pipeline`, {
       method: 'POST',
