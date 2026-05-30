@@ -15,9 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       where: { id: params.id },
       include: {
         workflow: true,
-        stageLogs: {
-          orderBy: { createdAt: 'desc' }
-        }
+        stageLogs: true
       }
     })
 
