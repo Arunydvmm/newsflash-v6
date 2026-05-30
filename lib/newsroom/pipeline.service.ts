@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { Resend } from 'resend'
 import { monitoringAgent } from './agents/monitoring.agent'
 import { researchAgent } from './agents/research.agent'
 import { extractionAgent } from './agents/extraction.agent'
@@ -14,7 +13,7 @@ import { chiefeditorAgent } from './agents/chiefeditor.agent'
 import { generateReport } from './report.generator'
 
 const prisma = new PrismaClient()
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new (require('resend').Resend)(process.env.RESEND_API_KEY) : null
 
 interface StoryData {
   headline: string
@@ -39,10 +38,14 @@ const STAGES = [
 ]
 
 async function sendBlockEmail(articleId: string, reason: string) {
+  if (!resend || !process.env.ADMIN_EMAIL) {
+    console.warn('Resend API key or ADMIN_EMAIL not set, skipping email notification')
+    return
+  }
   try {
     await resend.emails.send({
       from: 'NewsFlash AI <noreply@newsflash-v6.onrender.com>',
-      to: process.env.ADMIN_EMAIL || 'admin@newsflash.com',
+      to: process.env.ADMIN_EMAIL,
       subject: `🚨 Article BLOCKED - ${articleId}`,
       html: `
         <h2>Article Blocked in Pipeline</h2>
