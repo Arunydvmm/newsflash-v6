@@ -1,0 +1,63 @@
+I have a Next.js 14 project using MongoDB + Mongoose.
+Existing models are in /app/models/ folder.
+Create ONE new file: /app/models/NfArticle.ts
+Do NOT touch any existing model files.
+
+// @ts-nocheck
+import mongoose, { Schema } from 'mongoose'
+
+const NfArticleSchema = new Schema({
+  sourceUrl:          { type: String, required: true },
+  sourceName:         { type: String, required: true },
+  region:             { type: String, default: 'India' },
+  priority:           { type: String, enum: ['BREAKING','STANDARD','FEATURE'], default: 'STANDARD' },
+  pipelineStatus:     { type: String, default: 'MONITORING',
+    enum: ['MONITORING','RESEARCH','EXTRACTION','FACT_CHECK',
+           'JUNIOR_DRAFT','SENIOR_EDIT','BIAS_REVIEW','LEGAL_REVIEW',
+           'COPYRIGHT_REVIEW','SEO_REVIEW','CHIEF_EDITOR',
+           'DRAFT_READY','APPROVED','REJECTED','BLOCKED','PUBLISHED'] },
+  currentStage:       { type: String, default: 'monitoring' },
+  title:              { type: String },
+  content:            { type: String },
+  summary:            { type: String },
+  slug:               { type: String },
+  category:           { type: String },
+  tags:               [String],
+  keyHighlights:      [String],
+  referenceLinks:     [{ sourceName: String, url: String }],
+  isBreaking:         { type: Boolean, default: false },
+  aiDisclosure:       { type: String, default: 'This article was researched and drafted with AI assistance and reviewed by our editorial team.' },
+  metaDescription:    { type: String },
+  ogTags:             { type: Object },
+  schemaMarkup:       { type: Object },
+  socialPosts:        { type: Object },
+  overallConfidence:  { type: Number },
+  overallRiskLevel:   { type: String, default: 'UNKNOWN' },
+  editorialGrade:     { type: String },
+  plagiarismScore:    { type: Number },
+  legalVerdict:       { type: String, default: 'PENDING' },
+  copyrightVerdict:   { type: String, default: 'PENDING' },
+  factCheckVerdict:   { type: String, default: 'PENDING' },
+  biasVerdict:        { type: String, default: 'PENDING' },
+  blockReason:        { type: String },
+  humanDecision:      { type: String },
+  humanNotes:         { type: String },
+  reviewedBy:         { type: String },
+  reviewedAt:         { type: Date },
+  publishedArticleId: { type: Schema.Types.ObjectId, ref: 'Article' },
+  monitoringReport:   { type: Object },
+  researchReport:     { type: Object },
+  extractionReport:   { type: Object },
+  factCheckReport:    { type: Object },
+  juniorDraftReport:  { type: Object },
+  seniorEditReport:   { type: Object },
+  biasReport:         { type: Object },
+  legalReport:        { type: Object },
+  copyrightReport:    { type: Object },
+  seoReport:          { type: Object },
+  chiefEditorReport:  { type: Object },
+  masterSummary:      { type: Object },
+}, { timestamps: true, collection: 'nf_articles' })
+
+export default mongoose.models.NfArticle ||
+  mongoose.model('NfArticle', NfArticleSchema)

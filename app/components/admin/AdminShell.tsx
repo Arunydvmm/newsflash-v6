@@ -12,6 +12,8 @@ const NAV_GROUPS = [
       { label: 'All Articles',   href: '/admin/articles',        icon: '📄' },
       { label: 'New Article',    href: '/admin/articles/new',    icon: '✚' },
       { label: 'Pending Review', href: '/admin/articles/pending',icon: '⏳' },
+      { label: 'AI Newsroom',  href: '/admin/newsroom',        icon: '🤖' },
+      { label: 'AI Drafts',    href: '/admin/newsroom/drafts',  icon: '📥' },
     ],
   },
   {

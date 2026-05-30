@@ -3,7 +3,7 @@ import { jwtVerify } from 'jose'
 
 const SECRET       = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-change-in-production')
 const AUTH_COOKIE  = 'nf_token'
-const EMP_COOKIE   = 'nf_emp_token'
+const EMP_COOKIE   = 'nf_emp_token' // Matches EMP_AUTH_COOKIE in lib/auth.ts
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
