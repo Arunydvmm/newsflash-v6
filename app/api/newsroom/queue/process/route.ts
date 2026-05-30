@@ -144,7 +144,8 @@ export async function GET(req: NextRequest) {
       take: 50
     })
 
-    return NextResponse.json({ watchlist })
+    console.log(`Watchlist API: Returning ${watchlist.length} items`)
+    return NextResponse.json({ watchlist, count: watchlist.length })
   } catch (error) {
     console.error('Error fetching watchlist:', error)
     return NextResponse.json({ error: 'Failed to fetch watchlist' }, { status: 500 })
