@@ -28,14 +28,10 @@ export async function fetchRSSFeeds(): Promise<RSSItem[]> {
 
   for (const feed of FEEDS) {
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
-
-      const feedData = await parser.parseURL(feed.url, {
-        signal: controller.signal
-      })
-
-      clearTimeout(timeoutId)
+      const feedData = await Promise.race([
+        parser.parseURL(feed.url),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+      ]) as any
 
       if (feedData.items) {
         for (const item of feedData.items.slice(0, 10)) { // Top 10 per feed
