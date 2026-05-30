@@ -4,6 +4,21 @@ import { getAuth } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
+export async function GET(req: NextRequest) {
+  const auth = getAuth()
+  if (!auth || auth.role !== 'SuperAdmin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const config = await prisma.nfSystemConfig.findFirst()
+    return NextResponse.json({ emergencyStop: config?.emergencyStop || false })
+  } catch (error) {
+    console.error('Error fetching emergency stop status:', error)
+    return NextResponse.json({ error: 'Failed to fetch emergency stop status' }, { status: 500 })
+  }
+}
+
 export async function POST(req: NextRequest) {
   const auth = getAuth()
   if (!auth || auth.role !== 'SuperAdmin') {
