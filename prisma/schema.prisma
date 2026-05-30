@@ -168,3 +168,12 @@ model NfAuditLog {
   @@index([action])
   @@index([createdAt])
 }
+
+model NfSystemConfig {
+  id            String   @id @default(cuid())
+  emergencyStop Boolean  @default(false)
+  lastUpdatedBy String?
+  lastUpdatedAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

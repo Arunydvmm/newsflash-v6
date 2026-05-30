@@ -24,6 +24,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     // Safety checks
     const summaryReport = nfArticle.summaryReport as any
+    if (nfArticle.pipelineStatus !== 'DRAFT_READY') {
+      return NextResponse.json({ error: 'Article not ready for approval' }, { status: 403 })
+    }
+    if (!nfArticle.humanDecision || nfArticle.humanDecision !== 'APPROVED') {
+      return NextResponse.json({ error: 'No human approval on record' }, { status: 403 })
+    }
     if (summaryReport?.factCheckSummary?.falseClaims > 0) {
       return NextResponse.json({ error: 'Article has false claims' }, { status: 403 })
     }

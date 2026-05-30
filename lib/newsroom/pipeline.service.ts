@@ -61,6 +61,13 @@ async function sendBlockEmail(articleId: string, reason: string) {
 }
 
 export async function runPipeline(storyData: StoryData): Promise<void> {
+  // Check emergency kill switch
+  const config = await prisma.nfSystemConfig.findFirst()
+  if (config?.emergencyStop) {
+    console.warn('Emergency kill switch is active - pipeline stopped')
+    return
+  }
+
   // Create article record
   const article = await prisma.nfArticle.create({
     data: {
