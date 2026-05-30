@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
           headline: story.headline,
           sourceUrl: story.sourceUrl,
           sourceName: story.sourceName,
-          region: story.region || 'India',
+          region: 'India',
           priority: 'STANDARD',
           status: 'PENDING'
         }
