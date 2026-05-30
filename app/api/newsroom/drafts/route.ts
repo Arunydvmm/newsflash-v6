@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    console.log('Fetching drafts with pipelineStatus: DRAFT_READY')
     const drafts = await prisma.nfArticle.findMany({
       where: {
         pipelineStatus: 'DRAFT_READY'
@@ -18,6 +19,15 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
       take: 50
     })
+
+    console.log(`Drafts API: Found ${drafts.length} articles with DRAFT_READY status`)
+    
+    // Also check what statuses exist
+    const allArticles = await prisma.nfArticle.findMany({
+      select: { pipelineStatus: true },
+      take: 10
+    })
+    console.log('Sample article statuses:', allArticles.map(a => a.pipelineStatus))
 
     return NextResponse.json({ drafts, count: drafts.length })
   } catch (error) {
