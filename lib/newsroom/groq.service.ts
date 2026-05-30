@@ -82,7 +82,29 @@ export async function callGroq(
         )
 
         const content = response.choices[0]?.message?.content || '{}'
-        const data = JSON.parse(content)
+        
+        // Try to parse JSON, with fallback for malformed JSON
+        let data
+        try {
+          data = JSON.parse(content)
+        } catch (parseError) {
+          // Try to fix common JSON issues
+          console.warn('JSON parse error, attempting to fix:', parseError)
+          try {
+            // Remove markdown code blocks if present
+            const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+            data = JSON.parse(cleanedContent)
+          } catch (secondError) {
+            // Last resort: try to extract JSON from the response
+            const jsonMatch = content.match(/\{[\s\S]*\}/)
+            if (jsonMatch) {
+              data = JSON.parse(jsonMatch[0])
+            } else {
+              throw new Error(`Failed to parse JSON: ${content}`)
+            }
+          }
+        }
+        
         const processingMs = Date.now() - startTime
         const tokensUsed = response.usage?.total_tokens || 0
 
@@ -120,7 +142,29 @@ export async function callGroqFast(
         )
 
         const content = response.choices[0]?.message?.content || '{}'
-        const data = JSON.parse(content)
+        
+        // Try to parse JSON, with fallback for malformed JSON
+        let data
+        try {
+          data = JSON.parse(content)
+        } catch (parseError) {
+          // Try to fix common JSON issues
+          console.warn('JSON parse error, attempting to fix:', parseError)
+          try {
+            // Remove markdown code blocks if present
+            const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+            data = JSON.parse(cleanedContent)
+          } catch (secondError) {
+            // Last resort: try to extract JSON from the response
+            const jsonMatch = content.match(/\{[\s\S]*\}/)
+            if (jsonMatch) {
+              data = JSON.parse(jsonMatch[0])
+            } else {
+              throw new Error(`Failed to parse JSON: ${content}`)
+            }
+          }
+        }
+        
         const processingMs = Date.now() - startTime
         const tokensUsed = response.usage?.total_tokens || 0
 

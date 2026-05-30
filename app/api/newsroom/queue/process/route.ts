@@ -5,10 +5,53 @@ import { getAuth } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
+// Simple in-memory rate limiter
+const apiCallTimestamps: number[] = []
+const MAX_CALLS_PER_MINUTE = 5
+const MIN_INTERVAL_MS = 60000 / MAX_CALLS_PER_MINUTE // 12 seconds between calls
+
+function checkRateLimit(): { allowed: boolean; waitTime?: number } {
+  const now = Date.now()
+  
+  // Remove timestamps older than 1 minute
+  const recentCalls = apiCallTimestamps.filter(timestamp => now - timestamp < 60000)
+  
+  if (recentCalls.length >= MAX_CALLS_PER_MINUTE) {
+    const oldestCall = recentCalls[0]
+    const waitTime = 60000 - (now - oldestCall)
+    return { allowed: false, waitTime }
+  }
+  
+  // Check minimum interval between calls
+  if (recentCalls.length > 0) {
+    const lastCall = recentCalls[recentCalls.length - 1]
+    const timeSinceLastCall = now - lastCall
+    if (timeSinceLastCall < MIN_INTERVAL_MS) {
+      return { allowed: false, waitTime: MIN_INTERVAL_MS - timeSinceLastCall }
+    }
+  }
+  
+  return { allowed: true }
+}
+
+function recordApiCall() {
+  apiCallTimestamps.push(Date.now())
+}
+
 export async function POST(req: NextRequest) {
   const auth = getAuth()
   if (!auth || auth.role !== 'SuperAdmin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Check rate limit
+  const rateLimit = checkRateLimit()
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ 
+      error: 'Rate limit exceeded',
+      waitTime: Math.ceil((rateLimit.waitTime || 0) / 1000),
+      message: `Please wait ${Math.ceil((rateLimit.waitTime || 0) / 1000)} seconds before processing next article`
+    }, { status: 429 })
   }
 
   try {
@@ -27,6 +70,9 @@ export async function POST(req: NextRequest) {
       where: { id: nextItem.id },
       data: { status: 'PROCESSING' }
     })
+
+    // Record API call before running pipeline
+    recordApiCall()
 
     // Run pipeline
     const storyData = {

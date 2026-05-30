@@ -62,7 +62,11 @@ export default function NewsroomPage() {
       
       if (!res.ok) {
         const errorData = await res.json()
-        alert(`Failed: ${errorData.error || 'Unknown error'}`)
+        if (res.status === 429) {
+          alert(`Rate limit: ${errorData.message}`)
+        } else {
+          alert(`Failed: ${errorData.error || 'Unknown error'}`)
+        }
         setProcessing(false)
         return
       }
