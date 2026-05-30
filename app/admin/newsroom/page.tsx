@@ -24,8 +24,7 @@ export default function NewsroomPage() {
     if (!confirm('Trigger AI newsroom pipeline? This will fetch RSS feeds and process articles.')) return
     try {
       const res = await fetch('/api/newsroom/pipeline', {
-        method: 'POST',
-        headers: { 'x-scheduler-secret': 'dev-secret' }
+        method: 'POST'
       })
       
       if (!res.ok) {

@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchRSSFeeds } from '@/lib/newsroom/rss.service'
 import { checkDuplicate } from '@/lib/newsroom/duplicate.service'
 import { runPipeline } from '@/lib/newsroom/pipeline.service'
+import { getAuth } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get('x-scheduler-secret')
-  if (secret !== process.env.SCHEDULER_SECRET) {
+  const auth = getAuth()
+  if (!auth || auth.role !== 'SuperAdmin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
