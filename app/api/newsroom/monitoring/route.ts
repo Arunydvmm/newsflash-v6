@@ -26,9 +26,7 @@ export async function GET(req: NextRequest) {
         pipelineStatus: true,
         sourceName: true,
         createdAt: true,
-        updatedAt: true,
-        isGovernmentVerified: true,
-        governmentSource: true
+        updatedAt: true
       },
       orderBy: { updatedAt: 'desc' },
       take: 10
