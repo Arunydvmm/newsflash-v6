@@ -13,6 +13,7 @@ export interface JWTPayload {
   role:       string
   type:       'admin' | 'employee'
   permissions?: Record<string, boolean>
+  userId?: string // For notification system compatibility
 }
 
 export function signToken(payload: JWTPayload): string {
