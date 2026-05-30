@@ -135,7 +135,7 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
         where: { id: article.id },
         data: {
           currentStage: stage.name.toLowerCase(),
-          pipelineStatus: stage.status,
+          pipelineStatus: stage.status as any,
           content: result.modifiedContent
         }
       })
