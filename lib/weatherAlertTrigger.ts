@@ -1,5 +1,5 @@
 import { NotificationService, WeatherChangeData } from './notificationService';
-import { UserPreference } from './models/UserPreference';
+import UserPreference from './models/UserPreference';
 import mongoose from 'mongoose';
 
 interface WeatherSnapshot {

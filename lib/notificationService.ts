@@ -1,5 +1,5 @@
 import { Notification, INotification } from './models/Notification';
-import { UserPreference } from './models/UserPreference';
+import UserPreference from './models/UserPreference';
 import { WeatherAlert } from './models/WeatherAlert';
 import mongoose from 'mongoose';
 
