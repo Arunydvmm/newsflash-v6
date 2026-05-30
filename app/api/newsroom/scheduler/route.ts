@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     // Check for stuck pipelines
     const stuckWorkflows = await prisma.nfWorkflow.findMany({
       where: {
-        status: { notIn: ['BLOCKED', 'DRAFT_READY', 'COMPLETED'] },
+        status: { notIn: ['BLOCKED', 'DRAFT_READY', 'PUBLISHED', 'REJECTED'] as any },
         updatedAt: { lt: new Date(Date.now() - 10 * 60 * 1000) } // 10 minutes ago
       }
     })
