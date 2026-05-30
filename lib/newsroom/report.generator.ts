@@ -10,7 +10,7 @@ export async function generateReport(
   // Get all stage logs
   const stageLogs = await prisma.nfStageLog.findMany({
     where: { articleId },
-    orderBy: { createdAt: 'asc' }
+    orderBy: { startTime: 'asc' }
   })
 
   // Calculate overall confidence

@@ -135,7 +135,7 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
         where: { id: article.id },
         data: {
           currentStage: stage.name.toLowerCase(),
-          pipelineStatus: stage.status as any,
+          pipelineStatus: stage.status,
           content: result.modifiedContent
         }
       })
@@ -153,7 +153,7 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
         await prisma.nfWorkflow.update({
           where: { id: workflow.id },
           data: {
-            status: 'BLOCKED',
+            status: 'BLOCKED' as any,
             completedAt: new Date()
           }
         })
