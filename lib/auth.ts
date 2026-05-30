@@ -16,7 +16,9 @@ export interface JWTPayload {
 }
 
 export function signToken(payload: JWTPayload): string {
-  return jwt.sign(payload, SECRET, { expiresIn: '7d' } as any)
+  // Add userId as alias for adminId for notification system compatibility
+  const tokenPayload = { ...payload, userId: payload.userId || payload.adminId }
+  return jwt.sign(tokenPayload, SECRET, { expiresIn: '7d' } as any)
 }
 
 export function verifyToken(token: string): JWTPayload | null {
