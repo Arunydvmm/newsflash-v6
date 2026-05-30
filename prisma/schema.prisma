@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum NfStatus {
+  MONITORING
+  RESEARCH
+  EXTRACTION
+  FACT_CHECK
+  JUNIOR_DRAFT
+  SENIOR_EDIT
+  BIAS_REVIEW
+  LEGAL_REVIEW
+  COPYRIGHT_REVIEW
+  SEO_REVIEW
+  CHIEF_EDITOR
+  DRAFT_READY
+  APPROVED
+  REJECTED
+  BLOCKED
+  PUBLISHED
+}
+
+model NfArticle {
+  id                String   @id @default(cuid())
+  sourceUrl         String
+  sourceName        String
+  region            String   @default("India")
+  priority          String   @default("STANDARD") // BREAKING | STANDARD | FEATURE
+  pipelineStatus    NfStatus @default(MONITORING)
+  currentStage      String   @default("monitoring")
+  title             String?
+  content           String?
+  summary           String?
+  slug              String?
+  category          String?
+  tags              String[]
+  keyHighlights     String[]
+  referenceLinks    Json[]
+  isBreaking        Boolean  @default(false)
+  aiDisclosure      String   @default("This article was researched and drafted with AI assistance and reviewed by our editorial team.")
+  metaDescription   String?
+  ogTags            Json?
+  schemaMarkup      Json?
+  socialPosts       Json?
+  overallConfidence Float?
+  overallRiskLevel  String   @default("UNKNOWN")
+  editorialGrade    String?
+  plagiarismScore   Float?
+  legalVerdict      String   @default("PENDING")
+  copyrightVerdict  String   @default("PENDING")
+  factCheckVerdict  String   @default("PENDING")
+  biasVerdict       String   @default("PENDING")
+  blockReason       String?
+  humanDecision     String?
+  humanNotes        String?
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  publishedArticleId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  workflow          NfWorkflow?
+  stageLogs         NfStageLog[]
+  contentLogs       NfContentLog[]
+  summaryReport     NfSummaryReport?
+  auditLogs         NfAuditLog[]
+
+  @@index([pipelineStatus])
+  @@index([createdAt])
+}
+
+model NfWorkflow {
+  id          String    @id @default(cuid())
+  articleId   String    @unique
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  status      NfStatus  @default(MONITORING)
+  error       String?
+  article     NfArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model NfStageLog {
+  id             String   @id @default(cuid())
+  articleId      String
+  stageName      String
+  stageStatus    String
+  startTime      DateTime @default(now())
+  endTime        DateTime?
+  report         Json
+  confidence     Float
+  recommendation String
+  tokensUsed     Int
+  processingMs   Int
+  article        NfArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@index([stageName])
+}
+
+model NfContentLog {
+  id            String   @id @default(cuid())
+  articleId     String
+  stageName     String
+  contentBefore String
+  contentAfter  String
+  diff          String?
+  createdAt     DateTime @default(now())
+  article       NfArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@index([stageName])
+}
+
+model NfSummaryReport {
+  id                   String   @id @default(cuid())
+  articleId            String    @unique
+  overallConfidence    Float
+  overallRiskLevel     String
+  editorialGrade       String
+  factCheckSummary     Json
+  legalSummary         Json
+  copyrightSummary     Json
+  biasSummary          Json
+  seoSummary           Json
+  recommendations       String[]
+  stageConfidences     Json
+  totalTokensUsed      Int
+  totalProcessingTime  Int
+  createdAt            DateTime @default(now())
+  article              NfArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+}
+
+model NfSource {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  url         String
+  region      String
+  enabled     Boolean  @default(true)
+  lastFetched DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([enabled])
+}
+
+model NfAuditLog {
+  id          String   @id @default(cuid())
+  articleId   String
+  action      String
+  performedBy String
+  reason      String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  article     NfArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@index([action])
+  @@index([createdAt])
+}

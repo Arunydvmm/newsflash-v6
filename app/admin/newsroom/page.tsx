@@ -8,7 +8,7 @@ export default function NewsroomPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/newsroom/stats')
+    fetch('/api/newsroom/status')
       .then(res => res.json())
       .then(data => {
         setStats(data)
@@ -23,9 +23,9 @@ export default function NewsroomPage() {
   const triggerPipeline = async () => {
     if (!confirm('Trigger AI newsroom pipeline? This will fetch RSS feeds and process articles.')) return
     try {
-      const res = await fetch('/api/newsroom/trigger', {
+      const res = await fetch('/api/newsroom/pipeline', {
         method: 'POST',
-        headers: { 'x-cron-secret': process.env.NEXT_PUBLIC_AI_NEWSROOM_CRON_SECRET || 'dev-secret' }
+        headers: { 'x-scheduler-secret': process.env.SCHEDULER_SECRET || 'dev-secret' }
       })
       const data = await res.json()
       alert(`Triggered: ${data.triggered} articles`)
@@ -35,27 +35,6 @@ export default function NewsroomPage() {
     }
   }
 
-  const processUrl = async () => {
-    const url = prompt('Enter article URL to process:')
-    if (!url) return
-
-    try {
-      const res = await fetch('/api/newsroom/process-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      })
-      const data = await res.json()
-      if (data.success) {
-        alert('URL submitted for processing')
-        window.location.reload()
-      } else {
-        alert(data.error || 'Failed to process URL')
-      }
-    } catch (err) {
-      alert('Failed to process URL')
-    }
-  }
 
   return (
     <AdminShell>
@@ -87,7 +66,7 @@ export default function NewsroomPage() {
             </div>
             <div style={{ background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
               <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Running</div>
-              <div style={{ fontSize: '32px', fontWeight: '700', color: '#1976D2' }}>{stats.running}</div>
+              <div style={{ fontSize: '32px', fontWeight: '700', color: '#1976D2' }}>{stats.pipelineRunning}</div>
             </div>
             <div style={{ background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
               <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Total Published</div>
@@ -113,21 +92,6 @@ export default function NewsroomPage() {
               }}
             >
               Trigger Pipeline (RSS)
-            </button>
-            <button
-              onClick={processUrl}
-              style={{
-                background: '#1976D2',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600'
-              }}
-            >
-              Process URL
             </button>
           </div>
         </div>

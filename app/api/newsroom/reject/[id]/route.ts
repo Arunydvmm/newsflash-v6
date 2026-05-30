@@ -1,22 +1,42 @@
-// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
-import { connectDB } from '@/lib/db'
-import NfArticle from '@/app/models/NfArticle'
+import { PrismaClient } from '@prisma/client'
 import { getAuth } from '@/lib/auth'
+
+const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  await connectDB()
+
   const { reason } = await req.json()
-  await NfArticle.findByIdAndUpdate(params.id, {
-    pipelineStatus: 'REJECTED',
-    humanDecision: 'REJECTED',
-    humanNotes: reason || 'Rejected by editor',
-    reviewedBy: auth.username,
-    reviewedAt: new Date()
-  })
-  return NextResponse.json({ success: true })
+
+  try {
+    await prisma.nfArticle.update({
+      where: { id: params.id },
+      data: {
+        pipelineStatus: 'REJECTED',
+        humanDecision: 'REJECTED',
+        humanNotes: reason || 'Rejected by editor',
+        reviewedBy: auth.username,
+        reviewedAt: new Date()
+      }
+    })
+
+    // Log to audit
+    await prisma.nfAuditLog.create({
+      data: {
+        articleId: params.id,
+        action: 'REJECT',
+        performedBy: auth.username,
+        reason: reason || 'Rejected by editor'
+      }
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Reject error:', error)
+    return NextResponse.json({ error: 'Failed to reject article' }, { status: 500 })
+  }
 }
