@@ -35,6 +35,28 @@ export default function NewsroomPage() {
     }
   }
 
+  const processUrl = async () => {
+    const url = prompt('Enter article URL to process:')
+    if (!url) return
+
+    try {
+      const res = await fetch('/api/newsroom/process-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert('URL submitted for processing')
+        window.location.reload()
+      } else {
+        alert(data.error || 'Failed to process URL')
+      }
+    } catch (err) {
+      alert('Failed to process URL')
+    }
+  }
+
   return (
     <AdminShell>
       <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -76,21 +98,38 @@ export default function NewsroomPage() {
 
         <div style={{ background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
           <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Actions</h2>
-          <button
-            onClick={triggerPipeline}
-            style={{
-              background: '#C62828',
-              color: 'white',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}
-          >
-            Trigger Pipeline
-          </button>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              onClick={triggerPipeline}
+              style={{
+                background: '#C62828',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              Trigger Pipeline (RSS)
+            </button>
+            <button
+              onClick={processUrl}
+              style={{
+                background: '#1976D2',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              Process URL
+            </button>
+          </div>
         </div>
 
         <div style={{ marginTop: '32px', background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
