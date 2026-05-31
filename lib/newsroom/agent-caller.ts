@@ -151,7 +151,7 @@ export async function callAgent(
   prompt: string,
   maxTokens: number,
   jobId: string
-): Promise<{ data: any; tokensUsed: number; providerUsed: string; modelUsed: string; sleepOccurred: boolean; sleepMs: number }> {
+): Promise<{ data: any; tokensUsed: number; providerUsed: string; modelUsed: string; usedKey: 'primary' | 'backup' | 'fallback' | 'retry_after_sleep'; sleepOccurred: boolean; sleepMs: number }> {
 
   const config = AGENT_KEYS[agentName]
   const attempts = [
@@ -180,6 +180,7 @@ export async function callAgent(
         ...result,
         providerUsed: attempt.cfg.provider,
         modelUsed:    attempt.cfg.model,
+        usedKey:       attempt.label === 'primary' ? 'primary' : attempt.label === 'backup' ? 'backup' : 'fallback',
         sleepOccurred,
         sleepMs: totalSleepMs
       }
