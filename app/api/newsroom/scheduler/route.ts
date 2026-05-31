@@ -17,7 +17,9 @@ const RSS_SOURCES = [
 
 export async function POST(req: NextRequest) {
   const schedulerSecret = req.headers.get('x-scheduler-secret')
-  if (schedulerSecret !== process.env.SCHEDULER_SECRET) {
+  // Allow both server-side and client-side secrets for flexibility
+  const validSecret = process.env.SCHEDULER_SECRET || process.env.NEXT_PUBLIC_SCHEDULER_SECRET
+  if (schedulerSecret !== validSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -25,7 +27,7 @@ export async function POST(req: NextRequest) {
     // Check if engine is stopped
     const config = await prisma.nfSystemConfig.findFirst()
     if (config?.engineStopped) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         message: 'Engine is stopped. Skipping scheduler run.',
         added: 0,
         skipped: 0,
@@ -36,19 +38,26 @@ export async function POST(req: NextRequest) {
 
     // Fetch RSS feeds
     const allArticles: any[] = []
+    console.log('Starting RSS feed fetch...')
     for (const source of RSS_SOURCES) {
       try {
+        console.log(`Fetching ${source.name}...`)
         const response = await fetch(source.url, { signal: AbortSignal.timeout(10000) })
-        if (!response.ok) continue
+        if (!response.ok) {
+          console.log(`Failed to fetch ${source.name}: HTTP ${response.status}`)
+          continue
+        }
         const text = await response.text()
-        
+        console.log(`Fetched ${text.length} chars from ${source.name}`)
+
         // Simple RSS parsing (in production, use a proper RSS parser)
         const items = text.match(/<item>([\s\S]*?)<\/item>/g) || []
+        console.log(`Found ${items.length} items in ${source.name}`)
         for (const item of items) {
           const titleMatch = item.match(/<title>(.*?)<\/title>/)
           const linkMatch = item.match(/<link>(.*?)<\/link>/) || item.match(/<link[^>]*>(.*?)<\/link>/)
           const descMatch = item.match(/<description>(.*?)<\/description>/)
-          
+
           if (titleMatch && linkMatch) {
             allArticles.push({
               headline: titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, ''),
@@ -64,6 +73,7 @@ export async function POST(req: NextRequest) {
         console.error(`Failed to fetch ${source.name}:`, err)
       }
     }
+    console.log(`Total articles fetched: ${allArticles.length}`)
 
     // Deduplicate by URL
     const seenUrls = new Set()
