@@ -25,17 +25,48 @@ export interface AgentStageResult {
   sleepDurationMs: number
 }
 
-export const MAX_SLOTS = 3
-export const SLOT_DELAYS = { 1: 0, 2: 45000, 3: 90000 }
+// HARDCODED — never change these values
+const MAX_SLOTS = 1              // only 1 article processes at a time
+const MAX_ARTICLES_PER_DAY = 5   // stop after 5 completed articles per day
+const SLOT_DELAY = 0             // no delay needed — only 1 slot
+
+// Check if a new job can be started
+async function canStartNewJob(): Promise<{ allowed: boolean; reason: string }> {
+  // Check 1: is another job already running?
+  const running = await prisma.nfPipelineJob.count({
+    where: { status: 'RUNNING' }
+  })
+  if (running > 0) {
+    return { allowed: false, reason: 'Another article is already processing. Wait for it to finish.' }
+  }
+
+  // Check 2: have we already completed 5 articles today?
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const completedToday = await prisma.nfPipelineJob.count({
+    where: { status: 'COMPLETED', completedAt: { gte: todayStart } }
+  })
+  if (completedToday >= MAX_ARTICLES_PER_DAY) {
+    return { allowed: false, reason: `Daily limit reached (${completedToday}/${MAX_ARTICLES_PER_DAY}). Resets at midnight IST.` }
+  }
+
+  // Check 3: is engine manually stopped?
+  const config = await prisma.nfSystemConfig.findFirst()
+  if (config?.engineStopped) {
+    return { allowed: false, reason: 'Engine manually stopped by admin.' }
+  }
+
+  return { allowed: true, reason: '' }
+}
 
 const STAGES = [
-  { name: 'MONITOR',        fn: monitorAgent,       maxTokens: 500,  delayAfter: 3000 },
-  { name: 'RESEARCH',       fn: researchAgent,      maxTokens: 1500, delayAfter: 4000 },
-  { name: 'EXTRACT_VERIFY', fn: extractVerifyAgent, maxTokens: 1500, delayAfter: 4000 },
-  { name: 'WRITE',          fn: writeAgent,         maxTokens: 6000, delayAfter: 5000 },
-  { name: 'SAFETY',         fn: safetyAgent,        maxTokens: 2000, delayAfter: 4000 },
-  { name: 'SEO_POLISH',     fn: seoPolishAgent,     maxTokens: 5000, delayAfter: 3000 },
-  { name: 'CHIEF_EDITOR',   fn: chiefEditorAgent,   maxTokens: 1000, delayAfter: 0    }
+  { name: 'MONITOR',        fn: monitorAgent,       maxTokens: 500,  delayAfter: 5000  },
+  { name: 'RESEARCH',       fn: researchAgent,      maxTokens: 800,  delayAfter: 8000  },
+  { name: 'EXTRACT_VERIFY', fn: extractVerifyAgent, maxTokens: 800,  delayAfter: 8000  },
+  { name: 'WRITE',          fn: writeAgent,         maxTokens: 2000, delayAfter: 10000 },
+  { name: 'SAFETY',         fn: safetyAgent,        maxTokens: 800,  delayAfter: 8000  },
+  { name: 'SEO_POLISH',     fn: seoPolishAgent,     maxTokens: 1500, delayAfter: 5000  },
+  { name: 'CHIEF_EDITOR',   fn: chiefEditorAgent,   maxTokens: 800,  delayAfter: 0     }
 ]
 
 export async function initSlots() {
@@ -194,9 +225,19 @@ async function endJob(jobId: string, slotNumber: number, status: string, reason:
 }
 
 async function triggerNextJob(slotNumber: number) {
+  const check = await canStartNewJob()
+  if (!check.allowed) return
+
   const nextJob = await getNextQueuedJob()
   if (!nextJob) return
-  await occupySlot(slotNumber, nextJob.id)
+
+  // 10 second pause between articles — lets APIs breathe
+  await new Promise(r => setTimeout(r, 10000))
+
+  await prisma.nfPipelineSlot.update({
+    where:  { slotNumber },
+    data:   { status: 'BUSY', currentJobId: nextJob.id, startedAt: new Date() }
+  })
   runPipelineJob(nextJob, slotNumber) // fire and forget
 }
 

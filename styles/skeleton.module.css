@@ -1,0 +1,35 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeletonBase {
+  background: linear-gradient(
+    90deg,
+    #1a1a1a 25%,
+    rgba(198, 40, 40, 0.2) 50%,
+    #1a1a1a 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+.skeletonCard {
+  border-radius: 8px;
+}
+
+.skeletonAvatar {
+  border-radius: 50%;
+}
+
+.skeletonText {
+  border-radius: 4px;
+}
+
+.skeletonPill {
+  border-radius: 20px;
+}

@@ -190,6 +190,11 @@ model NfSystemConfig {
   engineStoppedBy     String?
   lastUpdatedBy       String?
   lastUpdatedAt       DateTime?
+  groqTokensToday     Int      @default(0)
+  googleTokensToday   Int      @default(0)
+  mistralTokensToday  Int      @default(0)
+  tokenResetDate      String?  // stores today's date YYYY-MM-DD IST
+  maxArticlesPerDay   Int      @default(5)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }

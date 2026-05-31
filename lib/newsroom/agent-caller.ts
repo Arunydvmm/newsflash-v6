@@ -1,299 +1,222 @@
-import { AGENT_KEYS, FALLBACK_KEYS, KEY_SHARING_MAP } from './agent-keys.config'
+import { AGENT_KEYS, FALLBACK_KEYS } from './agent-keys.config'
+import { canUseProvider, recordTokens } from './token-budget'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-const SLEEP_DURATION_MS = 45000 // 45 seconds sleep on failure
-const RATE_LIMIT_DELAY_MS = 2000 // 2 seconds delay between calls to avoid rate limits
+// Parse actual retry wait time from Groq error message
+function parseRetryAfter(errorMessage: string): number {
+  const minMatch = errorMessage?.match(/(\d+)m[\d.]+s/)
+  const secMatch = errorMessage?.match(/in ([\d.]+)s/)
+  if (minMatch) return (parseInt(minMatch[1]) + 1) * 60 * 1000  // minutes + 1 buffer
+  if (secMatch) return (parseFloat(secMatch[1]) + 5) * 1000     // seconds + 5s buffer
+  return 65000 // default 65s
+}
 
-// Helper function to clean and parse JSON from AI response
-function cleanAndParseJSON(raw: string): any {
-  if (!raw || raw.trim().length === 0) {
-    throw new Error('Empty response from AI')
-  }
-  
-  // Remove markdown code blocks
-  let clean = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
-  
-  if (clean.length === 0) {
-    throw new Error('Empty response after cleaning markdown')
-  }
-  
-  // Try to parse as-is
+// Update sleep status in DB for admin panel visibility
+async function setSleepStatus(jobId: string, agentName: string, sleeping: boolean, reason = '', wakeAt = 0) {
   try {
-    return JSON.parse(clean)
-  } catch (e) {
-    // If that fails, try to extract JSON from the response
-    // Look for JSON object pattern
-    const jsonMatch = clean.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      try {
-        return JSON.parse(jsonMatch[0])
-      } catch (e2) {
-        throw new Error(`Failed to parse AI response as JSON: ${clean.slice(0, 200)}`)
-      }
-    }
-    throw new Error(`Failed to parse AI response as JSON: ${clean.slice(0, 200)}`)
-  }
-}
-
-export interface AgentCallResult {
-  data: any
-  tokensUsed: number
-  providerUsed: string
-  modelUsed: string
-  usedKey: 'primary' | 'backup' | 'fallback' | 'retry_after_sleep'
-  sleepOccurred: boolean
-  sleepDurationMs: number
-  blockReason?: string
-}
-
-// Get env variable name from key value (reverse lookup)
-function getEnvKeyName(keyValue: string): string {
-  for (const [envName] of Object.entries(KEY_SHARING_MAP)) {
-    if (process.env[envName] === keyValue) return envName
-  }
-  return 'UNKNOWN_KEY'
-}
-
-// Mark key cooldown in DB so all agents sharing this key know
-async function markKeyCooldown(envKeyName: string, cooldownMs: number = 60000) {
-  try {
-    const config = await prisma.nfSystemConfig.findFirst()
-    const existing = config?.keyCooldowns ? JSON.parse(config.keyCooldowns as string) : {}
-    existing[envKeyName] = Date.now() + cooldownMs
-    await prisma.nfSystemConfig.upsert({
-      where: { id: config?.id ?? 'default' },
-      update: { keyCooldowns: JSON.stringify(existing) },
-      create: { id: 'default', keyCooldowns: JSON.stringify(existing) }
-    })
-  } catch (e) {
-    console.error('Failed to mark key cooldown in DB:', e)
-  }
-}
-
-async function isKeyCoolingDown(envKeyName: string): Promise<boolean> {
-  try {
-    const config = await prisma.nfSystemConfig.findFirst()
-    const cooldowns = config?.keyCooldowns ? JSON.parse(config.keyCooldowns as string) : {}
-    return !!(cooldowns[envKeyName] && cooldowns[envKeyName] > Date.now())
-  } catch {
-    return false
-  }
-}
-
-// Update sleep status in DB so admin panel can see it
-async function updateAgentSleepStatus(
-  jobId: string,
-  agentName: string,
-  sleeping: boolean,
-  reason: string = '',
-  wakeAt?: number
-) {
-  try {
-    const config = await prisma.nfSystemConfig.findFirst()
-    const sleepStatuses = config?.agentSleepStatuses
-      ? JSON.parse(config.agentSleepStatuses as string)
-      : {}
+    const config  = await prisma.nfSystemConfig.findFirst()
+    const statuses = config?.agentSleepStatuses ? JSON.parse(config.agentSleepStatuses as string) : {}
+    const key = `${jobId}_${agentName}` 
     if (sleeping) {
-      sleepStatuses[`${jobId}_${agentName}`] = {
-        jobId,
-        agentName,
-        sleeping: true,
-        reason,
-        sleepStarted: Date.now(),
-        wakeAt: wakeAt ?? Date.now() + SLEEP_DURATION_MS
-      }
+      statuses[key] = { jobId, agentName, sleeping: true, reason, sleepStarted: Date.now(), wakeAt }
     } else {
-      delete sleepStatuses[`${jobId}_${agentName}`]
+      delete statuses[key]
     }
     await prisma.nfSystemConfig.upsert({
-      where: { id: config?.id ?? 'default' },
-      update: { agentSleepStatuses: JSON.stringify(sleepStatuses) },
-      create: { id: 'default', agentSleepStatuses: JSON.stringify(sleepStatuses) }
+      where:  { id: config?.id ?? 'default' },
+      update: { agentSleepStatuses: JSON.stringify(statuses) },
+      create: { id: 'default', agentSleepStatuses: JSON.stringify(statuses) }
     })
-  } catch (e) {
-    console.error('Failed to update sleep status:', e)
-  }
+  } catch (e) { console.error('setSleepStatus error:', e) }
 }
 
+// Call any provider
 async function callProvider(
   config: { key: string; provider: string; model: string },
   prompt: string,
   maxTokens: number
 ): Promise<{ data: any; tokensUsed: number }> {
 
-  if (!config.key) throw new Error(`API key missing for provider: ${config.provider}`)
+  if (!config.key) throw new Error(`Missing API key for ${config.provider}`)
 
-  // Add delay to avoid rate limiting
-  await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS))
+  // Check token budget before calling
+  const provider = config.provider === 'google_legacy' ? 'google' : config.provider as any
+  if (['groq', 'google', 'mistral'].includes(provider)) {
+    const allowed = await canUseProvider(provider, maxTokens)
+    if (!allowed) throw new Error(`TOKEN_BUDGET_EXCEEDED:${provider}`)
+  }
 
-  console.log(`[AI Call] Provider: ${config.provider}, Model: ${config.model}`)
+  let res: Response
+  let body: any
 
   if (config.provider === 'groq') {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${config.key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: maxTokens,
-        temperature: 0.3
-      })
+      headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: config.model, messages: [{ role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 }),
+      signal: AbortSignal.timeout(30000)
     })
-    if (!res.ok) {
-      const err = await res.json()
-      const error: any = new Error(err.error?.message || 'Groq API error')
-      error.status = res.status
-      throw error
-    }
-    const json = await res.json()
-    const raw = json.choices[0].message.content
-    console.log(`[AI Response] Groq raw response length: ${raw?.length || 0}`)
-    return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
+    if (!res.ok) { const e: any = new Error((await res.json()).error?.message ?? 'Groq error'); e.status = res.status; throw e }
+    body = await res.json()
+    const raw = body.choices[0].message.content
+    const tokens = body.usage?.total_tokens ?? 0
+    await recordTokens('groq', tokens)
+    return { data: JSON.parse(raw.replace(/```json|```/g, '').trim()), tokensUsed: tokens }
   }
 
   if (config.provider === 'openrouter') {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${config.key}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL ?? '',
-        'X-Title': 'NewsFlash AI Newsroom'
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: maxTokens,
-        temperature: 0.3
-      })
-    })
-    if (!res.ok) {
-      const err = await res.json()
-      const error: any = new Error(err.error?.message || 'OpenRouter API error')
-      error.status = res.status
-      throw error
+    // Try multiple free models in order until one works
+    const modelsToTry = [
+      config.model,
+      'mistralai/mistral-7b-instruct:free',
+      'google/gemma-2-9b-it:free',
+      'meta-llama/llama-3.2-3b-instruct:free',
+      'microsoft/phi-3-mini-128k-instruct:free',
+      'qwen/qwen-2-7b-instruct:free'
+    ]
+    for (const model of modelsToTry) {
+      try {
+        res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${config.key}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL ?? '',
+            'X-Title': 'NewsFlash AI Newsroom'
+          },
+          body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 }),
+          signal: AbortSignal.timeout(60000)
+        })
+        if (!res.ok) {
+          const errBody = await res.json()
+          const msg = errBody.error?.message ?? 'OpenRouter error'
+          if (msg.includes('provider') || msg.includes('offline') || res.status === 503) {
+            console.warn(`OpenRouter model ${model} unavailable — trying next`)
+            continue // try next model
+          }
+          const e: any = new Error(msg); e.status = res.status; throw e
+        }
+        body = await res.json()
+        const raw = body.choices[0].message.content
+        return { data: JSON.parse(raw.replace(/```json|```/g, '').trim()), tokensUsed: body.usage?.total_tokens ?? 0 }
+      } catch (modelErr: any) {
+        if (modelErr.message?.includes('TOKEN_BUDGET')) throw modelErr
+        console.warn(`OpenRouter ${model} failed: ${modelErr.message} — trying next model`)
+      }
     }
-    const json = await res.json()
-    const raw = json.choices[0].message.content
-    console.log(`[AI Response] OpenRouter raw response length: ${raw?.length || 0}`)
-    return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
+    throw new Error('All OpenRouter free models unavailable')
   }
 
   if (config.provider === 'google' || config.provider === 'google_legacy') {
-    const res = await fetch(
+    res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.3 }
-        })
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens, temperature: 0.3 } }),
+        signal: AbortSignal.timeout(30000)
       }
     )
-    if (!res.ok) {
-      const err = await res.json()
-      const error: any = new Error(err.error?.message || 'Google API error')
-      error.status = res.status
-      throw error
-    }
-    const json = await res.json()
-    const raw = json.candidates[0].content.parts[0].text
-    console.log(`[AI Response] Google raw response length: ${raw?.length || 0}`)
-    return { data: cleanAndParseJSON(raw), tokensUsed: json.usageMetadata?.totalTokenCount ?? 0 }
+    if (!res.ok) { const e: any = new Error((await res.json()).error?.message ?? 'Google error'); e.status = res.status; throw e }
+    body = await res.json()
+    const raw = body.candidates[0].content.parts[0].text
+    const tokens = body.usageMetadata?.totalTokenCount ?? 0
+    await recordTokens('google', tokens)
+    return { data: JSON.parse(raw.replace(/```json|```/g, '').trim()), tokensUsed: tokens }
   }
 
   if (config.provider === 'mistral') {
-    const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    res = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${config.key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: maxTokens,
-        temperature: 0.3
-      })
+      headers: { Authorization: `Bearer ${config.key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: config.model, messages: [{ role: 'user', content: prompt }], max_tokens: maxTokens, temperature: 0.3 }),
+      signal: AbortSignal.timeout(30000)
     })
-    if (!res.ok) {
-      const err = await res.json()
-      const error: any = new Error(err.error?.message || 'Mistral API error')
-      error.status = res.status
-      throw error
-    }
-    const json = await res.json()
-    const raw = json.choices[0].message.content
-    console.log(`[AI Response] Mistral raw response length: ${raw?.length || 0}`)
-    return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
+    if (!res.ok) { const e: any = new Error((await res.json()).error?.message ?? 'Mistral error'); e.status = res.status; throw e }
+    body = await res.json()
+    const raw = body.choices[0].message.content
+    const tokens = body.usage?.total_tokens ?? 0
+    await recordTokens('mistral', tokens)
+    return { data: JSON.parse(raw.replace(/```json|```/g, '').trim()), tokensUsed: tokens }
   }
 
   throw new Error(`Unknown provider: ${config.provider}`)
 }
 
+// Main agent caller — primary → backup → fallback → smart sleep → final retry
 export async function callAgent(
   agentName: keyof typeof AGENT_KEYS,
   prompt: string,
   maxTokens: number,
   jobId: string
-): Promise<AgentCallResult> {
+): Promise<{ data: any; tokensUsed: number; providerUsed: string; modelUsed: string; sleepOccurred: boolean; sleepMs: number }> {
 
   const config = AGENT_KEYS[agentName]
-  const primaryEnvKey = getEnvKeyName(config.primary.key)
-  const backupEnvKey = getEnvKeyName(config.backup.key)
-  const sameKey = primaryEnvKey === backupEnvKey
+  const attempts = [
+    { label: 'primary',  cfg: config.primary },
+    { label: 'backup',   cfg: config.backup  },
+    ...FALLBACK_KEYS.filter(k => k.key).map((k, i) => ({ label: `fallback_${i+1}`, cfg: k }))
+  ]
+
+  // Remove duplicate keys (same key = same result so skip dupes)
+  const seen = new Set<string>()
+  const uniqueAttempts = attempts.filter(a => {
+    if (seen.has(a.cfg.key)) return false
+    seen.add(a.cfg.key)
+    return true
+  })
+
+  let lastError: any = null
   let sleepOccurred = false
+  let totalSleepMs = 0
 
-  // Try primary
-  const primaryCooling = await isKeyCoolingDown(primaryEnvKey)
-  if (!primaryCooling) {
+  for (const attempt of uniqueAttempts) {
     try {
-      const result = await callProvider(config.primary, prompt, maxTokens)
-      return { ...result, providerUsed: config.primary.provider, modelUsed: config.primary.model, usedKey: 'primary', sleepOccurred: false, sleepDurationMs: 0 }
-    } catch (err: any) {
-      if (err.status === 429) await markKeyCooldown(primaryEnvKey, 60000)
-      console.warn(`[${agentName}] primary failed: ${err.message}`)
-    }
-  }
-
-  // Try backup (only if different key)
-  if (!sameKey) {
-    const backupCooling = await isKeyCoolingDown(backupEnvKey)
-    if (!backupCooling) {
-      try {
-        const result = await callProvider(config.backup, prompt, maxTokens)
-        return { ...result, providerUsed: config.backup.provider, modelUsed: config.backup.model, usedKey: 'backup', sleepOccurred: false, sleepDurationMs: 0 }
-      } catch (err: any) {
-        if (err.status === 429) await markKeyCooldown(backupEnvKey, 60000)
-        console.warn(`[${agentName}] backup failed: ${err.message}`)
+      const result = await callProvider(attempt.cfg, prompt, maxTokens)
+      if (sleepOccurred) await setSleepStatus(jobId, agentName, false)
+      return {
+        ...result,
+        providerUsed: attempt.cfg.provider,
+        modelUsed:    attempt.cfg.model,
+        sleepOccurred,
+        sleepMs: totalSleepMs
       }
-    }
-  }
-
-  // Try universal fallback keys
-  for (const fallback of FALLBACK_KEYS) {
-    if (!fallback.key) continue
-    try {
-      const result = await callProvider(fallback, prompt, maxTokens)
-      return { ...result, providerUsed: fallback.provider, modelUsed: fallback.model, usedKey: 'fallback', sleepOccurred: false, sleepDurationMs: 0 }
     } catch (err: any) {
-      console.warn(`[${agentName}] fallback ${fallback.provider} failed: ${err.message}`)
+      lastError = err
+      // Budget exceeded — skip this provider entirely, try next
+      if (err.message?.includes('TOKEN_BUDGET_EXCEEDED')) {
+        console.warn(`[${agentName}] ${attempt.label} budget exceeded — trying next provider`)
+        continue
+      }
+      // Rate limited — parse actual wait time, sleep, then continue to next attempt
+      if (err.status === 429) {
+        const waitMs = parseRetryAfter(err.message)
+        // Only sleep if wait is under 5 minutes — otherwise skip and try next key
+        if (waitMs <= 300000) {
+          console.warn(`[${agentName}] ${attempt.label} rate limited — sleeping ${Math.round(waitMs/1000)}s`)
+          sleepOccurred = true
+          totalSleepMs += waitMs
+          await setSleepStatus(jobId, agentName, true, `Rate limited on ${attempt.cfg.provider} — waiting ${Math.round(waitMs/1000)}s`, Date.now() + waitMs)
+          await new Promise(r => setTimeout(r, waitMs))
+          await setSleepStatus(jobId, agentName, false)
+          // Retry same attempt after sleep
+          try {
+            const result = await callProvider(attempt.cfg, prompt, maxTokens)
+            return { ...result, providerUsed: attempt.cfg.provider, modelUsed: attempt.cfg.model, sleepOccurred: true, sleepMs: totalSleepMs }
+          } catch (retryErr: any) {
+            console.warn(`[${agentName}] retry after sleep also failed — trying next key`)
+          }
+        } else {
+          console.warn(`[${agentName}] retry wait too long (${Math.round(waitMs/60000)}m) — skipping to next key`)
+        }
+        continue
+      }
+      console.warn(`[${agentName}] ${attempt.label} failed: ${err.message}`)
     }
   }
 
-  // ALL KEYS FAILED — ENTER SLEEP MODE FOR 45 SECONDS
-  console.warn(`[${agentName}] All keys failed — entering sleep mode for ${SLEEP_DURATION_MS/1000}s`)
-  await updateAgentSleepStatus(jobId, agentName, true, 'All API keys failed or cooling down', Date.now() + SLEEP_DURATION_MS)
-  await new Promise(r => setTimeout(r, SLEEP_DURATION_MS))
-  await updateAgentSleepStatus(jobId, agentName, false)
-  sleepOccurred = true
-
-  // Retry primary after sleep
-  try {
-    const result = await callProvider(config.primary, prompt, maxTokens)
-    return { ...result, providerUsed: config.primary.provider, modelUsed: config.primary.model, usedKey: 'retry_after_sleep', sleepOccurred: true, sleepDurationMs: SLEEP_DURATION_MS }
-  } catch (finalErr: any) {
-    // Sleep and retry failed — throw to pipeline to mark stage as failed
-    throw new Error(`[${agentName}] Failed after sleep retry: ${finalErr.message}`)
-  }
+  // All attempts exhausted — throw so pipeline can mark stage as failed
+  throw new Error(`[${agentName}] All providers failed. Last error: ${lastError?.message}`)
 }
