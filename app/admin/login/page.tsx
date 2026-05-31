@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import MatrixRain from '@/components/MatrixRain'
 import TerminalText from '@/components/TerminalText'
+import styles from '@/styles/admin-login.module.css'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -97,6 +98,7 @@ export default function AdminLoginPage() {
 
       {/* CRT flicker effect */}
       <div
+        className={styles.flicker}
         style={{
           position: 'fixed',
           top: 0,
@@ -105,17 +107,9 @@ export default function AdminLoginPage() {
           height: '100%',
           pointerEvents: 'none',
           zIndex: 2,
-          animation: 'flicker 0.15s infinite',
           opacity: 0.03
         }}
       />
-      <style jsx>{`
-        @keyframes flicker {
-          0% { opacity: 0.02; }
-          50% { opacity: 0.05; }
-          100% { opacity: 0.02; }
-        }
-      `}</style>
 
       {/* Content */}
       <div
@@ -157,26 +151,17 @@ export default function AdminLoginPage() {
           >
             {/* Logo with glitch effect */}
             <div
+              className={styles.glitch}
               style={{
                 color: '#C62828',
                 fontSize: '24px',
                 fontWeight: 'bold',
                 marginBottom: '32px',
-                textAlign: 'center',
-                animation: 'glitch 2s infinite'
+                textAlign: 'center'
               }}
             >
               NEWSFLASH
             </div>
-            <style jsx>{`
-              @keyframes glitch {
-                0%, 90%, 100% { transform: translate(0); }
-                92% { transform: translate(-2px, 2px); }
-                94% { transform: translate(2px, -2px); }
-                96% { transform: translate(-2px, -2px); }
-                98% { transform: translate(2px, 2px); }
-              }
-            `}</style>
 
             {!authenticating && !authStatus ? (
               <form onSubmit={handleLogin}>
