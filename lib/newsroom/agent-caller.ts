@@ -7,8 +7,16 @@ const SLEEP_DURATION_MS = 45000 // 45 seconds sleep on failure
 
 // Helper function to clean and parse JSON from AI response
 function cleanAndParseJSON(raw: string): any {
+  if (!raw || raw.trim().length === 0) {
+    throw new Error('Empty response from AI')
+  }
+  
   // Remove markdown code blocks
   let clean = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+  
+  if (clean.length === 0) {
+    throw new Error('Empty response after cleaning markdown')
+  }
   
   // Try to parse as-is
   try {
@@ -116,6 +124,8 @@ async function callProvider(
 
   if (!config.key) throw new Error(`API key missing for provider: ${config.provider}`)
 
+  console.log(`[AI Call] Provider: ${config.provider}, Model: ${config.model}`)
+
   if (config.provider === 'groq') {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -135,6 +145,7 @@ async function callProvider(
     }
     const json = await res.json()
     const raw = json.choices[0].message.content
+    console.log(`[AI Response] Groq raw response length: ${raw?.length || 0}`)
     return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
   }
 
@@ -162,6 +173,7 @@ async function callProvider(
     }
     const json = await res.json()
     const raw = json.choices[0].message.content
+    console.log(`[AI Response] OpenRouter raw response length: ${raw?.length || 0}`)
     return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
   }
 
@@ -185,6 +197,7 @@ async function callProvider(
     }
     const json = await res.json()
     const raw = json.candidates[0].content.parts[0].text
+    console.log(`[AI Response] Google raw response length: ${raw?.length || 0}`)
     return { data: cleanAndParseJSON(raw), tokensUsed: json.usageMetadata?.totalTokenCount ?? 0 }
   }
 
@@ -207,6 +220,7 @@ async function callProvider(
     }
     const json = await res.json()
     const raw = json.choices[0].message.content
+    console.log(`[AI Response] Mistral raw response length: ${raw?.length || 0}`)
     return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
   }
 
