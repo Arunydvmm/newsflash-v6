@@ -118,7 +118,7 @@ export async function getNextQueuedJob() {
 
 export async function runPipelineJob(job: any, slotNumber: number) {
   // Delayed start per slot
-  const delay = SLOT_DELAYS[slotNumber as keyof typeof SLOT_DELAYS] ?? 0
+  const delay = SLOT_DELAY
   if (delay > 0) await new Promise(r => setTimeout(r, delay))
 
   await prisma.nfPipelineJob.update({
