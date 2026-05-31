@@ -205,7 +205,7 @@ export async function callAgent(
           // Retry same attempt after sleep
           try {
             const result = await callProvider(attempt.cfg, prompt, maxTokens)
-            return { ...result, providerUsed: attempt.cfg.provider, modelUsed: attempt.cfg.model, sleepOccurred: true, sleepMs: totalSleepMs }
+            return { ...result, providerUsed: attempt.cfg.provider, modelUsed: attempt.cfg.model, usedKey: 'retry_after_sleep', sleepOccurred: true, sleepMs: totalSleepMs }
           } catch (retryErr: any) {
             console.warn(`[${agentName}] retry after sleep also failed — trying next key`)
           }
