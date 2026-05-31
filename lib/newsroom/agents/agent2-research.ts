@@ -1,23 +1,14 @@
-import { callAIProvider } from '../provider.service'
+import { callAgent } from '../agent-caller'
 
 interface AgentInput {
-  articleId: string
+  jobId: string
   currentContent: string
-  previousStageReport: object
-  sourceData: object
-  metadata: { title: string; region: string; priority: string; language: string }
+  allPreviousReports: Record<string, any>
+  sourceData: any
+  metadata: { title: string; region: string; priority: string }
 }
 
-interface AgentOutput {
-  modifiedContent: string
-  stageReport: object
-  confidence: number
-  recommendation: string
-  tokensUsed: number
-  processingMs: number
-}
-
-export async function researchAgent(input: AgentInput): Promise<AgentOutput> {
+export async function researchAgent(input: AgentInput) {
   const startTime = Date.now()
 
   const prompt = `
@@ -45,7 +36,7 @@ Assign a credibilityScore per claim (not just overall):
 
 Title: ${input.metadata.title}
 Content: ${input.currentContent}
-Monitoring Report: ${JSON.stringify(input.previousStageReport)}
+Monitoring Report: ${JSON.stringify(input.allPreviousReports['MONITOR']?.report || {})}
 
 Return JSON:
 {
@@ -78,7 +69,7 @@ Return JSON:
 }
 `
 
-  const result = await callAIProvider('RESEARCH', prompt, 0.3, 2000)
+  const result = await callAgent('RESEARCH', prompt, 1500, input.jobId)
   const processingMs = Date.now() - startTime
 
   return {
@@ -86,7 +77,12 @@ Return JSON:
     stageReport: result.data.stageReport,
     confidence: result.data.confidence || 0.8,
     recommendation: result.data.recommendation || 'PROCEED',
+    providerUsed: result.providerUsed,
+    modelUsed: result.modelUsed,
+    usedKey: result.usedKey,
     tokensUsed: result.tokensUsed,
-    processingMs
+    processingMs,
+    sleepOccurred: result.sleepOccurred,
+    sleepDurationMs: result.sleepDurationMs
   }
 }

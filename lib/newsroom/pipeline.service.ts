@@ -187,6 +187,9 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
 
       currentContent = result.modifiedContent
       previousStageReport = result.stageReport
+
+      // Add 2-second delay between agent calls to prevent rate limit bursts
+      await new Promise(resolve => setTimeout(resolve, 2000))
     }
 
     // Generate summary report

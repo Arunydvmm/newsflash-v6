@@ -6,6 +6,8 @@ import Article from '../../models/Article'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
 import AdSlotServer from '../../components/AdSlotServer'
+import ArticleRenderer from '@/components/article/ArticleRenderer'
+import TableOfContents from '@/components/article/TableOfContents'
 
 export const revalidate = 0 // Disable ISR - fetch fresh data on every request
 
@@ -18,19 +20,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const a = await Article.findOne({ slug: params.slug, status: 'published' }).lean() as any
   if (!a) return { title: 'Not Found' }
   const url = `${SITE_URL}/article/${a.slug}`
-  const image = a.featuredImage || `${SITE_URL}/og-default.jpg`
+  const image = a.coverImage || a.featuredImage || `${SITE_URL}/og-default.jpg`
+  const title = a.metaTitle || a.title
+  const description = a.excerpt || a.summary
   return {
-    title: a.title,
-    description: a.summary,
+    title,
+    description,
     keywords: [...(a.tags || []), a.category, 'India news', 'NewsFlash'],
     authors: [{ name: a.author || 'NewsFlash Editorial' }],
     alternates: { canonical: url },
     openGraph: {
       type: 'article',
       url,
-      title: a.title,
-      description: a.summary,
-      images: [{ url: image, width: 1200, height: 630, alt: a.title }],
+      title,
+      description,
+      images: [{ url: image, width: 1200, height: 630, alt: title }],
       publishedTime: a.createdAt,
       modifiedTime: a.updatedAt,
       authors: [a.author || 'NewsFlash Editorial'],
@@ -39,8 +43,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: a.title,
-      description: a.summary,
+      title,
+      description,
       images: [image],
     },
   }
@@ -232,7 +236,9 @@ export default async function ArticlePage({ params }: Props) {
           )}
 
           {/* CONTENT */}
-          <div className="art-content" dangerouslySetInnerHTML={{ __html: a.content }} />
+          <div className="art-content">
+            <ArticleRenderer content={a.content} />
+          </div>
 
           {/* Mid-Article Ad */}
           <div style={{ margin:'40px 0', padding:'24px 0', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5' }}>
@@ -306,6 +312,9 @@ export default async function ArticlePage({ params }: Props) {
         {/* SIDEBAR */}
         <aside className="sidebar-col">
           <div style={{ position:'sticky', top:80 }}>
+            {/* Table of Contents */}
+            <TableOfContents content={a.content} />
+
             {/* Ad Slot 1 */}
             <div style={{ marginBottom:32, borderRadius: 8, overflow: 'hidden', background: '#F8F8F8', padding: 12 }}>
               <AdSlotServer slotId="banner-300x250" style={{ minHeight: 250 }} />

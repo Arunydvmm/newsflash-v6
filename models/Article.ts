@@ -20,6 +20,18 @@ const ArticleSchema = new mongoose.Schema({
   dataSource: String,
   lastUpdated: Date,
 
+  // NEW: AI Pipeline fields
+  metaTitle: String,
+  excerpt: String,
+  overallScore: Number,
+  coverImage: String,
+  inlineImages: [String],
+  imageCredits: String,
+  contentOrigin: String,
+  videoUrl: String,
+  keyHighlights: [String],
+  referenceLinks: [{ sourceName: String, url: String }],
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })

@@ -5,37 +5,31 @@ import { getAuth } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
-// Simple in-memory rate limiter
-const apiCallTimestamps: number[] = []
-const MAX_CALLS_PER_MINUTE = 5
-const MIN_INTERVAL_MS = 60000 / MAX_CALLS_PER_MINUTE // 12 seconds between calls
-
-function checkRateLimit(): { allowed: boolean; waitTime?: number } {
+async function checkRateLimit(): Promise<{ allowed: boolean; waitTime?: number }> {
+  const config = await prisma.nfSystemConfig.findFirst()
   const now = Date.now()
-  
-  // Remove timestamps older than 1 minute
-  const recentCalls = apiCallTimestamps.filter(timestamp => now - timestamp < 60000)
-  
-  if (recentCalls.length >= MAX_CALLS_PER_MINUTE) {
-    const oldestCall = recentCalls[0]
-    const waitTime = 60000 - (now - oldestCall)
-    return { allowed: false, waitTime }
+  const timestamps: number[] = config?.rateLimitTimestamps ? JSON.parse(config.rateLimitTimestamps as string) : []
+  const recent = timestamps.filter(t => now - t < 60000)
+  if (recent.length >= 5) {
+    return { allowed: false, waitTime: 60000 - (now - recent[0]) }
   }
-  
-  // Check minimum interval between calls
-  if (recentCalls.length > 0) {
-    const lastCall = recentCalls[recentCalls.length - 1]
-    const timeSinceLastCall = now - lastCall
-    if (timeSinceLastCall < MIN_INTERVAL_MS) {
-      return { allowed: false, waitTime: MIN_INTERVAL_MS - timeSinceLastCall }
-    }
+  if (recent.length > 0 && now - recent[recent.length - 1] < 12000) {
+    return { allowed: false, waitTime: 12000 - (now - recent[recent.length - 1]) }
   }
-  
   return { allowed: true }
 }
 
-function recordApiCall() {
-  apiCallTimestamps.push(Date.now())
+async function recordApiCall() {
+  const config = await prisma.nfSystemConfig.findFirst()
+  const now = Date.now()
+  const timestamps: number[] = config?.rateLimitTimestamps ? JSON.parse(config.rateLimitTimestamps as string) : []
+  const recent = timestamps.filter(t => now - t < 60000)
+  recent.push(now)
+  await prisma.nfSystemConfig.upsert({
+    where: { id: config?.id || 'default' },
+    update: { rateLimitTimestamps: JSON.stringify(recent) },
+    create: { id: 'default', rateLimitTimestamps: JSON.stringify(recent) }
+  })
 }
 
 export async function POST(req: NextRequest) {
@@ -45,7 +39,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check rate limit
-  const rateLimit = checkRateLimit()
+  const rateLimit = await checkRateLimit()
   if (!rateLimit.allowed) {
     return NextResponse.json({ 
       error: 'Rate limit exceeded',
@@ -72,7 +66,24 @@ export async function POST(req: NextRequest) {
     })
 
     // Record API call before running pipeline
-    recordApiCall()
+    await recordApiCall()
+
+    // Fetch real content snippet from sourceUrl if not already present
+    let contentSnippet = nextItem.contentSnippet || ''
+    if (!contentSnippet && nextItem.sourceUrl) {
+      try {
+        const res = await fetch(nextItem.sourceUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0' },
+          signal: AbortSignal.timeout(8000)
+        })
+        const html = await res.text()
+        // Strip tags, get first 500 chars of body text
+        const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+        contentSnippet = text.substring(0, 500)
+      } catch (e) {
+        console.warn('Could not fetch content snippet for:', nextItem.sourceUrl)
+      }
+    }
 
     // Run pipeline
     const storyData = {
@@ -80,7 +91,7 @@ export async function POST(req: NextRequest) {
       sourceUrl: nextItem.sourceUrl,
       sourceName: nextItem.sourceName,
       publishedAt: nextItem.createdAt,
-      contentSnippet: ''
+      contentSnippet
     }
 
     await runPipeline(storyData)

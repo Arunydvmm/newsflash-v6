@@ -21,8 +21,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ triggered: 0, articles: [], message: 'No articles fetched from RSS feeds' })
     }
 
-    // Pick top 5 by newsworthiness (simplified - just take first 5)
-    const top5 = feeds.slice(0, 5)
+    // Score each article and pick top 5
+    const scored = feeds.map(item => {
+      let score = 0
+      const h = item.headline.toLowerCase()
+      // Recency bonus
+      const ageHours = (Date.now() - item.publishedAt.getTime()) / 3600000
+      score += Math.max(0, 10 - ageHours) // fresher = higher score
+      // Breaking news keywords
+      const breaking = ['breaking', 'urgent', 'alert', 'just in', 'live', 'exclusive']
+      if (breaking.some(k => h.includes(k))) score += 5
+      // India-specific bonus
+      if (item.sourceName.includes('NDTV') || item.sourceName.includes('Hindu') || item.sourceName.includes('Times of India')) score += 2
+      // Content length bonus (more content = more processable)
+      score += Math.min(3, item.contentSnippet.length / 100)
+      return { ...item, score }
+    }).sort((a, b) => b.score - a.score)
+
+    const top5 = scored.slice(0, 5)
 
     const addedToWatchlist = []
 

@@ -42,15 +42,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Article already in watchlist' }, { status: 409 })
     }
 
+    // Fetch real page title and content snippet
+    let headline = url
+    let contentSnippet = ''
+    try {
+      const pageRes = await fetch(url, { 
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        signal: AbortSignal.timeout(8000)
+      })
+      const html = await pageRes.text()
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+      const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)
+      headline = titleMatch ? titleMatch[1].trim() : url
+      contentSnippet = descMatch ? descMatch[1].trim() : ''
+    } catch (e) {
+      console.warn('Could not fetch page title, using URL as headline')
+    }
+
     // Add to watchlist
     const watchlistItem = await prisma.nfWatchlist.create({
       data: {
-        headline: `Custom URL: ${url}`,
+        headline,
         sourceUrl: url,
         sourceName: 'Custom URL',
         region: 'India',
         priority: 'STANDARD',
-        status: 'PENDING'
+        status: 'PENDING',
+        contentSnippet
       }
     })
 

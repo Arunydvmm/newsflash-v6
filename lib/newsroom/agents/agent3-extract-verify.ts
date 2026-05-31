@@ -1,23 +1,14 @@
-import { callAIProvider } from '../provider.service'
+import { callAgent } from '../agent-caller'
 
 interface AgentInput {
-  articleId: string
+  jobId: string
   currentContent: string
-  previousStageReport: object
-  sourceData: object
-  metadata: { title: string; region: string; priority: string; language: string }
+  allPreviousReports: Record<string, any>
+  sourceData: any
+  metadata: { title: string; region: string; priority: string }
 }
 
-interface AgentOutput {
-  modifiedContent: string
-  stageReport: object
-  confidence: number
-  recommendation: string
-  tokensUsed: number
-  processingMs: number
-}
-
-export async function extractionAgent(input: AgentInput): Promise<AgentOutput> {
+export async function extractVerifyAgent(input: AgentInput) {
   const startTime = Date.now()
 
   const prompt = `
@@ -42,7 +33,7 @@ Required fields (ALL must be present):
 
 Title: ${input.metadata.title}
 Content: ${input.currentContent}
-Research Report: ${JSON.stringify(input.previousStageReport)}
+Research Report: ${JSON.stringify(input.allPreviousReports['RESEARCH']?.report || {})}
 
 Return JSON:
 {
@@ -68,7 +59,7 @@ Return JSON:
 If any required field is missing, set recommendation to "BLOCK" and list missing fields in missingFields array.
 `
 
-  const result = await callAIProvider('EXTRACTION', prompt, 0.3, 2000)
+  const result = await callAgent('EXTRACT_VERIFY', prompt, 1500, input.jobId)
   const processingMs = Date.now() - startTime
 
   return {
@@ -76,7 +67,13 @@ If any required field is missing, set recommendation to "BLOCK" and list missing
     stageReport: result.data.stageReport,
     confidence: result.data.confidence || 0.8,
     recommendation: result.data.recommendation || 'PROCEED',
+    blockReason: result.data.recommendation === 'BLOCK' ? result.data.stageReport?.missingFields?.join(', ') : undefined,
+    providerUsed: result.providerUsed,
+    modelUsed: result.modelUsed,
+    usedKey: result.usedKey,
     tokensUsed: result.tokensUsed,
-    processingMs
+    processingMs,
+    sleepOccurred: result.sleepOccurred,
+    sleepDurationMs: result.sleepDurationMs
   }
 }

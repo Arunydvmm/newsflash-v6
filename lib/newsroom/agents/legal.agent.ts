@@ -23,6 +23,26 @@ export async function legalAgent(input: AgentInput): Promise<AgentOutput> {
   const prompt = `
 You are a legal review AI. Check this article for legal issues.
 
+EXPLICIT INSTRUCTION:
+- Check for active court cases (sub-judice matters) - reporting on ongoing litigation can be contempt of court
+- Check for statements about living individuals that could be defamatory
+- Check for unverified criminal allegations against named individuals
+- Any high-risk flag must return BLOCK (not ESCALATE)
+
+Legal risks to check:
+- Defamation: False statements harming reputation of individuals/organizations
+- Libel: Written defamatory statements
+- Contempt of court: Reporting on sub-judice matters that could prejudice proceedings
+- Privacy: Invasion of privacy, revealing private information without consent
+- Copyright: Unauthorized use of copyrighted material
+- Sedition: Statements inciting violence against the government
+
+High-risk scenarios (must BLOCK):
+- Unverified criminal allegations against named individuals
+- Reporting on active court cases with potential to prejudice proceedings
+- Defamatory statements about living individuals without evidence
+- Statements that could incite violence or public disorder
+
 Title: ${input.metadata.title}
 Content: ${input.currentContent}
 Bias Report: ${JSON.stringify(input.previousStageReport)}
@@ -31,15 +51,27 @@ Return JSON:
 {
   "modifiedContent": "content with legal annotations",
   "stageReport": {
-    "legalIssues": ["defamation|libel|copyright|privacy|none"],
-    "flaggedContent": ["content1", "content2"],
-    "riskLevel": "NONE|LOW|MEDIUM|HIGH",
+    "legalIssues": ["defamation|libel|copyright|privacy|contempt_of_court|sedition|none"],
+    "flaggedContent": [
+      {
+        "content": "flagged text",
+        "issue": "defamation|libel|copyright|privacy|contempt_of_court|sedition",
+        "riskLevel": "HIGH|MEDIUM|LOW",
+        "reason": "explanation"
+      }
+    ],
+    "subJudiceMatters": boolean,
+    "defamationRisk": boolean,
+    "privacyRisk": boolean,
+    "overallRiskLevel": "NONE|LOW|MEDIUM|HIGH",
     "legalVerdict": "CLEAR|BLOCKED",
     "legalNotes": "notes"
   },
   "confidence": 0.0-1.0,
   "recommendation": "PROCEED|ESCALATE|REWRITE|BLOCK"
 }
+
+If any high-risk flag is detected, set recommendation to "BLOCK" and legalVerdict to "BLOCKED".
 `
 
   const result = await callAIProvider('LEGAL_REVIEW', prompt, 0.2, 2000)

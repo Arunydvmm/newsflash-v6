@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { callGroqFast } from './groq.service'
+import { callAIProvider } from './provider.service'
 
 const prisma = new PrismaClient()
 
@@ -40,7 +40,7 @@ Return JSON:
 `
 
     try {
-      const result = await callGroqFast(prompt, 0.1)
+      const result = await callAIProvider('MONITORING', prompt, 0.1, 300)
 
       if (result.data.isSameStory && result.data.similarityScore > 0.8) {
         return {

@@ -48,6 +48,8 @@ model NfArticle {
   isBreaking        Boolean  @default(false)
   aiDisclosure      String   @default("This article was researched and drafted with AI assistance and reviewed by our editorial team.")
   metaDescription   String?
+  metaTitle         String?
+  excerpt           String?
   isGovernmentVerified Boolean @default(false)
   governmentSource   String?
   ogTags            Json?
@@ -56,6 +58,7 @@ model NfArticle {
   overallConfidence Float?
   overallRiskLevel  String   @default("UNKNOWN")
   editorialGrade    String?
+  overallScore      Float?
   plagiarismScore   Float?
   legalVerdict      String   @default("PENDING")
   copyrightVerdict  String   @default("PENDING")
@@ -67,6 +70,11 @@ model NfArticle {
   reviewedBy        String?
   reviewedAt        DateTime?
   publishedArticleId String?
+  coverImage        String?   // 1200x630 — used for OG and article header
+  featuredImage     String?   // fallback image
+  inlineImages      Json      @default("[]")  // images inserted mid-article
+  imageCredits      Json      @default("[]")  // credit per image { url, photographer, source }
+  contentOrigin     String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -172,27 +180,66 @@ model NfAuditLog {
 }
 
 model NfSystemConfig {
-  id            String   @id @default(cuid())
-  emergencyStop Boolean  @default(false)
-  lastUpdatedBy String?
-  lastUpdatedAt DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  emergencyStop        Boolean  @default(false)
+  rateLimitTimestamps String?
+  keyCooldowns        String?  // JSON: { GROQ_KEY_1: timestamp }
+  agentSleepStatuses  String?  // JSON: { jobId_agentName: sleepInfo }
+  engineStopped       Boolean  @default(false)
+  engineStoppedAt     DateTime?
+  engineStoppedBy     String?
+  lastUpdatedBy       String?
+  lastUpdatedAt       DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model NfWatchlist {
-  id          String   @id @default(cuid())
-  headline    String
-  sourceUrl   String
-  sourceName  String
-  region      String   @default("India")
-  priority    String   @default("STANDARD")
-  status      String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
-  errorMessage String?
-  articleId   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  headline       String
+  sourceUrl      String
+  sourceName     String
+  region         String   @default("India")
+  priority       String   @default("STANDARD")
+  status         String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  errorMessage   String?
+  articleId      String?
+  contentSnippet String?
+  category       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  pipelineJobs   NfPipelineJob[]
 
   @@index([status])
   @@index([createdAt])
+}
+
+model NfPipelineSlot {
+  id           String    @id @default(cuid())
+  slotNumber   Int       @unique
+  status       String    @default("IDLE")
+  currentJobId String?
+  startedAt    DateTime?
+  updatedAt    DateTime  @updatedAt
+}
+
+model NfPipelineJob {
+  id             String      @id @default(cuid())
+  watchlistId    String
+  slotNumber     Int?
+  status         String      @default("QUEUED")
+  currentStage   String?
+  currentAgent   String?
+  stageStatuses  Json        @default("{}")
+  agentReports   Json        @default("{}")
+  sleepLog       Json        @default("[]")
+  queuePosition  Int?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  failedAt       DateTime?
+  failReason     String?
+  articleId      String?
+  createdAt      DateTime    @default(now())
+  watchlist      NfWatchlist @relation(fields: [watchlistId], references: [id])
 }

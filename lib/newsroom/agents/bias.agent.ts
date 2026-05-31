@@ -23,6 +23,24 @@ export async function biasAgent(input: AgentInput): Promise<AgentOutput> {
   const prompt = `
 You are a bias detection AI. Check this article for bias.
 
+EXPLICIT INSTRUCTION:
+- Flag politically charged language (e.g., "fascist", "communist", "terrorist", "extremist" without context)
+- Flag unverified allegations (claims without evidence or attribution)
+- Flag emotional adjectives (e.g., "shocking", "devastating", "horrific" when used for manipulation)
+- List each flagged sentence with suggested neutral replacement
+
+Bias categories to check:
+- Political bias: Favoring one political party/ideology over others
+- Cultural bias: Stereotyping cultural groups, religions, regions
+- Gender bias: Gender-based stereotypes or discriminatory language
+- Religious bias: Favoring or discriminating against religious groups
+- Regional bias: Favoring certain regions over others
+
+For each flagged sentence, provide:
+- The original sentence
+- The type of bias detected
+- A neutral replacement that removes bias while preserving meaning
+
 Title: ${input.metadata.title}
 Content: ${input.currentContent}
 Senior Edit Report: ${JSON.stringify(input.previousStageReport)}
@@ -31,7 +49,15 @@ Return JSON:
 {
   "modifiedContent": "content with bias annotations",
   "stageReport": {
-    "biasTypes": ["political|cultural|gender|religious|none"],
+    "biasTypes": ["political|cultural|gender|religious|regional|none"],
+    "flaggedSentences": [
+      {
+        "original": "original sentence",
+        "biasType": "political|cultural|gender|religious|regional",
+        "neutralReplacement": "neutral version",
+        "reason": "explanation"
+      }
+    ],
     "biasedPhrases": ["phrase1", "phrase2"],
     "neutralPhrases": ["phrase1", "phrase2"],
     "overallBias": "NONE|LOW|MEDIUM|HIGH",

@@ -1,860 +1,557 @@
 'use client'
-// @ts-nocheck
 import { useState, useEffect } from 'react'
 import AdminShell from '@/components/admin/AdminShell'
 
+interface EngineStatus {
+  engineStopped: boolean
+  engineStoppedBy: string | null
+  slots: Array<{
+    slotNumber: number
+    status: string
+    currentJob: any
+  }>
+  queue: {
+    queued: number
+    running: number
+    completed: number
+    failed: number
+    held: number
+  }
+  sleepingAgents: Array<{
+    jobId: string
+    agentName: string
+    reason: string
+    sleepStarted: number
+    wakeAt: number
+    secondsRemaining: number
+  }>
+  keyHealth: Record<string, {
+    configured: boolean
+    cooling: boolean
+    cooldownRemainingSeconds: number
+    sharedBy: string[]
+  }>
+  todayStats: {
+    completed: number
+    failed: number
+    held: number
+    avgProcessingTimeSeconds: number
+  }
+}
+
 export default function NewsroomPage() {
-  const [stats, setStats] = useState(null)
-  const [agentStats, setAgentStats] = useState(null)
-  const [watchlist, setWatchlist] = useState(null)
-  const [monitoringData, setMonitoringData] = useState(null)
-  const [emergencyStop, setEmergencyStop] = useState(false)
+  const [status, setStatus] = useState<EngineStatus | null>(null)
   const [loading, setLoading] = useState(true)
-  const [showAgentReport, setShowAgentReport] = useState(false)
-  const [showWatchlist, setShowWatchlist] = useState(true)
-  const [showMonitoring, setShowMonitoring] = useState(false)
-  const [processing, setProcessing] = useState(false)
-  const [customUrl, setCustomUrl] = useState('')
-  const [pipelineStatus, setPipelineStatus] = useState(null)
+  const [selectedJob, setSelectedJob] = useState<any>(null)
+  const [showJobModal, setShowJobModal] = useState(false)
+  const [wipeConfirm, setWipeConfirm] = useState('')
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStatus = async () => {
       try {
-        const [statusData, agentsData, watchlistData, monitoringResponse, emergencyResponse, pipelineStatusResponse] = await Promise.all([
-          fetch('/api/newsroom/status').then(res => res.json()),
-          fetch('/api/newsroom/agents').then(res => res.json()),
-          fetch('/api/newsroom/queue/process').then(res => res.json()),
-          fetch('/api/newsroom/monitoring').then(res => res.json()),
-          fetch('/api/newsroom/emergency-stop').then(res => res.json()),
-          fetch('/api/pipeline/status').then(res => res.json()).catch(() => null)
-        ])
-        console.log('Watchlist data received:', watchlistData)
-        console.log('Agent stats received:', agentsData)
-        console.log('Monitoring data received:', monitoringResponse)
-        console.log('Setting watchlist state with:', watchlistData.watchlist || [])
-        console.log('Current showWatchlist state:', showWatchlist)
-        setStats(statusData)
-        setAgentStats(agentsData)
-        setWatchlist(watchlistData.watchlist || [])
-        setMonitoringData(monitoringResponse)
-        setEmergencyStop(emergencyResponse.emergencyStop || false)
-        setPipelineStatus(pipelineStatusResponse)
-        setLoading(false)
-      } catch (err) {
-        console.error('Failed to fetch newsroom stats:', err)
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-
-    // Auto-refresh data every 5 seconds if watchlist or monitoring view is open
-    let interval: NodeJS.Timeout
-    if (showWatchlist || showMonitoring) {
-      interval = setInterval(fetchData, 5000)
-    }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [showWatchlist, showMonitoring])
-
-  const triggerPipeline = async () => {
-    if (!confirm('Trigger AI newsroom pipeline? This will fetch RSS feeds and add articles to watchlist.')) return
-    try {
-      const res = await fetch('/api/newsroom/pipeline', {
-        method: 'POST'
-      })
-      
-      if (!res.ok) {
-        const errorData = await res.json()
-        alert(`Failed: ${errorData.error || 'Unknown error'}`)
-        return
-      }
-      
-      const data = await res.json()
-      alert(`Added ${data.added || 0} articles to watchlist`)
-      window.location.reload()
-    } catch (err) {
-      alert('Failed to trigger pipeline')
-      console.error(err)
-    }
-  }
-
-  const processNextItem = async () => {
-    if (!confirm('Process next item from watchlist?')) return
-    setProcessing(true)
-    try {
-      const res = await fetch('/api/newsroom/queue/process', {
-        method: 'POST'
-      })
-      
-      if (!res.ok) {
-        const errorData = await res.json()
-        if (res.status === 429) {
-          alert(`Rate limit: ${errorData.message}`)
-        } else {
-          alert(`Failed: ${errorData.error || 'Unknown error'}`)
+        const res = await fetch('/api/newsroom/engine/status')
+        if (res.ok) {
+          const data = await res.json()
+          setStatus(data)
         }
-        setProcessing(false)
-        return
+      } catch (err) {
+        console.error('Failed to fetch engine status:', err)
       }
-      
-      const data = await res.json()
-      if (data.article) {
-        alert(`Processed: ${data.article}`)
-      } else if (data.message) {
+      setLoading(false)
+    }
+
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 5000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const startEngine = async () => {
+    try {
+      const res = await fetch('/api/newsroom/engine/start', { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
         alert(data.message)
-      } else {
-        alert('Processed successfully')
       }
-      window.location.reload()
     } catch (err) {
-      alert('Failed to process item')
-      console.error(err)
-      setProcessing(false)
+      alert('Failed to start engine')
     }
   }
 
-  const fetchFromUrl = async () => {
-    if (!customUrl.trim()) {
-      alert('Please enter a URL')
+  const stopEngine = async () => {
+    if (!confirm('Stop the engine? Running jobs will finish gracefully.')) return
+    try {
+      const res = await fetch('/api/newsroom/engine/stop', { method: 'POST' })
+      if (res.ok) {
+        alert('Engine stop requested')
+      }
+    } catch (err) {
+      alert('Failed to stop engine')
+    }
+  }
+
+  const resumeEngine = async () => {
+    try {
+      const res = await fetch('/api/newsroom/engine/resume', { method: 'POST' })
+      if (res.ok) {
+        alert('Engine resumed')
+      }
+    } catch (err) {
+      alert('Failed to resume engine')
+    }
+  }
+
+  const triggerNow = async () => {
+    if (!confirm('Trigger scheduler now? This will fetch RSS feeds and add articles to queue.')) return
+    try {
+      const res = await fetch('/api/newsroom/scheduler', { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        alert(`Added ${data.added} articles, skipped ${data.skipped}`)
+      }
+    } catch (err) {
+      alert('Failed to trigger scheduler')
+    }
+  }
+
+  const wipePipeline = async () => {
+    if (wipeConfirm !== 'CONFIRM') {
+      alert('Type CONFIRM to wipe pipeline data')
       return
     }
-
-    // Validate URL format
-    const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/
-    if (!urlRegex.test(customUrl.trim())) {
-      alert('Invalid URL format. URL must start with http:// or https://')
-      return
-    }
-    
-    if (!confirm(`Fetch article from URL: ${customUrl}?`)) return
-    
-    setProcessing(true)
     try {
-      const res = await fetch('/api/newsroom/fetch-url', {
+      const res = await fetch('/api/newsroom/wipe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: customUrl.trim() })
+        body: JSON.stringify({ confirm: wipeConfirm })
       })
-      
-      if (!res.ok) {
-        const errorData = await res.json()
-        alert(`Failed: ${errorData.error || 'Unknown error'}`)
-        setProcessing(false)
-        return
+      if (res.ok) {
+        alert('Pipeline data wiped')
+        setWipeConfirm('')
       }
-      
-      const data = await res.json()
-      alert(`Added article to watchlist: ${data.headline}`)
-      setCustomUrl('')
-      window.location.reload()
     } catch (err) {
-      alert('Failed to fetch from URL')
-      console.error(err)
-      setProcessing(false)
+      alert('Failed to wipe pipeline')
     }
   }
 
-  const controlArticle = async (articleId: string, action: string, reason?: string) => {
+  const clearFailedJobs = async () => {
+    if (!confirm('Clear all failed jobs?')) return
     try {
-      const res = await fetch(`/api/newsroom/articles/${articleId}/control`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, reason })
-      })
-      
-      if (!res.ok) {
-        const errorData = await res.json()
-        alert(`Failed: ${errorData.error || 'Unknown error'}`)
-        return
-      }
-      
-      alert('Action completed successfully')
-      window.location.reload()
+      await fetch('/api/newsroom/wipe', { method: 'POST' })
+      alert('Failed jobs cleared')
     } catch (err) {
-      alert('Failed to control article')
-      console.error(err)
+      alert('Failed to clear jobs')
     }
   }
 
-  const toggleEmergencyStop = async () => {
-    const action = emergencyStop ? 'deactivate' : 'activate'
-    const confirmMessage = emergencyStop 
-      ? 'Deactivate emergency kill switch? Pipeline will resume processing.' 
-      : 'EMERGENCY KILL SWITCH: This will stop all pipeline jobs. Are you sure?'
-    
-    if (!confirm(confirmMessage)) return
+  const resetCooldowns = async () => {
+    if (!confirm('Reset all API key cooldowns?')) return
     try {
-      const res = await fetch('/api/newsroom/emergency-stop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
-      })
-      const data = await res.json()
-      if (data.success) {
-        setEmergencyStop(data.emergencyStop)
-        alert(emergencyStop ? 'Emergency kill switch deactivated' : 'Emergency kill switch activated')
-      } else {
-        alert(data.error || 'Failed to toggle kill switch')
+      const res = await fetch('/api/newsroom/wipe', { method: 'POST' })
+      if (res.ok) {
+        alert('Key cooldowns reset')
       }
     } catch (err) {
-      alert('Failed to toggle kill switch')
+      alert('Failed to reset cooldowns')
     }
   }
 
+  if (loading) {
+    return (
+      <AdminShell>
+        <div style={{ padding: '48px', textAlign: 'center', color: '#666' }}>Loading...</div>
+      </AdminShell>
+    )
+  }
+
+  if (!status) {
+    return (
+      <AdminShell>
+        <div style={{ padding: '48px', textAlign: 'center', color: '#666' }}>Failed to load engine status</div>
+      </AdminShell>
+    )
+  }
+
+  const stages = ['MONITOR', 'RESEARCH', 'EXTRACT_VERIFY', 'WRITE', 'SAFETY', 'SEO_POLISH', 'CHIEF_EDITOR']
+  const getStageIndex = (stageName: string) => stages.indexOf(stageName)
+  const getProgress = (stageName: string) => {
+    const idx = getStageIndex(stageName)
+    return idx >= 0 ? ((idx + 1) / stages.length) * 100 : 0
+  }
 
   return (
     <AdminShell>
-      <div style={{ padding: '16px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px', fontFamily: 'Playfair Display, serif' }}>
-            AI Newsroom
-          </h1>
-          <p style={{ color: '#666', fontSize: '14px' }}>
-            Automated AI-powered news generation pipeline
-          </p>
-        </div>
-
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '48px', color: '#666' }}>Loading...</div>
-        ) : stats ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Drafts Ready</div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#C62828' }}>{stats.draftsReady}</div>
+      <div style={{ padding: '16px', maxWidth: '1400px', margin: '0 auto' }}>
+        {/* TOP BAR — Engine Control */}
+        <div style={{ 
+          background: status.engineStopped ? '#FFF3E0' : '#E8F5E9',
+          padding: '16px', 
+          borderRadius: '8px', 
+          marginBottom: '24px',
+          border: `2px solid ${status.engineStopped ? '#FF9800' : '#4CAF50'}`
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {status.engineStopped ? '■ ENGINE STOPPED' : '● ENGINE RUNNING'}
+                {status.engineStopped && status.engineStoppedBy && (
+                  <span style={{ fontSize: '14px', fontWeight: '400', color: '#666' }}>
+                    (stopped by: {status.engineStoppedBy})
+                  </span>
+                )}
+              </h1>
             </div>
-            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Blocked</div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#C62828' }}>{stats.blocked}</div>
-            </div>
-            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Published Today</div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#2E7D32' }}>{stats.publishedToday}</div>
-            </div>
-            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Pending</div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#FF9800' }}>{watchlist?.filter((w: any) => w.status === 'PENDING').length || 0}</div>
-            </div>
-            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Processing</div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#2196F3' }}>{watchlist?.filter((w: any) => w.status === 'PROCESSING').length || 0}</div>
-            </div>
-            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Completed</div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#4CAF50' }}>{watchlist?.filter((w: any) => w.status === 'COMPLETED').length || 0}</div>
-            </div>
-            <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase', marginBottom: '4px' }}>Failed</div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: '#F44336' }}>{watchlist?.filter((w: any) => w.status === 'FAILED').length || 0}</div>
-            </div>
-            <div style={{ background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-              <div style={{ fontSize: '12px', color: '#666', textTransform: 'uppercase', marginBottom: '8px' }}>Total Published</div>
-              <div style={{ fontSize: '32px', fontWeight: '700', color: '#2E7D32' }}>{stats.total}</div>
-            </div>
-          </div>
-        ) : null}
-
-        {/* Pipeline Stage Tiles */}
-        {pipelineStatus && (
-          <div style={{ marginTop: '24px', background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>Pipeline Stages</h2>
-              <div style={{ fontSize: '11px', color: '#666' }}>
-                {pipelineStatus.isRunning ? '🔄 Running' : '⏸️ Idle'}
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' }}>
-              {pipelineStatus.stageStatuses?.map((stage: any) => (
-                <div
-                  key={stage.name}
-                  style={{
-                    padding: '12px',
-                    borderRadius: '6px',
-                    border: '1px solid #e0e0e0',
-                    background: stage.status === 'running' ? '#E3F2FD' : 
-                              stage.status === 'done' ? '#E8F5E9' : '#F5F5F5',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                  onClick={() => {
-                    alert(`Stage: ${stage.name}\nStatus: ${stage.status}\nLast Article: ${stage.lastArticle || 'None'}`)
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '600', color: '#333' }}>{stage.name}</div>
-                    <span style={{
-                      fontSize: '9px',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      fontWeight: '600',
-                      background: stage.status === 'running' ? '#2196F3' : 
-                                stage.status === 'done' ? '#4CAF50' : '#9E9E9E',
-                      color: 'white'
-                    }}>
-                      {stage.status}
-                    </span>
-                  </div>
-                  {stage.lastArticle && (
-                    <div style={{ fontSize: '10px', color: '#666', marginTop: '4px' }}>
-                      {stage.lastArticle.substring(0, 30)}...
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Actions</h2>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-            <button
-              onClick={triggerPipeline}
-              style={{
-                background: '#C62828',
-                color: 'white',
-                border: 'none',
-                padding: '10px 16px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '600',
-                flex: '1 1 auto',
-                minWidth: '120px'
-              }}
-            >
-              Trigger Pipeline
-            </button>
-            <button
-              onClick={() => setShowAgentReport(!showAgentReport)}
-              style={{
-                background: '#1976D2',
-                color: 'white',
-                border: 'none',
-                padding: '10px 16px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '600',
-                flex: '1 1 auto',
-                minWidth: '120px'
-              }}
-            >
-              📊 Agent Report
-            </button>
-            <button
-              onClick={() => setShowWatchlist(!showWatchlist)}
-              style={{
-                background: '#7B1FA2',
-                color: 'white',
-                border: 'none',
-                padding: '10px 16px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '600',
-                flex: '1 1 auto',
-                minWidth: '120px'
-              }}
-            >
-              📋 Watchlist ({watchlist?.filter((w: any) => w.status === 'PENDING').length || 0})
-            </button>
-            <button
-              onClick={() => setShowMonitoring(!showMonitoring)}
-              style={{
-                background: '#E65100',
-                color: 'white',
-                border: 'none',
-                padding: '10px 16px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '600',
-                flex: '1 1 auto',
-                minWidth: '120px'
-              }}
-            >
-              🔴 Live Monitor
-            </button>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <input
-              type="text"
-              placeholder="Paste article URL to fetch..."
-              value={customUrl}
-              onChange={(e) => setCustomUrl(e.target.value)}
-              style={{
-                flex: '1',
-                minWidth: '200px',
-                padding: '10px 12px',
-                borderRadius: '4px',
-                border: '1px solid #e0e0e0',
-                fontSize: '12px'
-              }}
-            />
-            <button
-              onClick={fetchFromUrl}
-              disabled={processing}
-              style={{
-                background: '#2E7D32',
-                color: 'white',
-                border: 'none',
-                padding: '10px 16px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: '600',
-                minWidth: '100px'
-              }}
-            >
-              {processing ? 'Fetching...' : 'Fetch URL'}
-            </button>
-          </div>
-        </div>
-
-        {showAgentReport && agentStats && (
-          <div style={{ marginTop: '24px', background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Agent Report Cards</h2>
-            
-            {agentStats.overview && (
-              <div style={{ marginBottom: '16px', padding: '12px', background: '#f5f5f5', borderRadius: '4px' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Pipeline Overview</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' }}>
-                  <div>
-                    <div style={{ fontSize: '11px', color: '#666' }}>Total Articles</div>
-                    <div style={{ fontSize: '18px', fontWeight: '700' }}>{agentStats.overview.totalArticles}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '11px', color: '#666' }}>Published</div>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#2E7D32' }}>{agentStats.overview.publishedArticles}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '11px', color: '#666' }}>Draft Ready</div>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#1976D2' }}>{agentStats.overview.draftReadyArticles}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '11px', color: '#666' }}>Blocked</div>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#C62828' }}>{agentStats.overview.blockedArticles}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '11px', color: '#666' }}>Success Rate</div>
-                    <div style={{ fontSize: '18px', fontWeight: '700', color: '#2E7D32' }}>{agentStats.overview.successRate}%</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
-              {agentStats.agentStats.map((agent: any) => (
-                <div key={agent.stage} style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <h3 style={{ fontSize: '13px', fontWeight: '700', margin: 0 }}>{agent.stage}</h3>
-                    <span style={{ fontSize: '11px', background: '#1976D2', color: 'white', padding: '3px 6px', borderRadius: '4px' }}>
-                      {agent.totalRuns} runs
-                    </span>
-                  </div>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '11px' }}>
-                    <div>
-                      <div style={{ color: '#666' }}>Avg Confidence</div>
-                      <div style={{ fontSize: '14px', fontWeight: '600' }}>{(agent.avgConfidence * 100).toFixed(1)}%</div>
-                    </div>
-                    <div>
-                      <div style={{ color: '#666' }}>Avg Tokens</div>
-                      <div style={{ fontSize: '14px', fontWeight: '600' }}>{agent.avgTokens.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: '#666' }}>Avg Time</div>
-                      <div style={{ fontSize: '14px', fontWeight: '600' }}>{(agent.avgProcessingTime / 1000).toFixed(2)}s</div>
-                    </div>
-                    <div>
-                      <div style={{ color: '#666' }}>Total Tokens</div>
-                      <div style={{ fontSize: '14px', fontWeight: '600' }}>{agent.totalTokens.toLocaleString()}</div>
-                    </div>
-                  </div>
-
-                  {agent.recentLogs && agent.recentLogs.length > 0 && (
-                    <div style={{ marginTop: '8px', borderTop: '1px solid #e0e0e0', paddingTop: '8px' }}>
-                      <div style={{ fontSize: '10px', color: '#666', marginBottom: '6px' }}>Recent Activity</div>
-                      {agent.recentLogs.slice(0, 3).map((log: any, idx: number) => (
-                        <div key={idx} style={{ fontSize: '10px', padding: '3px 0', borderBottom: idx < 2 ? '1px solid #f0f0f0' : 'none' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ color: '#666' }}>{log.stageStatus}</span>
-                            <span>{(log.confidence * 100).toFixed(0)}%</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {showWatchlist && watchlist && (
-          <div style={{ marginTop: '24px', background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>Watchlist Queue</h2>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
-                onClick={processNextItem}
-                disabled={processing}
+                onClick={startEngine}
+                disabled={!status.engineStopped}
                 style={{
-                  background: processing ? '#999' : '#7B1FA2',
+                  background: !status.engineStopped ? '#ccc' : '#4CAF50',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
                   borderRadius: '4px',
-                  cursor: processing ? 'not-allowed' : 'pointer',
+                  cursor: !status.engineStopped ? 'not-allowed' : 'pointer',
                   fontSize: '12px',
                   fontWeight: '600'
                 }}
               >
-                {processing ? 'Processing...' : 'Process Next Item'}
+                ▶ Start Engine
+              </button>
+              <button
+                onClick={stopEngine}
+                disabled={status.engineStopped}
+                style={{
+                  background: status.engineStopped ? '#ccc' : '#F44336',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: status.engineStopped ? 'not-allowed' : 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}
+              >
+                ■ Stop Engine
+              </button>
+              <button
+                onClick={resumeEngine}
+                disabled={!status.engineStopped}
+                style={{
+                  background: !status.engineStopped ? '#ccc' : '#2196F3',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: !status.engineStopped ? 'not-allowed' : 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}
+              >
+                ↺ Resume
+              </button>
+              <button
+                onClick={triggerNow}
+                style={{
+                  background: '#FF9800',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}
+              >
+                ⚡ Trigger Now
               </button>
             </div>
+          </div>
+          <div style={{ marginTop: '12px', fontSize: '13px', color: '#666' }}>
+            Queue: {status.queue.queued} waiting | {status.queue.running} running | {status.todayStats.completed} done today | {status.queue.failed} failed | {status.queue.held} held
+          </div>
+        </div>
 
-            {watchlist.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px', color: '#666', fontSize: '12px' }}>No items in watchlist</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {watchlist.map((item: any) => (
-                  <div key={item.id} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '6px' }}>
-                      <div style={{ flex: 1, marginRight: '8px' }}>
-                        <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '3px' }}>{item.headline}</div>
-                        <div style={{ fontSize: '11px', color: '#666' }}>
-                          {item.sourceName} • {new Date(item.createdAt).toLocaleString()}
-                        </div>
+        {/* SECTION A — 3 Live Slot Cards */}
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Live Pipeline Slots</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '16px' }}>
+            {status.slots.map((slot) => (
+              <div key={slot.slotNumber} style={{
+                background: 'white',
+                padding: '16px',
+                borderRadius: '8px',
+                border: slot.status === 'BUSY' ? '2px solid #2196F3' : '1px solid #e0e0e0',
+                boxShadow: slot.status === 'BUSY' ? '0 2px 8px rgba(33, 150, 243, 0.2)' : 'none'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', margin: 0 }}>
+                    SLOT {slot.slotNumber} — {slot.status}
+                  </h3>
+                  {slot.status === 'BUSY' && (
+                    <span style={{ fontSize: '10px', background: '#2196F3', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>
+                      Active
+                    </span>
+                  )}
+                </div>
+
+                {slot.status === 'BUSY' && slot.currentJob ? (
+                  <>
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>
+                        📰 "{slot.currentJob.headline.substring(0, 50)}..."
                       </div>
-                      <span style={{
-                        fontSize: '10px',
-                        padding: '3px 6px',
-                        borderRadius: '4px',
-                        fontWeight: '600',
-                        background: item.status === 'PENDING' ? '#FF9800' : 
-                                  item.status === 'PROCESSING' ? '#2196F3' : 
-                                  item.status === 'COMPLETED' ? '#4CAF50' : '#F44336',
-                        color: 'white'
-                      }}>
-                        {item.status}
-                      </span>
+                      <div style={{ fontSize: '11px', color: '#666' }}>
+                        Source: {slot.currentJob.source} • Added: {Math.floor((Date.now() - new Date(slot.currentJob.addedAt).getTime()) / 60000)}m ago
+                      </div>
                     </div>
-                    {item.errorMessage && (
-                      <div style={{ fontSize: '10px', color: '#C62828', marginTop: '6px' }}>
-                        Error: {item.errorMessage}
+
+                    <div style={{ borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginBottom: '12px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>
+                        Current: ▶ {slot.currentJob.currentStage} (Stage {getStageIndex(slot.currentJob.currentStage) + 1}/7)
+                      </div>
+                      <div style={{ background: '#e0e0e0', borderRadius: '4px', height: '8px', overflow: 'hidden', marginBottom: '4px' }}>
+                        <div style={{
+                          background: '#2196F3',
+                          height: '100%',
+                          width: `${getProgress(slot.currentJob.currentStage)}%`,
+                          transition: 'width 0.3s'
+                        }} />
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#666' }}>
+                        Elapsed: {Math.floor(slot.currentJob.elapsedSeconds / 60)}m {slot.currentJob.elapsedSeconds % 60}s
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>
+                      Agent: {slot.currentJob.currentAgent}
+                    </div>
+
+                    {slot.currentJob.sleepLog && slot.currentJob.sleepLog.length > 0 && (
+                      <div style={{ background: '#FFF3E0', padding: '8px', borderRadius: '4px', fontSize: '11px' }}>
+                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>⚠️ Sleep occurred</div>
+                        {slot.currentJob.sleepLog.map((log: any, idx: number) => (
+                          <div key={idx} style={{ marginBottom: '2px' }}>
+                            {log.stage}: {log.sleepDurationMs / 1000}s — {log.reason}
+                          </div>
+                        ))}
                       </div>
                     )}
+                  </>
+                ) : (
+                  <div style={{ padding: '24px', textAlign: 'center', color: '#999', fontSize: '13px' }}>
+                    Waiting for next queued article
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {showMonitoring && monitoringData && (
-          <div style={{ marginTop: '24px', background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>🔴 Live Pipeline Monitor</h2>
-              <div style={{ fontSize: '11px', color: '#666' }}>Auto-refreshing every 5s</div>
-            </div>
-
-            {/* Watchlist Status */}
-            <div style={{ marginBottom: '16px', padding: '12px', background: '#FFF3E0', borderRadius: '4px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Watchlist Status</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '8px' }}>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#666' }}>Pending</div>
-                  <div style={{ fontSize: '18px', fontWeight: '700', color: '#FF9800' }}>{monitoringData.watchlistStatus.pending}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#666' }}>Processing</div>
-                  <div style={{ fontSize: '18px', fontWeight: '700', color: '#2196F3' }}>{monitoringData.watchlistStatus.processing}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#666' }}>Completed</div>
-                  <div style={{ fontSize: '18px', fontWeight: '700', color: '#4CAF50' }}>{monitoringData.watchlistStatus.completed}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#666' }}>Failed</div>
-                  <div style={{ fontSize: '18px', fontWeight: '700', color: '#F44336' }}>{monitoringData.watchlistStatus.failed}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Currently Processing */}
-            <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Currently Processing</h3>
-              {monitoringData.processingArticles.length === 0 ? (
-                <div style={{ padding: '12px', background: '#f5f5f5', borderRadius: '4px', color: '#666', fontSize: '11px' }}>
-                  No articles currently processing
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {monitoringData.processingArticles.map((article: any) => {
-                    const stages = ['MONITORING', 'RESEARCH', 'EXTRACTION', 'FACT_CHECK', 'JUNIOR_DRAFT', 'SENIOR_EDIT', 'BIAS_REVIEW', 'LEGAL_REVIEW', 'COPYRIGHT_REVIEW', 'SEO_REVIEW', 'CHIEF_EDITOR']
-                    const currentStageIndex = stages.indexOf(article.currentStage?.toUpperCase())
-                    
-                    return (
-                      <div key={article.id} style={{ border: '1px solid #2196F3', borderRadius: '4px', padding: '10px', background: '#E3F2FD' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '6px' }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                              <div style={{ fontSize: '13px', fontWeight: '600' }}>{article.title}</div>
-                              {article.isGovernmentVerified && (
-                                <span style={{
-                                  fontSize: '9px',
-                                  padding: '2px 6px',
-                                  borderRadius: '4px',
-                                  fontWeight: '600',
-                                  background: '#4CAF50',
-                                  color: 'white',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '2px'
-                                }}>
-                                  ✓ Verified
-                                </span>
-                              )}
-                            </div>
-                            <div style={{ fontSize: '11px', color: '#666' }}>
-                              {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
-                              {article.isGovernmentVerified && article.governmentSource && (
-                                <span style={{ color: '#4CAF50', marginLeft: '8px', fontWeight: '600' }}>
-                                  • {article.governmentSource}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <span style={{
-                            fontSize: '10px',
-                            padding: '3px 6px',
-                            borderRadius: '4px',
-                            fontWeight: '600',
-                            background: '#2196F3',
-                            color: 'white'
-                          }}>
-                            {article.currentStage}
-                          </span>
-                        </div>
-                        
-                        {/* Horizontal Progress Bar */}
-                        <div style={{ marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', gap: '1px', marginBottom: '3px' }}>
-                            {stages.map((stage, index) => {
-                              const isCompleted = index < currentStageIndex
-                              const isCurrent = index === currentStageIndex
-                              const isPending = index > currentStageIndex
-                              
-                              return (
-                                <div
-                                  key={stage}
-                                  style={{
-                                    flex: 1,
-                                    height: '6px',
-                                    borderRadius: '1px',
-                                    background: isCompleted ? '#4CAF50' : isCurrent ? '#2196F3' : '#E0E0E0',
-                                    transition: 'background 0.3s'
-                                  }}
-                                  title={stage}
-                                />
-                              )
-                            })}
-                          </div>
-                          <div style={{ fontSize: '9px', color: '#666', display: 'flex', justifyContent: 'space-between' }}>
-                            <span>MONITORING</span>
-                            <span>CHIEF_EDITOR</span>
-                          </div>
-                        </div>
-                        
-                        <div style={{ fontSize: '10px', color: '#1976D2', marginBottom: '6px' }}>
-                          Status: {article.pipelineStatus} • Stage {currentStageIndex + 1}/11
-                        </div>
-                        <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
-                          <button
-                            onClick={() => {
-                              const reason = prompt('Enter reason for stopping:')
-                              if (reason) controlArticle(article.id, 'stop', reason)
-                            }}
-                            style={{
-                              background: '#F44336',
-                              color: 'white',
-                              border: 'none',
-                              padding: '5px 10px',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '10px',
-                              fontWeight: '600'
-                            }}
-                          >
-                            ⏹ Stop
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm('Delete this article? This cannot be undone.')) {
-                                controlArticle(article.id, 'delete')
-                              }
-                            }}
-                            style={{
-                              background: '#9E9E9E',
-                              color: 'white',
-                              border: 'none',
-                              padding: '5px 10px',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '10px',
-                              fontWeight: '600'
-                            }}
-                          >
-                            🗑 Delete
-                          </button>
-                          <button
-                            onClick={() => {
-                              const suggestion = prompt('Enter edit suggestion for the agent:')
-                              if (suggestion) controlArticle(article.id, 'suggest_edit', suggestion)
-                            }}
-                            style={{
-                              background: '#FF9800',
-                              color: 'white',
-                              border: 'none',
-                              padding: '5px 10px',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '10px',
-                              fontWeight: '600'
-                            }}
-                          >
-                            ✏ Edit
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Blocked Articles */}
-            <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Blocked Articles</h3>
-              {monitoringData.blockedArticles.length === 0 ? (
-                <div style={{ padding: '12px', background: '#f5f5f5', borderRadius: '4px', color: '#666', fontSize: '11px' }}>
-                  No blocked articles
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {monitoringData.blockedArticles.map((article: any) => (
-                    <div key={article.id} style={{ border: '1px solid #F44336', borderRadius: '4px', padding: '10px', background: '#FFEBEE' }}>
-                      <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '3px' }}>{article.title}</div>
-                      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px' }}>
-                        {article.sourceName} • {new Date(article.updatedAt).toLocaleString()}
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#C62828', marginBottom: '6px' }}>
-                        Reason: {article.blockReason}
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                        <button
-                          onClick={() => {
-                            const reason = prompt('Enter reason for unblocking:')
-                            if (reason) controlArticle(article.id, 'unblock', reason)
-                          }}
-                          style={{
-                            background: '#4CAF50',
-                            color: 'white',
-                            border: 'none',
-                            padding: '5px 10px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '10px',
-                            fontWeight: '600'
-                          }}
-                        >
-                          ✅ Unblock
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm('Delete this article? This cannot be undone.')) {
-                              controlArticle(article.id, 'delete')
-                            }
-                          }}
-                          style={{
-                            background: '#9E9E9E',
-                            color: 'white',
-                            border: 'none',
-                            padding: '5px 10px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '10px',
-                            fontWeight: '600'
-                          }}
-                        >
-                          🗑 Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Recent Activity */}
-            <div>
-              <h3 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Recent Activity</h3>
-              {monitoringData.recentActivity.length === 0 ? (
-                <div style={{ padding: '12px', background: '#f5f5f5', borderRadius: '4px', color: '#666', fontSize: '11px' }}>
-                  No recent activity
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {monitoringData.recentActivity.map((log: any) => (
-                    <div key={log.id} style={{ border: '1px solid #e0e0e0', borderRadius: '4px', padding: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '6px' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '3px' }}>{log.article.title}</div>
-                          <div style={{ fontSize: '10px', color: '#666' }}>
-                            Stage: {log.stageName} • {new Date(log.startTime).toLocaleString()}
-                          </div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '10px', color: '#666' }}>
-                            Confidence: {(log.confidence * 100).toFixed(0)}%
-                          </div>
-                          <span style={{
-                            fontSize: '9px',
-                            padding: '2px 5px',
-                            borderRadius: '4px',
-                            fontWeight: '600',
-                            background: log.stageStatus === 'COMPLETED' ? '#4CAF50' : '#FF9800',
-                            color: 'white'
-                          }}>
-                            {log.stageStatus}
-                          </span>
-                        </div>
-                      </div>
-                      {log.recommendation && (
-                        <div style={{ fontSize: '10px', color: '#666' }}>
-                          Recommendation: {log.recommendation}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div style={{ marginTop: '32px', background: 'white', padding: '24px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Pipeline Stages</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px' }}>
-            {['MONITORING', 'RESEARCH', 'EXTRACTION', 'FACT_CHECK', 'JUNIOR_DRAFT', 'SENIOR_EDIT', 'BIAS_REVIEW', 'LEGAL_REVIEW', 'COPYRIGHT_REVIEW', 'SEO_REVIEW', 'CHIEF_EDITOR'].map(stage => (
-              <div key={stage} style={{ padding: '8px 12px', background: '#f5f5f5', borderRadius: '4px', fontSize: '12px', fontFamily: 'JetBrains Mono, monospace' }}>
-                {stage}
+                )}
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* SECTION B — 7 Agent Status Tiles */}
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Agent Status</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+            {[
+              { name: 'MONITOR', key: 'GROQ_KEY_1', model: 'llama-3.1-8b-instant' },
+              { name: 'RESEARCH', key: 'GROQ_KEY_1', model: 'llama-3.3-70b-versatile' },
+              { name: 'EXTRACT_VERIFY', key: 'GOOGLE_AI_KEY_1', model: 'gemini-1.5-flash' },
+              { name: 'WRITE', key: 'OPENROUTER_KEY_1', model: 'llama-3.3-70b:free' },
+              { name: 'SAFETY', key: 'OPENROUTER_KEY_3', model: 'gemini-2.0-flash-thinking' },
+              { name: 'SEO_POLISH', key: 'MISTRAL_KEY_1', model: 'mistral-small-latest' },
+              { name: 'CHIEF_EDITOR', key: 'OPENROUTER_KEY_2', model: 'gemini-2.0-flash-thinking' }
+            ].map((agent) => {
+              const keyHealth = status.keyHealth[agent.key]
+              const isSleeping = status.sleepingAgents.some((s: any) => s.agentName === agent.name)
+              
+              return (
+                <div key={agent.name} style={{
+                  background: 'white',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid #e0e0e0'
+                }}>
+                  <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>
+                    AGENT — {agent.name}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
+                    Primary: {agent.key} {keyHealth?.configured ? '✅' : '❌'}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
+                    Model: {agent.model}
+                  </div>
+                  <div style={{ fontSize: '11px', marginBottom: '8px' }}>
+                    Status: {isSleeping ? '😴 Sleeping' : keyHealth?.cooling ? '🟡 Degraded' : keyHealth?.configured ? '🟢 Ready' : '❌ Unconfigured'}
+                  </div>
+                  {keyHealth?.cooling && (
+                    <div style={{ fontSize: '10px', color: '#FF9800' }}>
+                      Cooldown: {keyHealth.cooldownRemainingSeconds}s remaining
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* SECTION C — Sleeping Agents Alert */}
+        {status.sleepingAgents.length > 0 && (
+          <div style={{ 
+            background: '#FFF3E0', 
+            padding: '16px', 
+            borderRadius: '8px', 
+            marginBottom: '24px',
+            border: '2px solid #FF9800'
+          }}>
+            <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>😴 AGENTS IN SLEEP MODE</h2>
+            {status.sleepingAgents.map((agent: any, idx: number) => (
+              <div key={idx} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: idx < status.sleepingAgents.length - 1 ? '1px solid #FFE0B2' : 'none' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>
+                  {agent.agentName} — Job: {agent.jobId}
+                </div>
+                <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
+                  Reason: {agent.reason}
+                </div>
+                <div style={{ fontSize: '11px', color: '#666' }}>
+                  Sleeping: 45s total • Wakes in: {agent.secondsRemaining}s
+                </div>
+                <div style={{ background: '#e0e0e0', borderRadius: '4px', height: '6px', overflow: 'hidden', marginTop: '4px' }}>
+                  <div style={{
+                    background: '#FF9800',
+                    height: '100%',
+                    width: `${((45 - agent.secondsRemaining) / 45) * 100}%`
+                  }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* SECTION E — Key Health Dashboard */}
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Key Health Dashboard</h2>
+          <div style={{ background: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
+                  <th style={{ textAlign: 'left', padding: '8px', fontWeight: '600' }}>KEY</th>
+                  <th style={{ textAlign: 'left', padding: '8px', fontWeight: '600' }}>ASSIGNED TO</th>
+                  <th style={{ textAlign: 'left', padding: '8px', fontWeight: '600' }}>STATUS</th>
+                  <th style={{ textAlign: 'left', padding: '8px', fontWeight: '600' }}>COOLDOWN</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(status.keyHealth).map(([key, health]) => (
+                  <tr key={key} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                    <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                    <td style={{ padding: '8px', fontSize: '11px' }}>{health.sharedBy.join(', ')}</td>
+                    <td style={{ padding: '8px' }}>
+                      {health.configured ? (
+                        health.cooling ? (
+                          <span style={{ color: '#FF9800', fontWeight: '600' }}>⚠️ Cooling</span>
+                        ) : (
+                          <span style={{ color: '#4CAF50', fontWeight: '600' }}>✅ Healthy</span>
+                        )
+                      ) : (
+                        <span style={{ color: '#F44336', fontWeight: '600' }}>❌ Unconfigured</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '8px' }}>{health.cooling ? `${health.cooldownRemainingSeconds}s` : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* SECTION F — Danger Zone */}
+        <div style={{ 
+          background: '#FFEBEE', 
+          padding: '16px', 
+          borderRadius: '8px', 
+          border: '2px solid #F44336'
+        }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#C62828' }}>Danger Zone</h2>
+          
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Wipe Pipeline Data</div>
+            <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>
+              Deletes all jobs, queue, watchlist, agent logs, sleep statuses, cooldowns. Published articles are NEVER deleted.
+            </div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                type="text"
+                placeholder='Type "CONFIRM"'
+                value={wipeConfirm}
+                onChange={(e) => setWipeConfirm(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid #e0e0e0',
+                  fontSize: '12px',
+                  minWidth: '150px'
+                }}
+              />
+              <button
+                onClick={wipePipeline}
+                style={{
+                  background: '#C62828',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}
+              >
+                Wipe Pipeline Data
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Clear Failed Jobs Only</div>
+            <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>
+              Removes only FAILED status jobs from queue. No confirmation required.
+            </div>
+            <button
+              onClick={clearFailedJobs}
+              style={{
+                background: '#FF9800',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: '600'
+              }}
+            >
+              Clear Failed Jobs
+            </button>
+          </div>
+
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px' }}>Reset Key Cooldowns</div>
+            <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>
+              Clears all API key cooldown timers immediately. Use if keys have recovered early.
+            </div>
+            <button
+              onClick={resetCooldowns}
+              style={{
+                background: '#2196F3',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: '600'
+              }}
+            >
+              Reset Key Cooldowns
+            </button>
           </div>
         </div>
       </div>
