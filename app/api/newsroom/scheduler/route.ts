@@ -85,8 +85,7 @@ export async function POST(req: NextRequest) {
         sourceUrl:      item.sourceUrl,
         sourceName:     item.sourceName,
         contentSnippet: item.contentSnippet ?? '',
-        category:       item.category ?? 'General',
-        publishedAt:    new Date(item.publishedAt)
+        category:       item.category ?? 'General'
       }
     })
 
