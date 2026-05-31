@@ -70,7 +70,7 @@ Return JSON:
 }
 `
 
-  const result = await callAgent('SEO_POLISH', prompt, 5000, input.jobId)
+  const result = await callAgent('SEO_POLISH', prompt, 1500, input.jobId)
   const processingMs = Date.now() - startTime
 
   return {

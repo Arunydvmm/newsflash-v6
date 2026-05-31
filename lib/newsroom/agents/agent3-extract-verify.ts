@@ -59,7 +59,7 @@ Return JSON:
 If any required field is missing, set recommendation to "BLOCK" and list missing fields in missingFields array.
 `
 
-  const result = await callAgent('EXTRACT_VERIFY', prompt, 1500, input.jobId)
+  const result = await callAgent('EXTRACT_VERIFY', prompt, 800, input.jobId)
   const processingMs = Date.now() - startTime
 
   return {

@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 const SLEEP_DURATION_MS = 45000 // 45 seconds sleep on failure
+const RATE_LIMIT_DELAY_MS = 2000 // 2 seconds delay between calls to avoid rate limits
 
 // Helper function to clean and parse JSON from AI response
 function cleanAndParseJSON(raw: string): any {
@@ -123,6 +124,9 @@ async function callProvider(
 ): Promise<{ data: any; tokensUsed: number }> {
 
   if (!config.key) throw new Error(`API key missing for provider: ${config.provider}`)
+
+  // Add delay to avoid rate limiting
+  await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY_MS))
 
   console.log(`[AI Call] Provider: ${config.provider}, Model: ${config.model}`)
 

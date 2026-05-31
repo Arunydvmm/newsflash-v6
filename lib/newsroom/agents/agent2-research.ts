@@ -69,7 +69,7 @@ Return JSON:
 }
 `
 
-  const result = await callAgent('RESEARCH', prompt, 1500, input.jobId)
+  const result = await callAgent('RESEARCH', prompt, 800, input.jobId)
   const processingMs = Date.now() - startTime
 
   return {

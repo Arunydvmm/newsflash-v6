@@ -88,7 +88,7 @@ Set recommendation to "BLOCK" if any HIGH risk issues are found.
 Set recommendation to "REWRITE" if MEDIUM risk issues need addressing.
 `
 
-  const result = await callAgent('SAFETY', prompt, 2000, input.jobId)
+  const result = await callAgent('SAFETY', prompt, 800, input.jobId)
   const processingMs = Date.now() - startTime
 
   return {

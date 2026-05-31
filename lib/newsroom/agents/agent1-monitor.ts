@@ -58,7 +58,7 @@ IMPORTANT: Return ONLY valid JSON. Do not use markdown formatting. Do not includ
 }
 `
 
-  const result = await callAgent('MONITOR', prompt, 500, input.jobId)
+  const result = await callAgent('MONITOR', prompt, 300, input.jobId)
   const processingMs = Date.now() - startTime
 
   return {

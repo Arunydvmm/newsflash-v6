@@ -75,7 +75,7 @@ Set recommendation to match decision:
 - REJECT: "BLOCK"
 `
 
-  const result = await callAgent('CHIEF_EDITOR', prompt, 1000, input.jobId)
+  const result = await callAgent('CHIEF_EDITOR', prompt, 800, input.jobId)
   const processingMs = Date.now() - startTime
 
   return {
