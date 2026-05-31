@@ -4,6 +4,8 @@ import { connectDB } from '../../../lib/db'
 import Employee from '../../../models/Employee'
 import { getAuth } from '../../../lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   const auth = getAuth(req)
   if (!auth || auth.role !== 'SuperAdmin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

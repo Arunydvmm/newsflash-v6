@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { PrismaClient } from '@prisma/client'
 import { initSlots, getAvailableSlot, getNextQueuedJob, occupySlot, runPipelineJob } from '@/lib/newsroom/pipeline-engine'
+
+const prisma = new PrismaClient()
 
 export async function POST(req: NextRequest) {
   const auth = getAuth()

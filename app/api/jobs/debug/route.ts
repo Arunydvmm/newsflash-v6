@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server'
 import { connectDB } from '../../../lib/db'
 import JobCache from '../../../models/JobCache'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const API_KEY = process.env.INDIANAPI_KEY
 

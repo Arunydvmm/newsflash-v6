@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { connectDB } from '../../lib/db'
 import Article from '../../models/Article'
 
+export const dynamic = 'force-dynamic'
+
 const SITE_URL = 'https://newsflash-v6.onrender.com'
 
 export async function GET() {

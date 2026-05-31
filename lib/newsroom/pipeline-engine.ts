@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+import { PrismaClient } from '@prisma/client'
 import { callAgent } from './agent-caller'
 import { monitorAgent }       from './agents/agent1-monitor'
 import { researchAgent }      from './agents/agent2-research'
@@ -7,6 +7,23 @@ import { writeAgent }         from './agents/agent4-write'
 import { safetyAgent }        from './agents/agent5-safety'
 import { seoPolishAgent }     from './agents/agent6-seo-polish'
 import { chiefEditorAgent }   from './agents/agent7-chiefeditor'
+
+const prisma = new PrismaClient()
+
+export interface AgentStageResult {
+  modifiedContent?: string
+  stageReport: any
+  confidence: number
+  recommendation: 'PROCEED' | 'ESCALATE' | 'REWRITE' | 'BLOCK'
+  blockReason?: string
+  providerUsed: string
+  modelUsed: string
+  usedKey: 'primary' | 'backup' | 'fallback' | 'retry_after_sleep'
+  tokensUsed: number
+  processingMs: number
+  sleepOccurred: boolean
+  sleepDurationMs: number
+}
 
 export const MAX_SLOTS = 3
 export const SLOT_DELAYS = { 1: 0, 2: 45000, 3: 90000 }
@@ -104,7 +121,7 @@ export async function runPipelineJob(job: any, slotNumber: number) {
           region: job.watchlist?.region ?? 'India',
           priority: job.watchlist?.priority ?? 'STANDARD'
         }
-      })
+      }) as AgentStageResult
 
       // Track sleep events
       if (result.sleepOccurred) {

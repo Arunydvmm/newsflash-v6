@@ -8,7 +8,7 @@ import AdminShell from '../../components/admin/AdminShell'
 import Link from 'next/link'
 import { format } from 'date-fns'
 
-export const revalidate = 30
+export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   await connectDB()

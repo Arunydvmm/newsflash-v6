@@ -1,5 +1,7 @@
 import { AGENT_KEYS, FALLBACK_KEYS, KEY_SHARING_MAP } from './agent-keys.config'
-import { prisma } from '@/lib/prisma'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 const SLEEP_DURATION_MS = 45000 // 45 seconds sleep on failure
 
@@ -11,6 +13,7 @@ export interface AgentCallResult {
   usedKey: 'primary' | 'backup' | 'fallback' | 'retry_after_sleep'
   sleepOccurred: boolean
   sleepDurationMs: number
+  blockReason?: string
 }
 
 // Get env variable name from key value (reverse lookup)

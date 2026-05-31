@@ -1,5 +1,3 @@
-import { prisma } from '@/lib/prisma'
-
 export const AGENT_KEYS = {
   MONITOR: {
     primary: { key: process.env.GROQ_KEY_1!,        provider: 'groq',       model: 'llama-3.1-8b-instant' },

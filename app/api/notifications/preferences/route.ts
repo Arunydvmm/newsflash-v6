@@ -4,6 +4,8 @@ import { verifyAuth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import mongoose from 'mongoose';
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/notifications/preferences
  * Get user's notification preferences

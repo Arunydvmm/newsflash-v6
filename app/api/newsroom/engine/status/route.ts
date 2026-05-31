@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { PrismaClient } from '@prisma/client'
 import { KEY_SHARING_MAP } from '@/lib/newsroom/agent-keys.config'
+
+const prisma = new PrismaClient()
 
 export async function GET(req: NextRequest) {
   const auth = getAuth()

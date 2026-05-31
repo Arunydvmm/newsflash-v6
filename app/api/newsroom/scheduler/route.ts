@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { PrismaClient } from '@prisma/client'
 import { addToQueue } from '@/lib/newsroom/pipeline-engine'
+
+const prisma = new PrismaClient()
 
 const RSS_SOURCES = [
   { name: 'NDTV', url: 'https://feeds.feedburner.com/ndtvnews-india-news' },

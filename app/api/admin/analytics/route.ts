@@ -7,6 +7,8 @@ import Contact from '../../../models/Contact'
 import Employee from '../../../models/Employee'
 import { getAuth } from '../../../lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const auth = getAuth()
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

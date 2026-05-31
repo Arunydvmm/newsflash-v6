@@ -3,6 +3,8 @@ import { NotificationService } from '@/lib/notificationService';
 import { verifyAuth } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/notifications
  * Get user's notifications
