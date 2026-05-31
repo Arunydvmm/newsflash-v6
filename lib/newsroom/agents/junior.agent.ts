@@ -1,4 +1,4 @@
-import { callAIProvider } from '../provider.service'
+import { callAgent } from '../agent-caller'
 
 interface AgentInput {
   articleId: string
@@ -56,7 +56,7 @@ Return JSON:
 }
 `
 
-  const result = await callAIProvider('JUNIOR_DRAFT', prompt, 0.4, 2000)
+  const result = await callAgent('WRITE', prompt, 2000, input.articleId)
   const processingMs = Date.now() - startTime
 
   return {

@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { callAIProvider } from './provider.service'
+import { callAgent } from './agent-caller'
 
 const prisma = new PrismaClient()
 
@@ -8,7 +8,7 @@ export interface DuplicateCheckResult {
   similarArticleId?: string
 }
 
-export async function checkDuplicate(headline: string): Promise<DuplicateCheckResult> {
+export async function checkDuplicate(headline: string, jobId: string = 'duplicate-check'): Promise<DuplicateCheckResult> {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
 
   // Check for similar headlines in last 24 hours
@@ -40,7 +40,7 @@ Return JSON:
 `
 
     try {
-      const result = await callAIProvider('MONITORING', prompt, 0.1, 300)
+      const result = await callAgent('MONITOR', prompt, 300, jobId)
 
       if (result.data.isSameStory && result.data.similarityScore > 0.8) {
         return {

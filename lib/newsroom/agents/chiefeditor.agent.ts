@@ -1,4 +1,4 @@
-import { callAIProvider } from '../provider.service'
+import { callAgent } from '../agent-caller'
 
 interface AgentInput {
   articleId: string
@@ -86,7 +86,7 @@ If grade is C, REWRITE, or REJECT, set recommendation to "BLOCK".
 Only grade A or B should have recommendation "PROCEED".
 `
 
-  const result = await callAIProvider('CHIEF_EDITOR', prompt, 0.3, 2000)
+  const result = await callAgent('CHIEF_EDITOR', prompt, 2000, input.articleId)
   const processingMs = Date.now() - startTime
 
   return {

@@ -1,4 +1,4 @@
-import { callAIProvider } from '../provider.service'
+import { callAgent } from '../agent-caller'
 
 interface AgentInput {
   articleId: string
@@ -74,7 +74,7 @@ Return JSON:
 If any high-risk flag is detected, set recommendation to "BLOCK" and legalVerdict to "BLOCKED".
 `
 
-  const result = await callAIProvider('LEGAL_REVIEW', prompt, 0.2, 2000)
+  const result = await callAgent('SAFETY', prompt, 2000, input.articleId)
   const processingMs = Date.now() - startTime
 
   // HARD RULE: If legal verdict is BLOCKED, BLOCK the pipeline

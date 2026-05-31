@@ -1,4 +1,4 @@
-import { callAIProvider } from '../provider.service'
+import { callAgent } from '../agent-caller'
 
 interface AgentInput {
   articleId: string
@@ -68,7 +68,7 @@ Return JSON:
 If any required field is missing, set recommendation to "BLOCK" and list missing fields in missingFields array.
 `
 
-  const result = await callAIProvider('EXTRACTION', prompt, 0.3, 2000)
+  const result = await callAgent('EXTRACT_VERIFY', prompt, 2000, input.articleId)
   const processingMs = Date.now() - startTime
 
   return {

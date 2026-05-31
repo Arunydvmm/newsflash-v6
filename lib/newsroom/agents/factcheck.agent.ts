@@ -1,4 +1,4 @@
-import { callAIProvider } from '../provider.service'
+import { callAgent } from '../agent-caller'
 
 interface AgentInput {
   articleId: string
@@ -65,7 +65,7 @@ Return JSON:
 }
 `
 
-  const result = await callAIProvider('FACT_CHECK', prompt, 0.2, 2000)
+  const result = await callAgent('SAFETY', prompt, 2000, input.articleId)
   const processingMs = Date.now() - startTime
 
   const falseClaims = result.data.stageReport.claims?.filter((c: any) => c.verdict === 'FALSE').length || 0

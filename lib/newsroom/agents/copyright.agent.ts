@@ -1,4 +1,4 @@
-import { callAIProvider } from '../provider.service'
+import { callAgent } from '../agent-caller'
 
 interface AgentInput {
   articleId: string
@@ -73,7 +73,7 @@ Return JSON:
 If similarityScore > 0.1, set recommendation to "BLOCK" and copyrightVerdict to "BLOCKED".
 `
 
-  const result = await callAIProvider('COPYRIGHT', prompt, 0.2, 1000)
+  const result = await callAgent('SAFETY', prompt, 1000, input.articleId)
   const processingMs = Date.now() - startTime
 
   // HARD RULE: If similarityScore > 0.1 or copyright verdict is BLOCKED, BLOCK the pipeline
