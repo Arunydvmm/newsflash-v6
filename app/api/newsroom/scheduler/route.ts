@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { addToQueue } from '@/lib/newsroom/pipeline-engine'
+import { getAuth } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
@@ -16,10 +17,13 @@ const RSS_SOURCES = [
 ]
 
 export async function POST(req: NextRequest) {
+  // Check authentication (either admin auth or scheduler secret)
+  const auth = getAuth()
   const schedulerSecret = req.headers.get('x-scheduler-secret')
-  // Allow both server-side and client-side secrets for flexibility
-  const validSecret = process.env.SCHEDULER_SECRET || process.env.NEXT_PUBLIC_SCHEDULER_SECRET
-  if (schedulerSecret !== validSecret) {
+  const validSecret = process.env.SCHEDULER_SECRET
+
+  // Allow if authenticated as admin OR if valid scheduler secret is provided
+  if (!auth && schedulerSecret !== validSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
