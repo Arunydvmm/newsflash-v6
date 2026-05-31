@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchRSSFeeds } from '@/lib/newsroom/rss.service'
+import { fetchAllRSSFeeds } from '@/lib/newsroom/rss.service'
 import { checkDuplicate } from '@/lib/newsroom/duplicate.service'
 import { PrismaClient } from '@prisma/client'
 import { getAuth } from '@/lib/auth'
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Fetch RSS feeds
-    const feeds = await fetchRSSFeeds()
+    const feeds = await fetchAllRSSFeeds()
     console.log(`Fetched ${feeds.length} articles from RSS feeds`)
 
     if (feeds.length === 0) {
