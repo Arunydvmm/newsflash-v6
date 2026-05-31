@@ -31,7 +31,7 @@ const MAX_ARTICLES_PER_DAY = 5   // stop after 5 completed articles per day
 const SLOT_DELAY = 0             // no delay needed — only 1 slot
 
 // Check if a new job can be started
-async function canStartNewJob(): Promise<{ allowed: boolean; reason: string }> {
+export async function canStartNewJob(): Promise<{ allowed: boolean; reason: string }> {
   // Check 1: is another job already running?
   const running = await prisma.nfPipelineJob.count({
     where: { status: 'RUNNING' }
