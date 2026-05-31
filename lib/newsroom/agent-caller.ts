@@ -151,7 +151,7 @@ export async function callAgent(
   prompt: string,
   maxTokens: number,
   jobId: string
-): Promise<{ data: any; tokensUsed: number; providerUsed: string; modelUsed: string; usedKey: 'primary' | 'backup' | 'fallback' | 'retry_after_sleep'; sleepOccurred: boolean; sleepMs: number }> {
+): Promise<{ data: any; tokensUsed: number; providerUsed: string; modelUsed: string; usedKey: 'primary' | 'backup' | 'fallback' | 'retry_after_sleep'; sleepOccurred: boolean; sleepDurationMs: number }> {
 
   const config = AGENT_KEYS[agentName]
   const attempts = [
@@ -182,7 +182,7 @@ export async function callAgent(
         modelUsed:    attempt.cfg.model,
         usedKey:       attempt.label === 'primary' ? 'primary' : attempt.label === 'backup' ? 'backup' : 'fallback',
         sleepOccurred,
-        sleepMs: totalSleepMs
+        sleepDurationMs: totalSleepMs
       }
     } catch (err: any) {
       lastError = err
@@ -205,7 +205,7 @@ export async function callAgent(
           // Retry same attempt after sleep
           try {
             const result = await callProvider(attempt.cfg, prompt, maxTokens)
-            return { ...result, providerUsed: attempt.cfg.provider, modelUsed: attempt.cfg.model, usedKey: 'retry_after_sleep', sleepOccurred: true, sleepMs: totalSleepMs }
+            return { ...result, providerUsed: attempt.cfg.provider, modelUsed: attempt.cfg.model, usedKey: 'retry_after_sleep', sleepOccurred: true, sleepDurationMs: totalSleepMs }
           } catch (retryErr: any) {
             console.warn(`[${agentName}] retry after sleep also failed — trying next key`)
           }
