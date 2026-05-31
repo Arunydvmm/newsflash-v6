@@ -5,6 +5,29 @@ const prisma = new PrismaClient()
 
 const SLEEP_DURATION_MS = 45000 // 45 seconds sleep on failure
 
+// Helper function to clean and parse JSON from AI response
+function cleanAndParseJSON(raw: string): any {
+  // Remove markdown code blocks
+  let clean = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+  
+  // Try to parse as-is
+  try {
+    return JSON.parse(clean)
+  } catch (e) {
+    // If that fails, try to extract JSON from the response
+    // Look for JSON object pattern
+    const jsonMatch = clean.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0])
+      } catch (e2) {
+        throw new Error(`Failed to parse AI response as JSON: ${clean.slice(0, 200)}`)
+      }
+    }
+    throw new Error(`Failed to parse AI response as JSON: ${clean.slice(0, 200)}`)
+  }
+}
+
 export interface AgentCallResult {
   data: any
   tokensUsed: number
@@ -112,8 +135,7 @@ async function callProvider(
     }
     const json = await res.json()
     const raw = json.choices[0].message.content
-    const clean = raw.replace(/```json|```/g, '').trim()
-    return { data: JSON.parse(clean), tokensUsed: json.usage?.total_tokens ?? 0 }
+    return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
   }
 
   if (config.provider === 'openrouter') {
@@ -140,8 +162,7 @@ async function callProvider(
     }
     const json = await res.json()
     const raw = json.choices[0].message.content
-    const clean = raw.replace(/```json|```/g, '').trim()
-    return { data: JSON.parse(clean), tokensUsed: json.usage?.total_tokens ?? 0 }
+    return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
   }
 
   if (config.provider === 'google' || config.provider === 'google_legacy') {
@@ -164,8 +185,7 @@ async function callProvider(
     }
     const json = await res.json()
     const raw = json.candidates[0].content.parts[0].text
-    const clean = raw.replace(/```json|```/g, '').trim()
-    return { data: JSON.parse(clean), tokensUsed: json.usageMetadata?.totalTokenCount ?? 0 }
+    return { data: cleanAndParseJSON(raw), tokensUsed: json.usageMetadata?.totalTokenCount ?? 0 }
   }
 
   if (config.provider === 'mistral') {
@@ -187,8 +207,7 @@ async function callProvider(
     }
     const json = await res.json()
     const raw = json.choices[0].message.content
-    const clean = raw.replace(/```json|```/g, '').trim()
-    return { data: JSON.parse(clean), tokensUsed: json.usage?.total_tokens ?? 0 }
+    return { data: cleanAndParseJSON(raw), tokensUsed: json.usage?.total_tokens ?? 0 }
   }
 
   throw new Error(`Unknown provider: ${config.provider}`)

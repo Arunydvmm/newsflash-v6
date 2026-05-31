@@ -39,7 +39,8 @@ Title: ${input.metadata.title}
 Content: ${input.currentContent}
 Source: ${JSON.stringify(input.sourceData)}
 
-Return JSON:
+IMPORTANT: Return ONLY valid JSON. Do not use markdown formatting. Do not include \`\`\`json or \`\`\` tags. Return raw JSON only.
+
 {
   "modifiedContent": "improved headline if needed",
   "stageReport": {
