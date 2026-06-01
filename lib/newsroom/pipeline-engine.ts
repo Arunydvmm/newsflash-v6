@@ -132,6 +132,8 @@ export async function runPipelineJob(job: any, slotNumber: number) {
   const delay = SLOT_DELAY
   if (delay > 0) await new Promise(r => setTimeout(r, delay))
 
+  console.log(`[Pipeline] Starting job ${job.id} on slot ${slotNumber}`)
+
   await prisma.nfPipelineJob.update({
     where: { id: job.id },
     data: { status: 'RUNNING', slotNumber, startedAt: new Date() }
@@ -211,6 +213,12 @@ export async function runPipelineJob(job: any, slotNumber: number) {
       // EXCEPT for WRITE and CHIEF — those are critical, fail the job
       const criticalStages = ['WRITE', 'CHIEF']
       
+      console.error(`[Pipeline] Stage ${stage.name} failed:`, {
+        jobId: job.id,
+        error: error.message,
+        stack: error.stack
+      })
+      
       accumulatedReports[stage.name] = { 
         status: 'FAILED_SAFE', 
         error: error.message,
@@ -224,6 +232,7 @@ export async function runPipelineJob(job: any, slotNumber: number) {
       })
 
       if (criticalStages.includes(stage.name)) {
+        console.error(`[Pipeline] Critical stage ${stage.name} failed for job ${job.id}`)
         return await endJob(job.id, slotNumber, 'FAILED', `Critical stage ${stage.name} failed: ${error.message}`)
       }
 
