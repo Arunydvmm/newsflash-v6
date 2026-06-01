@@ -40,7 +40,7 @@ Return JSON:
 `
 
     try {
-      const result = await callAgent('MONITOR', prompt, 300, jobId)
+      const result = await callAgent('SCOUT', prompt, 300, jobId)
 
       if (result.data.isSameStory && result.data.similarityScore > 0.8) {
         return {
