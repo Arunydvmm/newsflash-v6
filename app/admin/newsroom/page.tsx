@@ -170,7 +170,7 @@ export default function NewsroomPage() {
           border: '1px solid #e0e0e0'
         }}>
           <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '12px' }}>
-            TODAY: {completedToday}/{maxArticlesPerDay} articles completed
+            TODAY: {completedToday}/{MAX_ARTICLES_PER_DAY} articles completed
           </div>
           <div style={{ background: '#e0e0e0', borderRadius: '8px', height: '12px', overflow: 'hidden', marginBottom: '8px' }}>
             <div style={{
