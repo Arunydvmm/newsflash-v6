@@ -261,8 +261,8 @@ export async function callAgent(
       // Rate limited — parse actual wait time, sleep, then continue to next attempt
       if (err.status === 429) {
         const waitMs = parseRetryAfter(err.message)
-        // Only sleep if wait is under 5 minutes — otherwise skip and try next key
-        if (waitMs <= 300000) {
+        // Only sleep if wait is under 30 minutes — otherwise skip and try next key
+        if (waitMs <= 1800000) {
           console.warn(`[${agentName}] ${attempt.label} rate limited — sleeping ${Math.round(waitMs/1000)}s`)
           sleepOccurred = true
           totalSleepMs += waitMs
