@@ -55,6 +55,8 @@ interface SimpleStatus {
   }
 }
 
+const MAX_ARTICLES_PER_DAY = 5
+
 export default function NewsroomPage() {
   const [status, setStatus] = useState<SimpleStatus | null>(null)
   const [loading, setLoading] = useState(true)
@@ -78,18 +80,6 @@ export default function NewsroomPage() {
 
     return () => clearInterval(interval)
   }, [])
-
-  const startEngine = async () => {
-    try {
-      const res = await fetch('/api/newsroom/engine/start', { method: 'POST' })
-      if (res.ok) {
-        const data = await res.json()
-        alert(data.message || 'Engine started')
-      }
-    } catch (err) {
-      alert('Failed to start engine')
-    }
-  }
 
   const stopEngine = async () => {
     if (!confirm('Stop the engine?')) return
@@ -120,7 +110,7 @@ export default function NewsroomPage() {
       const res = await fetch('/api/newsroom/scheduler', { method: 'POST' })
       if (res.ok) {
         const data = await res.json()
-        alert(`${data.added} articles queued. ${data.completedToday}/5 completed today.`)
+        alert(`${data.added} articles queued. ${data.completedToday}/${MAX_ARTICLES_PER_DAY} completed today.`)
       } else {
         const error = await res.json()
         alert(`Failed: ${error.error || 'Unknown error'}`)
@@ -149,7 +139,7 @@ export default function NewsroomPage() {
   if (loading) {
     return (
       <AdminShell>
-        <div style={{ padding: '48px', textAlign: 'center', color: '#666' }}>Loading...</div>
+        <div style={{ padding: '24px', textAlign: 'center' }}>Loading...</div>
       </AdminShell>
     )
   }
@@ -157,16 +147,16 @@ export default function NewsroomPage() {
   if (!status) {
     return (
       <AdminShell>
-        <div style={{ padding: '48px', textAlign: 'center', color: '#666' }}>Failed to load status</div>
+        <div style={{ padding: '24px', textAlign: 'center', color: '#f44336' }}>Failed to load status</div>
       </AdminShell>
     )
   }
 
-  const completedToday = status.todayStats.completed
-  const maxArticlesPerDay = 5
-  const progressPercent = (completedToday / maxArticlesPerDay) * 100
-  const currentJob = status.slots[0]?.currentJob
-  const engineRunning = !status.engineStopped
+  const currentSlot = status.slots?.[0]
+  const currentJob = currentSlot?.currentJob
+  const engineRunning = currentSlot?.status === 'BUSY'
+  const completedToday = status.todayStats?.completed ?? 0
+  const progressPercent = (completedToday / MAX_ARTICLES_PER_DAY) * 100
 
   return (
     <AdminShell>

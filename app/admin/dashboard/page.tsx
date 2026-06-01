@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { Suspense } from 'react'
 import { connectDB } from '../../lib/db'
 import Article from '../../models/Article'
 import SarkariJob from '../../models/SarkariJob'
@@ -7,10 +8,11 @@ import Employee from '../../models/Employee'
 import AdminShell from '../../components/admin/AdminShell'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { DashboardSkeleton } from '@/components/admin/skeletons'
 
 export const dynamic = 'force-dynamic'
 
-export default async function DashboardPage() {
+async function DashboardContent() {
   await connectDB()
 
   const [
@@ -172,5 +174,13 @@ export default async function DashboardPage() {
         </div>
       </div>
     </AdminShell>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardContent />
+    </Suspense>
   )
 }

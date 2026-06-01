@@ -4,6 +4,30 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+// Safe JSON parsing — never crash on bad JSON
+function safeParseJSON(raw: string): any {
+  try {
+    // Strip thinking tags from Nvidia
+    const clean = raw
+      .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+      .replace(/```json|```/g, '')
+      .trim()
+    return JSON.parse(clean)
+  } catch {
+    // Extract any JSON object from response
+    const match = raw.match(/\{[\s\S]*\}/)
+    if (match) {
+      try { return JSON.parse(match[0]) } catch {}
+    }
+    // Return safe default — never crash pipeline
+    return {
+      recommendation: 'BLOCK',
+      blockReason: 'Agent returned invalid JSON',
+      confidence: 0
+    }
+  }
+}
+
 // Parse actual retry wait time from Groq error message
 function parseRetryAfter(errorMessage: string): number {
   const minMatch = errorMessage?.match(/(\d+)m[\d.]+s/)
@@ -63,7 +87,7 @@ async function callProvider(
     const raw = body.choices[0].message.content
     const tokens = body.usage?.total_tokens ?? 0
     await recordTokens('groq', tokens)
-    return { data: JSON.parse(raw.replace(/```json|```/g, '').trim()), tokensUsed: tokens }
+    return { data: safeParseJSON(raw), tokensUsed: tokens }
   }
 
   if (config.provider === 'openrouter') {
@@ -100,7 +124,7 @@ async function callProvider(
         }
         body = await res.json()
         const raw = body.choices[0].message.content
-        return { data: JSON.parse(raw.replace(/```json|```/g, '').trim()), tokensUsed: body.usage?.total_tokens ?? 0 }
+        return { data: safeParseJSON(raw), tokensUsed: body.usage?.total_tokens ?? 0 }
       } catch (modelErr: any) {
         if (modelErr.message?.includes('TOKEN_BUDGET')) throw modelErr
         console.warn(`OpenRouter ${model} failed: ${modelErr.message} — trying next model`)
@@ -124,7 +148,7 @@ async function callProvider(
     const raw = body.candidates[0].content.parts[0].text
     const tokens = body.usageMetadata?.totalTokenCount ?? 0
     await recordTokens('google', tokens)
-    return { data: JSON.parse(raw.replace(/```json|```/g, '').trim()), tokensUsed: tokens }
+    return { data: safeParseJSON(raw), tokensUsed: tokens }
   }
 
   if (config.provider === 'mistral') {
@@ -139,7 +163,50 @@ async function callProvider(
     const raw = body.choices[0].message.content
     const tokens = body.usage?.total_tokens ?? 0
     await recordTokens('mistral', tokens)
-    return { data: JSON.parse(raw.replace(/```json|```/g, '').trim()), tokensUsed: tokens }
+    return { data: safeParseJSON(raw), tokensUsed: tokens }
+  }
+
+  if (config.provider === 'nvidia') {
+    // Nvidia uses OpenAI-compatible API
+    res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.key}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: config.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.6,
+        top_p: 0.95,
+        max_tokens: Math.min(maxTokens, 4096), // cap at 4096 for pipeline use
+        stream: false,
+        extra_body: {
+          chat_template_kwargs: { enable_thinking: false }, // disable for pipeline JSON output
+          reasoning_budget: 2048 // small budget — just needs decision not essay
+        }
+      }),
+      signal: AbortSignal.timeout(90000) // 90s timeout — reasoning models are slower
+    })
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}))
+      const e: any = new Error(errBody.error?.message ?? `Nvidia API error ${res.status}`)
+      e.status = res.status
+      throw e
+    }
+
+    body = await res.json()
+    const raw = body.choices[0].message.content ?? ''
+    const clean = raw.replace(/```json|```/g, '').trim()
+
+    // Nvidia reasoning models sometimes output thinking tags — strip them
+    const withoutThinking = clean.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '').trim()
+
+    return {
+      data: safeParseJSON(withoutThinking),
+      tokensUsed: body.usage?.total_tokens ?? 0
+    }
   }
 
   throw new Error(`Unknown provider: ${config.provider}`)

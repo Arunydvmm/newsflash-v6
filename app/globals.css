@@ -3,7 +3,10 @@
 @tailwind utilities;
 
 /* ── Import Poppins font ── */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+/* ── Cyberpunk Theme ── */
+@import url('../styles/cyberpunk.css');
 
 /* ── CSS Variables for dark/light mode ── */
 :root {

@@ -1,9 +1,11 @@
 'use client'
 // @ts-nocheck
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import AdminShell from '../../components/admin/AdminShell'
 import { format } from 'date-fns'
+import { ArticleTableSkeleton } from '@/components/admin/skeletons'
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   published:      { bg: '#E8F5E9', color: '#1B5E20' },
@@ -11,7 +13,7 @@ const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   pending_review: { bg: '#FFF3E0', color: '#E65100' },
 }
 
-export default function ArticlesListPage() {
+function ArticlesContent() {
   const [articles, setArticles] = useState([])
   const [loading, setLoading]   = useState(true)
   const [search, setSearch]     = useState('')
@@ -142,5 +144,13 @@ export default function ArticlesListPage() {
         </div>
       </div>
     </AdminShell>
+  )
+}
+
+export default function ArticlesListPage() {
+  return (
+    <Suspense fallback={<ArticleTableSkeleton />}>
+      <ArticlesContent />
+    </Suspense>
   )
 }

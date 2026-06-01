@@ -1,12 +1,10 @@
 import { PrismaClient } from '@prisma/client'
 import { callAgent } from './agent-caller'
-import { monitorAgent }       from './agents/agent1-monitor'
-import { researchAgent }      from './agents/agent2-research'
-import { extractVerifyAgent } from './agents/agent3-extract-verify'
-import { writeAgent }         from './agents/agent4-write'
-import { safetyAgent }        from './agents/agent5-safety'
-import { seoPolishAgent }     from './agents/agent6-seo-polish'
-import { chiefEditorAgent }   from './agents/agent7-chiefeditor'
+import { scoutAgent }   from './agents/agent1-scout'
+import { extractAgent } from './agents/agent2-extract'
+import { writeAgent }   from './agents/agent3-write'
+import { reviewAgent }  from './agents/agent4-review'
+import { chiefAgent }   from './agents/agent5-chief'
 
 const prisma = new PrismaClient()
 
@@ -60,14 +58,27 @@ export async function canStartNewJob(): Promise<{ allowed: boolean; reason: stri
 }
 
 const STAGES = [
-  { name: 'MONITOR',        fn: monitorAgent,       maxTokens: 500,  delayAfter: 5000  },
-  { name: 'RESEARCH',       fn: researchAgent,      maxTokens: 800,  delayAfter: 8000  },
-  { name: 'EXTRACT_VERIFY', fn: extractVerifyAgent, maxTokens: 800,  delayAfter: 8000  },
-  { name: 'WRITE',          fn: writeAgent,         maxTokens: 2000, delayAfter: 10000 },
-  { name: 'SAFETY',         fn: safetyAgent,        maxTokens: 800,  delayAfter: 8000  },
-  { name: 'SEO_POLISH',     fn: seoPolishAgent,     maxTokens: 1500, delayAfter: 5000  },
-  { name: 'CHIEF_EDITOR',   fn: chiefEditorAgent,   maxTokens: 800,  delayAfter: 0     }
+  { name: 'SCOUT',   fn: scoutAgent,   maxTokens: 800,  delayAfter: 5000  },
+  { name: 'EXTRACT', fn: extractAgent, maxTokens: 700,  delayAfter: 6000  },
+  { name: 'WRITE',   fn: writeAgent,   maxTokens: 3000, delayAfter: 8000  },
+  { name: 'REVIEW',  fn: reviewAgent,  maxTokens: 1000, delayAfter: 5000  },
+  { name: 'CHIEF',   fn: chiefAgent,   maxTokens: 800,  delayAfter: 0     }
 ]
+
+// Token math per article:
+// SCOUT:   800  → Groq KEY_1
+// EXTRACT: 700  → Groq KEY_2
+// WRITE:   3000 → OpenRouter (zero Groq tokens)
+// REVIEW:  1000 → OpenRouter (zero Groq tokens)
+// CHIEF:   800  → Nvidia     (zero Groq tokens)
+// ──────────────────────────────────
+// Groq KEY_1: 800  × 5 = 4,000  / 100,000 → 4%  ✅
+// Groq KEY_2: 700  × 5 = 3,500  / 100,000 → 3.5%✅
+// OpenRouter: 4000 × 5 = 20,000 free       → fine✅
+// Nvidia:     800  × 5 = 4,000  free tier  → fine✅
+// ──────────────────────────────────
+// Total daily: 7,500 Groq tokens — 92,500 token buffer remaining
+// Pipeline will NEVER hit quota at 5 articles/day
 
 export async function initSlots() {
   for (let i = 1; i <= MAX_SLOTS; i++) {
@@ -196,12 +207,27 @@ export async function runPipelineJob(job: any, slotNumber: number) {
       if (stage.delayAfter > 0) await new Promise(r => setTimeout(r, stage.delayAfter))
 
     } catch (error: any) {
-      accumulatedReports[stage.name] = { status: 'FAILED', error: error.message }
+      // Log but DO NOT crash — mark stage failed and continue to next
+      // EXCEPT for WRITE and CHIEF — those are critical, fail the job
+      const criticalStages = ['WRITE', 'CHIEF']
+      
+      accumulatedReports[stage.name] = { 
+        status: 'FAILED_SAFE', 
+        error: error.message,
+        recommendation: 'PROCEED', // continue despite failure
+        confidence: 0.5
+      }
+      
       await prisma.nfPipelineJob.update({
         where: { id: job.id },
         data: { agentReports: accumulatedReports, sleepLog }
       })
-      return await endJob(job.id, slotNumber, 'FAILED', `Stage ${stage.name} crashed: ${error.message}`)
+
+      if (criticalStages.includes(stage.name)) {
+        return await endJob(job.id, slotNumber, 'FAILED', `Critical stage ${stage.name} failed: ${error.message}`)
+      }
+
+      console.warn(`Stage ${stage.name} failed safely — continuing pipeline: ${error.message}`)
     }
   }
 
@@ -242,8 +268,8 @@ async function triggerNextJob(slotNumber: number) {
 }
 
 async function saveArticleFromJob(job: any, reports: Record<string, any>) {
-  const chiefReport = reports['CHIEF_EDITOR']?.report
-  const seoReport   = reports['SEO_POLISH']?.report
+  const chiefReport = reports['CHIEF']?.report
+  const reviewReport = reports['REVIEW']?.report
   const writeReport = reports['WRITE']?.report
 
   if (!chiefReport || chiefReport.editorialGrade === 'REJECT') return
@@ -252,11 +278,11 @@ async function saveArticleFromJob(job: any, reports: Record<string, any>) {
   const article = await prisma.nfArticle.create({
     data: {
       title:           writeReport?.article?.headline   ?? job.watchlist.headline,
-      slug:            seoReport?.seo?.slug             ?? job.watchlist.headline.toLowerCase().replace(/\s+/g, '-').slice(0, 60),
-      content:         seoReport?.polish?.polishedBody  ?? writeReport?.article?.body ?? '',
-      excerpt:         seoReport?.seo?.metaDescription  ?? '',
-      metaTitle:       seoReport?.seo?.metaTitle        ?? '',
-      metaDescription: seoReport?.seo?.metaDescription  ?? '',
+      slug:            reviewReport?.seo?.slug          ?? job.watchlist.headline.toLowerCase().replace(/\s+/g, '-').slice(0, 60),
+      content:         writeReport?.article?.body       ?? '',
+      excerpt:         reviewReport?.seo?.metaDescription ?? '',
+      metaTitle:       reviewReport?.seo?.metaTitle     ?? '',
+      metaDescription: reviewReport?.seo?.metaDescription ?? '',
       tags:            chiefReport?.finalTags           ?? [],
       category:        chiefReport?.finalCategory       ?? job.watchlist.category ?? 'General',
       sourceUrl:       job.watchlist.sourceUrl,

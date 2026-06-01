@@ -48,7 +48,7 @@ module.exports = {
       fontFamily: {
         serif:  ['Playfair Display', 'Georgia', 'serif'],
         sans:   ['Inter', 'system-ui', 'sans-serif'],
-        mono:   ['JetBrains Mono', 'monospace'],
+        mono:   ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       animation: {
         ticker:   'ticker 40s linear infinite',
@@ -56,12 +56,14 @@ module.exports = {
         slideUp:  'slideUp 0.4s ease-out',
         pulse:    'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         shimmer:  'shimmer 1.5s infinite',
+        scan:     'scan 3s linear infinite',
       },
       keyframes: {
         ticker:  { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } },
         fadeIn:  { from: { opacity: '0' }, to: { opacity: '1' } },
         slideUp: { from: { opacity: '0', transform: 'translateY(10px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
         shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+        scan:    { '0%': { top: '-2px' }, '100%': { top: '100%' } },
       },
     },
   },
