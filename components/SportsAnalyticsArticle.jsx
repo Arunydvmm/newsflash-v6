@@ -63,7 +63,7 @@ const SportsAnalyticsArticle = () => {
     },
     {
       icon: '⚡',
-      title: 'Bumrah\'s Dominance',
+      title: "Bumrah's Dominance",
       description: 'Jasprit Bumrah leading wicket-taker with 12 wickets at economy rate of 7.2. Death overs specialist.',
       color: '#EAF3DE'
     },
