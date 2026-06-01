@@ -76,25 +76,24 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
   })
 
   let currentContent = storyData.contentSnippet
-  let previousStageReport = {}
+  let allPreviousReports: Record<string, any> = {}
   let totalTokensUsed = 0
   let totalProcessingTime = 0
 
   try {
-    // Run all 11 stages
+    // Run all 5 stages
     for (const stage of STAGES) {
       const startTime = Date.now()
 
       const input = {
-        articleId: article.id,
+        jobId: article.id,
         currentContent,
-        previousStageReport,
-        sourceData: { url: storyData.sourceUrl, name: storyData.sourceName },
+        allPreviousReports,
+        sourceData: { url: storyData.sourceUrl, name: storyData.sourceName, publishedAt: storyData.publishedAt },
         metadata: {
           title: storyData.headline,
           region: 'India',
-          priority: 'STANDARD',
-          language: 'en'
+          priority: 'STANDARD'
         }
       }
 
@@ -127,12 +126,15 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
       totalTokensUsed += result.tokensUsed
       totalProcessingTime += result.processingMs
 
+      // Store stage report for next stage
+      allPreviousReports[stage.name] = result.stageReport
+
       // Update article
       await prisma.nfArticle.update({
         where: { id: article.id },
         data: {
           currentStage: stage.name.toLowerCase(),
-          pipelineStatus: stage.status as any,
+          pipelineStatus: stage.nextStatus as any,
           content: result.modifiedContent
         }
       })
@@ -173,7 +175,6 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
       }
 
       currentContent = result.modifiedContent
-      previousStageReport = result.stageReport
 
       // Add 2-second delay between agent calls to prevent rate limit bursts
       await new Promise(resolve => setTimeout(resolve, 2000))
