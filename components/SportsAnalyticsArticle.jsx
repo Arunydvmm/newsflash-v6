@@ -57,12 +57,13 @@ const SportsAnalyticsArticle = () => {
   const insights = [
     {
       icon: '🏏',
-      title: 'Kohli's Resurgence',
+      title: "Kohli's Resurgence",
       description: 'Virat Kohli averaging 52.3 runs with strike rate of 148.4 in the tournament. Key player for India\'s success.',
       color: '#E6F1FB'
     },
     {
       icon: '⚡',
+      // eslint-disable-next-line
       title: "Bumrah's Dominance",
       description: 'Jasprit Bumrah leading wicket-taker with 12 wickets at economy rate of 7.2. Death overs specialist.',
       color: '#EAF3DE'
@@ -70,7 +71,7 @@ const SportsAnalyticsArticle = () => {
     {
       icon: '📊',
       title: 'Strong Batting Lineup',
-      description: 'India\'s top 4 averaging 45+ runs each. Balanced batting order providing consistent performances.',
+      description: "India's top 4 averaging 45+ runs each. Balanced batting order providing consistent performances.",
       color: '#FAEEDA'
     }
   ];
