@@ -11,10 +11,5 @@
     "@next/next/no-page-custom-font": "off",
     "jsx-a11y/alt-text": "off"
   },
-  "overrides": [
-    {
-      "files": ["*.jsx"],
-      "parser": "babel-eslint"
-    }
-  ]
+  "ignorePatterns": ["components/SportsAnalyticsArticle.jsx"]
 }
