@@ -97,7 +97,7 @@ const TableSection = ({ icon, title, color, items, type }: any) => (
   </div>
 )
 
-export default async function ExamPortalPageContent() {
+async function ExamPortalPageContent() {
   await connectDB()
 
   const [sarkariJobs, examNotifications, admitCards, answerKeys, results] = await Promise.all([
