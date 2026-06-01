@@ -10,7 +10,7 @@ export const AGENT_KEYS = {
   // Groq KEY_2 primary — structured JSON extraction
   EXTRACT: {
     primary: { key: process.env.GROQ_KEY_2!,       provider: 'groq',       model: 'llama-3.3-70b-versatile' },
-    backup:  { key: process.env.GOOGLE_AI_KEY_1!,  provider: 'google',     model: 'gemini-1.5-flash' }
+    backup:  { key: process.env.GOOGLE_AI_KEY_1!,  provider: 'google',     model: 'gemini-2.0-flash' }
   },
 
   // Agent 3 — WRITE (solo — heaviest task, needs full token budget)
@@ -25,7 +25,7 @@ export const AGENT_KEYS = {
   // Google backup — fallback for safety review
   REVIEW: {
     primary: { key: process.env.MISTRAL_KEY_1!,    provider: 'mistral',    model: 'mistral-small-latest' },
-    backup:  { key: process.env.GOOGLE_AI_KEY_1!,  provider: 'google',     model: 'gemini-1.5-flash' }
+    backup:  { key: process.env.GOOGLE_AI_KEY_1!,  provider: 'google',     model: 'gemini-2.0-flash' }
   },
 
   // Agent 5 — CHIEF (final editorial gate)
