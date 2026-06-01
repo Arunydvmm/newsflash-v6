@@ -14,12 +14,12 @@ export async function writeAgent(input: AgentInput) {
   const schema = input.allPreviousReports['EXTRACT']?.report?.schema || {}
 
   const prompt = `
-You are a senior news writer. Write a complete 2500-3500 word publication-ready news article from this verified schema.
+You are a senior news writer. Write a publication-ready news article from this verified schema.
 
 Schema: ${JSON.stringify(schema)}
 
 REQUIREMENTS:
-- Length: 2500-3500 words STRICTLY
+- Length: 800-1500 words (flexible — quality over length)
 - Structure: inverted pyramid
 - Lead paragraph answers all 5 Ws
 - Short paragraphs: max 3 sentences (mobile-first)
@@ -28,11 +28,11 @@ REQUIREMENTS:
 - India-appropriate tone
 - Write entirely from schema — never copy source text
 
-INCLUDE MINIMUM 2 OF THESE:
-1. Key Facts table (always include this one)
-2. Important Dates timeline table
+INCLUDE AT LEAST 1 OF THESE:
+1. Key Facts table
+2. Important Dates timeline
 3. Data/statistics table
-4. Key Takeaways bullet list at end
+4. Key Takeaways bullet list
 
 All tables max 4 columns (mobile constraint).
 
@@ -41,7 +41,7 @@ Return JSON only:
   "article": {
     "headline": "",
     "subheadline": "",
-    "body": "full markdown 2500-3500 words",
+    "body": "full markdown 800-1500 words",
     "metaTitle": "under 60 chars",
     "metaDescription": "under 160 chars",
     "tags": [],
@@ -50,10 +50,10 @@ Return JSON only:
   "wordCount": 0,
   "tablesIncluded": 0,
   "confidence": 0.0-1.0,
-  "recommendation": "PROCEED|REWRITE|BLOCK"
+  "recommendation": "PROCEED|BLOCK"
 }
 
-Rewrite if wordCount outside 2500-3500 or tablesIncluded below 2.
+Recommend PROCEED if article is coherent and informative. Only BLOCK if content is harmful or completely incoherent.
 `
 
   const result = await callAgent('WRITE', prompt, 3000, input.jobId)

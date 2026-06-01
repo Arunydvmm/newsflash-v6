@@ -25,7 +25,7 @@ export interface AgentStageResult {
 
 // HARDCODED — never change these values
 const MAX_SLOTS = 1              // only 1 article processes at a time
-const MAX_ARTICLES_PER_DAY = 5   // stop after 5 completed articles per day
+const MAX_ARTICLES_PER_DAY = 1   // reduced to 1 to stay within token budget
 const SLOT_DELAY = 0             // no delay needed — only 1 slot
 
 // Check if a new job can be started
