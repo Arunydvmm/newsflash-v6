@@ -14,7 +14,7 @@ export async function POST(
   }
 
   try {
-    const { action, reason } = await req.json()
+    const { action, reason, suggestion } = await req.json()
     const articleId = params.id
 
     if (action === 'stop') {
@@ -69,8 +69,6 @@ export async function POST(
 
     if (action === 'suggest_edit') {
       // Add edit suggestion to article
-      const { suggestion } = await req.json()
-      
       await prisma.nfArticle.update({
         where: { id: articleId },
         data: {

@@ -3,30 +3,56 @@ import { useState, useEffect } from 'react'
 import AdminShell from '@/components/admin/AdminShell'
 
 interface SimpleStatus {
-  completedToday: number
-  maxArticlesPerDay: number
-  engineRunning: boolean
-  currentJob: {
-    headline: string
-    currentStage: string
-    elapsedSeconds: number
-    currentAgent: string
-    modelUsed: string
-  } | null
-  queue: Array<{
-    headline: string
+  engineStopped: boolean
+  engineStoppedBy: string | null
+  slots: Array<{
+    slotNumber: number
+    status: string
+    currentJob: {
+      id: string
+      headline: string
+      source: string
+      addedAt: string
+      currentStage: string
+      currentAgent: string
+      stageStatuses: Record<string, any>
+      startedAt: string
+      elapsedSeconds: number
+      sleepLog: any[]
+    } | null
   }>
-  tokenQuota: {
-    groq: { used: number; limit: number; percent: number }
-    google: { used: number; limit: number; percent: number }
-    mistral: { used: number; limit: number; percent: number }
+  queue: {
+    queued: number
+    running: number
+    completed: number
+    failed: number
+    held: number
   }
   sleepingAgents: Array<{
+    jobId: string
     agentName: string
-    secondsRemaining: number
     reason: string
+    sleepStarted: number
+    wakeAt: number
+    secondsRemaining: number
   }>
-  resetDate: string
+  keyHealth: Record<string, {
+    configured: boolean
+    cooling: boolean
+    cooldownRemainingSeconds: number
+    sharedBy: string[]
+  }>
+  todayStats: {
+    completed: number
+    failed: number
+    held: number
+    avgProcessingTimeSeconds: number
+  }
+  tokenQuota: {
+    groq:    { used: number; limit: number; percent: number }
+    google:  { used: number; limit: number; percent: number }
+    mistral: { used: number; limit: number; percent: number }
+  }
 }
 
 export default function NewsroomPage() {
@@ -136,7 +162,11 @@ export default function NewsroomPage() {
     )
   }
 
-  const progressPercent = (status.completedToday / status.maxArticlesPerDay) * 100
+  const completedToday = status.todayStats.completed
+  const maxArticlesPerDay = 5
+  const progressPercent = (completedToday / maxArticlesPerDay) * 100
+  const currentJob = status.slots[0]?.currentJob
+  const engineRunning = !status.engineStopped
 
   return (
     <AdminShell>
@@ -150,7 +180,7 @@ export default function NewsroomPage() {
           border: '1px solid #e0e0e0'
         }}>
           <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '12px' }}>
-            TODAY: {status.completedToday}/{status.maxArticlesPerDay} articles completed
+            TODAY: {completedToday}/{maxArticlesPerDay} articles completed
           </div>
           <div style={{ background: '#e0e0e0', borderRadius: '8px', height: '12px', overflow: 'hidden', marginBottom: '8px' }}>
             <div style={{
@@ -161,45 +191,45 @@ export default function NewsroomPage() {
             }} />
           </div>
           <div style={{ fontSize: '13px', color: '#666' }}>
-            Resets: midnight IST ({status.resetDate})
+            Resets: midnight IST
           </div>
         </div>
 
         {/* ENGINE STATUS */}
         <div style={{
-          background: status.engineRunning ? '#E8F5E9' : '#FFF3E0',
+          background: engineRunning ? '#E8F5E9' : '#FFF3E0',
           padding: '20px',
           borderRadius: '12px',
           marginBottom: '24px',
-          border: `2px solid ${status.engineRunning ? '#4CAF50' : '#FF9800'}`
+          border: `2px solid ${engineRunning ? '#4CAF50' : '#FF9800'}`
         }}>
           <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '12px' }}>
             ENGINE STATUS
           </div>
-          {status.engineRunning && status.currentJob ? (
+          {engineRunning && currentJob ? (
             <>
               <div style={{ fontSize: '14px', marginBottom: '8px' }}>
-                ● RUNNING — "{status.currentJob.headline.substring(0, 50)}..."
+                ● RUNNING — "{currentJob.headline.substring(0, 50)}..."
               </div>
               <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
-                Current stage: {status.currentJob.currentStage} (4/7)
+                Current stage: {currentJob.currentStage}
               </div>
               <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
-                Elapsed: {Math.floor(status.currentJob.elapsedSeconds / 60)}m {status.currentJob.elapsedSeconds % 60}s
+                Elapsed: {Math.floor(currentJob.elapsedSeconds / 60)}m {currentJob.elapsedSeconds % 60}s
               </div>
               <div style={{ fontSize: '13px', color: '#666' }}>
-                Agent: {status.currentJob.modelUsed}
+                Agent: {currentJob.currentAgent}
               </div>
             </>
           ) : (
             <div style={{ fontSize: '14px' }}>
-              {status.engineRunning ? '● RUNNING — No active job' : '■ STOPPED'}
+              {engineRunning ? '● RUNNING — No active job' : '■ STOPPED'}
             </div>
           )}
         </div>
 
         {/* QUEUE */}
-        {status.queue.length > 0 && (
+        {status.queue.queued > 0 && (
           <div style={{
             background: 'white',
             padding: '20px',
@@ -208,13 +238,11 @@ export default function NewsroomPage() {
             border: '1px solid #e0e0e0'
           }}>
             <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '12px' }}>
-              QUEUE ({status.queue.length} waiting)
+              QUEUE ({status.queue.queued} waiting)
             </div>
-            {status.queue.slice(0, 3).map((item, idx) => (
-              <div key={idx} style={{ fontSize: '13px', marginBottom: '8px', color: '#666' }}>
-                {idx + 1}. "{item.headline.substring(0, 50)}..."
-              </div>
-            ))}
+            <div style={{ fontSize: '13px', color: '#666' }}>
+              Running: {status.queue.running} · Completed: {status.queue.completed} · Failed: {status.queue.failed} · Held: {status.queue.held}
+            </div>
           </div>
         )}
 
@@ -306,14 +334,14 @@ export default function NewsroomPage() {
           </button>
           <button
             onClick={stopEngine}
-            disabled={!status.engineRunning}
+            disabled={!engineRunning}
             style={{
-              background: status.engineRunning ? '#F44336' : '#ccc',
+              background: engineRunning ? '#F44336' : '#ccc',
               color: 'white',
               border: 'none',
               padding: '12px 24px',
               borderRadius: '8px',
-              cursor: status.engineRunning ? 'pointer' : 'not-allowed',
+              cursor: engineRunning ? 'pointer' : 'not-allowed',
               fontSize: '14px',
               fontWeight: '600'
             }}
@@ -322,14 +350,14 @@ export default function NewsroomPage() {
           </button>
           <button
             onClick={resumeEngine}
-            disabled={status.engineRunning}
+            disabled={engineRunning}
             style={{
-              background: status.engineRunning ? '#ccc' : '#2196F3',
+              background: engineRunning ? '#ccc' : '#2196F3',
               color: 'white',
               border: 'none',
               padding: '12px 24px',
               borderRadius: '8px',
-              cursor: status.engineRunning ? 'not-allowed' : 'pointer',
+              cursor: engineRunning ? 'not-allowed' : 'pointer',
               fontSize: '14px',
               fontWeight: '600'
             }}

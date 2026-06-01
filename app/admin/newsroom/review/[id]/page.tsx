@@ -13,7 +13,7 @@ export default function ReviewPage() {
     fetch(`/api/newsroom/article/${id}`)
       .then(res => res.json())
       .then(data => {
-        setArticle(data)
+        setArticle(data.article)
         setLoading(false)
       })
       .catch(err => {

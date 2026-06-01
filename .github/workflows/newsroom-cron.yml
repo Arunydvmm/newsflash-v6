@@ -11,6 +11,6 @@ jobs:
     steps:
       - name: Trigger newsroom pipeline
         run: |
-          curl -X GET \
+          curl -X POST \
             -H "x-scheduler-secret: ${{ secrets.SCHEDULER_SECRET }}" \
             ${{ secrets.SITE_URL }}/api/newsroom/scheduler

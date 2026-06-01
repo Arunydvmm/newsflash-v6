@@ -131,6 +131,11 @@ export async function GET(req: NextRequest) {
     queue,
     sleepingAgents,
     keyHealth,
-    todayStats
+    todayStats,
+    tokenQuota: {
+      groq:    { used: config?.groqTokensToday ?? 0,    limit: 60000, percent: Math.round((config?.groqTokensToday ?? 0)    / 60000 * 100) },
+      google:  { used: config?.googleTokensToday ?? 0,  limit: 1200,  percent: Math.round((config?.googleTokensToday ?? 0)  / 1200  * 100) },
+      mistral: { used: config?.mistralTokensToday ?? 0, limit: 400,   percent: Math.round((config?.mistralTokensToday ?? 0) / 400   * 100) }
+    }
   })
 }

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
   // Reset pipeline slots
   await prisma.nfPipelineSlot.deleteMany({})
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= 1; i++) {
     await prisma.nfPipelineSlot.create({
       data: { slotNumber: i, status: 'IDLE' }
     })
