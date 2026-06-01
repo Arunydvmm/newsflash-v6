@@ -2,6 +2,8 @@
 // @ts-nocheck
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { Suspense } from 'react'
+import SkeletonCricketPage from '@/components/skeletons/SkeletonCricketPage'
 
 // IPL 2025 teams — factual public data, no logos used
 const IPL_TEAMS = [
@@ -240,7 +242,7 @@ function PurpleCap() {
   )
 }
 
-export default function CricketPage() {
+function CricketPage() {
   const [matches, setMatches]     = useState<any[]>([])
   const [news, setNews]           = useState<any[]>([])
   const [loading, setLoading]     = useState(true)
@@ -413,3 +415,13 @@ export default function CricketPage() {
     </div>
   )
 }
+
+function CricketPageWrapper() {
+  return (
+    <Suspense fallback={<SkeletonCricketPage />}>
+      <CricketPage />
+    </Suspense>
+  )
+}
+
+export default CricketPageWrapper

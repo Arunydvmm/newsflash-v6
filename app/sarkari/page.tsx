@@ -4,10 +4,12 @@ import ExamPortal from '../models/ExamPortal'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import NewsFeedWidget from '../components/NewsFeedWidget'
 import LiveJobsWidget from '../components/LiveJobsWidget'
 import SarkariNewsWidget from '../components/SarkariNewsWidget'
 import SarkariResultWidget from '../components/SarkariResultWidget'
+import SkeletonSarkariPage from '@/components/skeletons/SkeletonSarkariPage'
 
 export const revalidate = 0
 
@@ -95,7 +97,7 @@ const TableSection = ({ icon, title, color, items, type }: any) => (
   </div>
 )
 
-export default async function ExamPortalPage() {
+export default async function ExamPortalPageContent() {
   await connectDB()
 
   const [sarkariJobs, examNotifications, admitCards, answerKeys, results] = await Promise.all([
@@ -159,5 +161,13 @@ export default async function ExamPortalPage() {
         © {new Date().getFullYear()} NewsFlash Media
       </footer>
     </div>
+  )
+}
+
+export default function ExamPortalPage() {
+  return (
+    <Suspense fallback={<SkeletonSarkariPage />}>
+      <ExamPortalPageContent />
+    </Suspense>
   )
 }

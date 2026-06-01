@@ -1,5 +1,6 @@
 // @ts-nocheck
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { connectDB } from './lib/db'
 import Article from './models/Article'
 import { LoadingBar, HeroSlider, ArticleCard, CategoryButton } from './components/HomeClient'
@@ -14,10 +15,11 @@ import WeatherWidget from './components/WeatherWidget'
 import { CATEGORIES } from './lib/categories'
 import { format } from 'date-fns'
 import AdSlotServer from './components/AdSlotServer'
+import SkeletonHomePage from '@/components/skeletons/SkeletonHomePage'
 
 export const revalidate = 0 // Disable ISR - fetch fresh data on every request
 
-export default async function HomePage({ searchParams }: any) {
+async function HomeContent({ searchParams }: any) {
   await connectDB()
   const category = searchParams?.category || ''
   const search   = searchParams?.search   || ''
@@ -52,6 +54,29 @@ export default async function HomePage({ searchParams }: any) {
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: '#F4F4F0', minHeight: '100vh' }}>
+      <style>{`
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes shimmerBar { 0% { background-position: 0% 0; } 100% { background-position: 100% 0; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .main-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+        .scroll-snap-x { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; }
+        .scroll-snap-x > * { scroll-snap-align: start; }
+        .just-in-card { background: rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden; transition: all 0.2s; }
+        .just-in-card:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+        .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .rest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .cat-sec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .sec-title { display: flex; align-items: center; gap: 12px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #0D1B2A; margin-bottom: 16px; }
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        .footer-link { display: block; padding: 8px 0; color: #4A6080; text-decoration: none; font-size: 13px; border-bottom: 1px solid #1B2B3A; transition: color 0.2s; }
+        .footer-link:hover { color: #D4A017; }
+        @media (max-width: 768px) {
+          .main-grid { grid-template-columns: 1fr; }
+          .sidebar { display: none; }
+          .feat-grid, .rest-grid, .cat-sec-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
       <LoadingBar />
 
       {/* ── TOP BAR — Date, Time, Navigation ── */}
@@ -331,5 +356,13 @@ export default async function HomePage({ searchParams }: any) {
         </div>
       </footer>
     </div>
+  )
+}
+
+export default function HomePage({ searchParams }: any) {
+  return (
+    <Suspense fallback={<SkeletonHomePage />}>
+      <HomeContent searchParams={searchParams} />
+    </Suspense>
   )
 }
