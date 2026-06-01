@@ -111,6 +111,8 @@ export default function ExamPortalPage() {
               admitCardLink: record.admitcardlink || record.admit_card_link,
               answerKeyLink: record.answerkeylink || record.answer_key_link,
               resultLink: record.resultlink || record.result_link,
+              isActive: true,
+              isFeatured: false,
               importantDates: {
                 registrationStart: record.registration_start,
                 registrationEnd: record.registration_end,
