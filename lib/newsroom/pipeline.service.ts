@@ -1,16 +1,9 @@
 import { PrismaClient } from '@prisma/client'
-import { monitoringAgent } from './agents/monitoring.agent'
-import { researchAgent } from './agents/research.agent'
-import { extractionAgent } from './agents/extraction.agent'
-import { factcheckAgent } from './agents/factcheck.agent'
-import { juniorAgent } from './agents/junior.agent'
-import { seniorAgent } from './agents/senior.agent'
-import { biasAgent } from './agents/bias.agent'
-import { legalAgent } from './agents/legal.agent'
-import { copyrightAgent } from './agents/copyright.agent'
-import { seoAgent } from './agents/seo.agent'
-import { chiefeditorAgent } from './agents/chiefeditor.agent'
-import { generateReport } from './report.generator'
+import { scoutAgent } from './agents/agent1-scout'
+import { extractAgent } from './agents/agent2-extract'
+import { writeAgent } from './agents/agent3-write'
+import { reviewAgent } from './agents/agent4-review'
+import { chiefAgent } from './agents/agent5-chief'
 
 const prisma = new PrismaClient()
 const resend = process.env.RESEND_API_KEY ? new (require('resend').Resend)(process.env.RESEND_API_KEY) : null
@@ -24,17 +17,11 @@ interface StoryData {
 }
 
 const STAGES = [
-  { name: 'MONITORING', agent: monitoringAgent, status: 'RESEARCH' },
-  { name: 'RESEARCH', agent: researchAgent, status: 'EXTRACTION' },
-  { name: 'EXTRACTION', agent: extractionAgent, status: 'FACT_CHECK' },
-  { name: 'FACT_CHECK', agent: factcheckAgent, status: 'JUNIOR_DRAFT' },
-  { name: 'JUNIOR_DRAFT', agent: juniorAgent, status: 'SENIOR_EDIT' },
-  { name: 'SENIOR_EDIT', agent: seniorAgent, status: 'BIAS_REVIEW' },
-  { name: 'BIAS_REVIEW', agent: biasAgent, status: 'LEGAL_REVIEW' },
-  { name: 'LEGAL_REVIEW', agent: legalAgent, status: 'COPYRIGHT_REVIEW' },
-  { name: 'COPYRIGHT_REVIEW', agent: copyrightAgent, status: 'SEO_REVIEW' },
-  { name: 'SEO_REVIEW', agent: seoAgent, status: 'CHIEF_EDITOR' },
-  { name: 'CHIEF_EDITOR', agent: chiefeditorAgent, status: 'DRAFT_READY' }
+  { name: 'SCOUT', agent: scoutAgent, nextStatus: 'EXTRACT' },
+  { name: 'EXTRACT', agent: extractAgent, nextStatus: 'WRITE' },
+  { name: 'WRITE', agent: writeAgent, nextStatus: 'REVIEW' },
+  { name: 'REVIEW', agent: reviewAgent, nextStatus: 'CHIEF' },
+  { name: 'CHIEF', agent: chiefAgent, nextStatus: 'DRAFT_READY' }
 ]
 
 async function sendBlockEmail(articleId: string, reason: string) {
