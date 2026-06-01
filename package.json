@@ -37,6 +37,7 @@
     "mongoose": "^8.4.0",
     "motion": "^12.23.24",
     "next": "14.2.3",
+    "next-auth": "^4.24.14",
     "nodemailer": "^6.9.13",
     "openai": "^4.67.0",
     "postcss": "^8.4.38",
