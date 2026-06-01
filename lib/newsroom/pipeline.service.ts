@@ -4,6 +4,7 @@ import { extractAgent } from './agents/agent2-extract'
 import { writeAgent } from './agents/agent3-write'
 import { reviewAgent } from './agents/agent4-review'
 import { chiefAgent } from './agents/agent5-chief'
+import { generateReport } from './report.generator'
 
 const prisma = new PrismaClient()
 const resend = process.env.RESEND_API_KEY ? new (require('resend').Resend)(process.env.RESEND_API_KEY) : null
