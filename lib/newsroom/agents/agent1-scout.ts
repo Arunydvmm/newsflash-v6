@@ -11,6 +11,8 @@ interface AgentInput {
 export async function scoutAgent(input: AgentInput) {
   const startTime = Date.now()
 
+  console.log(`[Scout Agent] Starting for job ${input.jobId}`)
+
   const prompt = `
 You are a news scout and researcher combined. Given this news headline and snippet, do TWO tasks in one pass:
 
@@ -64,6 +66,12 @@ Return JSON only — no markdown, no explanation:
 
   const result = await callAgent('SCOUT', prompt, 800, input.jobId)
   const processingMs = Date.now() - startTime
+
+  console.log(`[Scout Agent] Completed for job ${input.jobId}`, {
+    processingMs,
+    hasData: !!result.data,
+    recommendation: result.data?.recommendation
+  })
 
   return {
     modifiedContent: input.currentContent,

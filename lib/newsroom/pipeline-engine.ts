@@ -170,9 +170,15 @@ export async function runPipelineJob(job: any, slotNumber: number) {
           }
         }) as AgentStageResult
 
+        if (!result) {
+          throw new Error(`Stage ${stage.name} returned undefined result`)
+        }
+
         console.log(`[Pipeline] Stage ${stage.name} completed for job ${job.id}`, {
           recommendation: result.recommendation,
-          confidence: result.confidence
+          confidence: result.confidence,
+          hasModifiedContent: !!result.modifiedContent,
+          hasStageReport: !!result.stageReport
         })
 
       // Track sleep events
