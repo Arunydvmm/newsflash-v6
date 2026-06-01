@@ -128,44 +128,52 @@ export async function getNextQueuedJob() {
 }
 
 export async function runPipelineJob(job: any, slotNumber: number) {
-  // Delayed start per slot
-  const delay = SLOT_DELAY
-  if (delay > 0) await new Promise(r => setTimeout(r, delay))
+  try {
+    // Delayed start per slot
+    const delay = SLOT_DELAY
+    if (delay > 0) await new Promise(r => setTimeout(r, delay))
 
-  console.log(`[Pipeline] Starting job ${job.id} on slot ${slotNumber}`)
+    console.log(`[Pipeline] Starting job ${job.id} on slot ${slotNumber}`)
 
-  await prisma.nfPipelineJob.update({
-    where: { id: job.id },
-    data: { status: 'RUNNING', slotNumber, startedAt: new Date() }
-  })
-
-  let currentContent = job.watchlist?.contentSnippet ?? ''
-  let accumulatedReports: Record<string, any> = {}
-  let sleepLog: any[] = []
-
-  for (const stage of STAGES) {
-    // Update current stage visible on admin panel
     await prisma.nfPipelineJob.update({
       where: { id: job.id },
-      data: {
-        currentStage: stage.name,
-        currentAgent: `${stage.name} (Slot ${slotNumber})`,
-        stageStatuses: { ...accumulatedReports, [stage.name]: 'RUNNING' }
-      }
+      data: { status: 'RUNNING', slotNumber, startedAt: new Date() }
     })
 
-    try {
-      const result = await stage.fn({
-        jobId: job.id,
-        currentContent,
-        allPreviousReports: accumulatedReports,
-        sourceData: job.watchlist,
-        metadata: {
-          title: job.watchlist?.headline ?? '',
-          region: job.watchlist?.region ?? 'India',
-          priority: job.watchlist?.priority ?? 'STANDARD'
+    let currentContent = job.watchlist?.contentSnippet ?? ''
+    let accumulatedReports: Record<string, any> = {}
+    let sleepLog: any[] = []
+
+    for (const stage of STAGES) {
+      // Update current stage visible on admin panel
+      await prisma.nfPipelineJob.update({
+        where: { id: job.id },
+        data: {
+          currentStage: stage.name,
+          currentAgent: `${stage.name} (Slot ${slotNumber})`,
+          stageStatuses: { ...accumulatedReports, [stage.name]: 'RUNNING' }
         }
-      }) as AgentStageResult
+      })
+
+      try {
+        console.log(`[Pipeline] Running stage ${stage.name} for job ${job.id}`)
+        
+        const result = await stage.fn({
+          jobId: job.id,
+          currentContent,
+          allPreviousReports: accumulatedReports,
+          sourceData: job.watchlist,
+          metadata: {
+            title: job.watchlist?.headline ?? '',
+            region: job.watchlist?.region ?? 'India',
+            priority: job.watchlist?.priority ?? 'STANDARD'
+          }
+        }) as AgentStageResult
+
+        console.log(`[Pipeline] Stage ${stage.name} completed for job ${job.id}`, {
+          recommendation: result.recommendation,
+          confidence: result.confidence
+        })
 
       // Track sleep events
       if (result.sleepOccurred) {
@@ -248,6 +256,13 @@ export async function runPipelineJob(job: any, slotNumber: number) {
   })
   await freeSlot(slotNumber)
   await triggerNextJob(slotNumber)
+  } catch (error: any) {
+    console.error(`[Pipeline] Unhandled error in job ${job.id}:`, {
+      error: error.message,
+      stack: error.stack
+    })
+    await endJob(job.id, slotNumber, 'FAILED', `Unhandled error: ${error.message}`)
+  }
 }
 
 async function endJob(jobId: string, slotNumber: number, status: string, reason: string) {
