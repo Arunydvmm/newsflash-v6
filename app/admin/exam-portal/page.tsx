@@ -92,7 +92,7 @@ export default function ExamPortalPage() {
           record[header] = values[i] || ''
         })
         return record
-      })
+      }).filter(r => r.title && r.organization) // Skip empty rows
 
       let imported = 0
       for (const record of records) {
@@ -104,7 +104,7 @@ export default function ExamPortalPage() {
               type: record.type || 'job-notification',
               title: record.title,
               organization: record.organization,
-              category: record.category,
+              category: record.category || 'Other',
               description: record.description,
               applyLink: record.applylink || record.apply_link,
               notificationPdf: record.notificationpdf || record.notification_pdf,
