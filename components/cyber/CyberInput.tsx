@@ -32,7 +32,7 @@ export default function CyberInput({ label, type = 'text', value, onChange, plac
           className="flex-1 bg-transparent font-mono text-sm text-[var(--cyber-text)] placeholder-[var(--cyber-text-dim)] outline-none"
         />
       </div>
-      {error && <p className="font-mono text-xs text-[var(--cyber-danger)]">>_ {error}</p>}
+      {error && <p className="font-mono text-xs text-[var(--cyber-danger)]">{'>'}_  {error}</p>}
     </div>
   )
 }
