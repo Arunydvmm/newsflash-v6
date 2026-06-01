@@ -150,7 +150,7 @@ export default function LoginPage() {
 
               {error && (
                 <div className="border border-[var(--cyber-danger)] bg-[#ff386011] px-3 py-2">
-                  <p className="font-mono text-xs text-[var(--cyber-danger)]">>_ {error}</p>
+                  <p className="font-mono text-xs text-[var(--cyber-danger)]">{'>'}_  {error}</p>
                 </div>
               )}
 
