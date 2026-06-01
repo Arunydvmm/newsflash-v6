@@ -146,14 +146,22 @@ export async function runPipelineJob(job: any, slotNumber: number) {
 
     for (const stage of STAGES) {
       // Update current stage visible on admin panel
-      await prisma.nfPipelineJob.update({
-        where: { id: job.id },
-        data: {
-          currentStage: stage.name,
-          currentAgent: `${stage.name} (Slot ${slotNumber})`,
-          stageStatuses: { ...accumulatedReports, [stage.name]: 'RUNNING' }
+      try {
+        await prisma.nfPipelineJob.update({
+          where: { id: job.id },
+          data: {
+            currentStage: stage.name,
+            currentAgent: `${stage.name} (Slot ${slotNumber})`,
+            stageStatuses: { ...accumulatedReports, [stage.name]: 'RUNNING' }
+          }
+        })
+      } catch (err: any) {
+        if (err.code === 'P2025') {
+          console.error(`[Pipeline] Job ${job.id} not found - aborting pipeline`)
+          return
         }
-      })
+        throw err
+      }
 
       try {
         console.log(`[Pipeline] Running stage ${stage.name} for job ${job.id}`)
@@ -207,6 +215,12 @@ export async function runPipelineJob(job: any, slotNumber: number) {
       await prisma.nfPipelineJob.update({
         where: { id: job.id },
         data: { agentReports: accumulatedReports, sleepLog }
+      }).catch((err: any) => {
+        if (err.code === 'P2025') {
+          console.error(`[Pipeline] Job ${job.id} not found during stage update - aborting`)
+          throw new Error(`Job disappeared during ${stage.name} stage`)
+        }
+        throw err
       })
 
       // Handle recommendations
