@@ -107,7 +107,12 @@ export default function NewsroomPage() {
   const triggerNow = async () => {
     if (!confirm('Trigger scheduler now? This will fetch RSS feeds and add articles to queue.')) return
     try {
-      const res = await fetch('/api/newsroom/scheduler', { method: 'POST' })
+      const res = await fetch('/api/newsroom/scheduler', {
+        method: 'POST',
+        headers: {
+          'x-scheduler-secret': process.env.NEXT_PUBLIC_SCHEDULER_SECRET || ''
+        }
+      })
       if (res.ok) {
         const data = await res.json()
         alert(`${data.added} articles queued. ${data.completedToday}/${MAX_ARTICLES_PER_DAY} completed today.`)
