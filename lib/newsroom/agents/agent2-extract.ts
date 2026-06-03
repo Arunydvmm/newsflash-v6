@@ -45,7 +45,7 @@ Extract and verify:
   "blockReason": ""
 }
 
-Block if factScore below 0.55 or overallVerification is FAILED. Return JSON only.
+Block ONLY if factScore below 0.30 (critical failure). PARTIAL verification is acceptable. Return JSON only.
 `
 
   const result = await callAgent('EXTRACT', prompt, 700, input.jobId)

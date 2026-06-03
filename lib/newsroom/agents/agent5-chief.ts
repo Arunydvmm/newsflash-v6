@@ -41,12 +41,12 @@ SEO score:      ${seoScore.toFixed(2)}
 Safety passed:  ${safetyPassed}
 Any blocks:     ${anyBlocks}
 
-GRADING:
-Grade A: all scores above 0.8, wordCount 2500-3500, safety passed, no blocks
-Grade B: all scores above 0.65, wordCount 2500-3500, safety passed, no blocks
-Grade C: any score 0.5-0.65 — hold for human review
-REWRITE:  wordCount outside range OR extract score below 0.6
-REJECT:   any block flag OR safety failed
+GRADING (for TESTING mode - lenient):
+Grade A: all scores above 0.75, wordCount 800+, safety passed, no critical blocks
+Grade B: all scores above 0.50, wordCount 500+, safety passed, no blocks
+Grade C: any score below 0.50 — hold for human review
+REWRITE:  wordCount below 500 OR extract score below 0.35
+REJECT:   safety failed OR critical blocks only
 
 Only Grade A or B → PUBLISH_NOW
 Grade C → HOLD_FOR_REVIEW

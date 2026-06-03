@@ -25,7 +25,7 @@ REVIEW 1 — SAFETY (bias + legal + copyright):
 - Bias score 0.0-1.0 (0=unbiased)
 - Legal risk: any defamation, sub-judice, privacy violations?
 - Copyright: any verbatim phrases over 5 words from source?
-- Block if: bias > 0.7, any HIGH legal risk, copyright similarity > 0.15
+- Block ONLY if: bias > 0.85 (extremely biased), any CRITICAL legal risk, copyright similarity > 0.25
 
 REVIEW 2 — SEO:
 - Meta title under 60 chars

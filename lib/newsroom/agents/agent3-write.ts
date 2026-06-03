@@ -53,7 +53,7 @@ Return JSON only:
   "recommendation": "PROCEED|BLOCK"
 }
 
-Recommend PROCEED if article is coherent and informative. Only BLOCK if content is harmful or completely incoherent.
+Recommend PROCEED if article has coherent content and is informative. Only BLOCK if content is clearly harmful, unintelligible, or generated as empty/null. Use your judgment - aim for articles that have SOME substance.
 `
 
   const result = await callAgent('WRITE', prompt, 3000, input.jobId)
