@@ -93,12 +93,12 @@ export async function POST(
     }
 
     if (action === 'unblock') {
-      // Unblock article - reset to MONITORING stage for reprocessing
+      // Unblock article - reset to SCOUT stage for reprocessing
       await prisma.nfArticle.update({
         where: { id: articleId },
         data: {
-          pipelineStatus: 'MONITORING',
-          currentStage: 'monitoring',
+          pipelineStatus: 'SCOUT',
+          currentStage: 'SCOUT',
           blockReason: null,
           humanDecision: 'UNBLOCK',
           humanNotes: reason || 'Manually unblocked by admin',
@@ -111,7 +111,7 @@ export async function POST(
       await prisma.nfWorkflow.updateMany({
         where: { articleId },
         data: {
-          status: 'MONITORING',
+          status: 'SCOUT',
           error: null,
           completedAt: null
         }
@@ -128,7 +128,7 @@ export async function POST(
         }
       })
 
-      return NextResponse.json({ success: true, message: 'Article unblocked and reset to MONITORING stage' })
+      return NextResponse.json({ success: true, message: 'Article unblocked and reset to SCOUT stage' })
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

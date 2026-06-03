@@ -15,8 +15,7 @@ export async function GET(req: NextRequest) {
     const processingArticles = await prisma.nfArticle.findMany({
       where: {
         pipelineStatus: {
-          in: ['MONITORING', 'RESEARCH', 'EXTRACTION', 'FACT_CHECK', 'JUNIOR_DRAFT', 
-                'SENIOR_EDIT', 'BIAS_REVIEW', 'LEGAL_REVIEW', 'COPYRIGHT_REVIEW', 'SEO_REVIEW', 'CHIEF_EDITOR']
+          in: ['SCOUT', 'EXTRACT', 'WRITE', 'REVIEW', 'CHIEF', 'DRAFT_READY', 'APPROVED']
         }
       },
       select: {
@@ -56,8 +55,7 @@ export async function GET(req: NextRequest) {
     const workflows = await prisma.nfWorkflow.findMany({
       where: {
         status: {
-          in: ['MONITORING', 'RESEARCH', 'EXTRACTION', 'FACT_CHECK', 'JUNIOR_DRAFT', 
-                'SENIOR_EDIT', 'BIAS_REVIEW', 'LEGAL_REVIEW', 'COPYRIGHT_REVIEW', 'SEO_REVIEW', 'CHIEF_EDITOR']
+          in: ['SCOUT', 'EXTRACT', 'WRITE', 'REVIEW', 'CHIEF', 'DRAFT_READY']
         }
       },
       orderBy: { id: 'desc' },
@@ -73,8 +71,7 @@ export async function GET(req: NextRequest) {
       }
     })
 
-    const stages = ['MONITORING', 'RESEARCH', 'EXTRACTION', 'FACT_CHECK', 'JUNIOR_DRAFT', 
-                   'SENIOR_EDIT', 'BIAS_REVIEW', 'LEGAL_REVIEW', 'COPYRIGHT_REVIEW', 'SEO_REVIEW', 'CHIEF_EDITOR']
+    const stages = ['SCOUT', 'EXTRACT', 'WRITE', 'REVIEW', 'CHIEF', 'DRAFT_READY']
 
     const stageStatuses = stages.map(stage => {
       const stageLogs = recentStageLogs.filter(log => log.stageName === stage)

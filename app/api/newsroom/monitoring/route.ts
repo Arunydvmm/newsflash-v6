@@ -15,8 +15,7 @@ export async function GET(req: NextRequest) {
     const processingArticles = await prisma.nfArticle.findMany({
       where: {
         pipelineStatus: {
-          in: ['MONITORING', 'RESEARCH', 'EXTRACTION', 'FACT_CHECK', 'JUNIOR_DRAFT', 
-                'SENIOR_EDIT', 'BIAS_REVIEW', 'LEGAL_REVIEW', 'COPYRIGHT_REVIEW', 'SEO_REVIEW', 'CHIEF_EDITOR']
+          in: ['SCOUT', 'EXTRACT', 'WRITE', 'REVIEW', 'CHIEF', 'DRAFT_READY', 'APPROVED']
         }
       },
       select: {

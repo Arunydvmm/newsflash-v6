@@ -63,8 +63,8 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
       content: storyData.contentSnippet,
       sourceUrl: storyData.sourceUrl,
       sourceName: storyData.sourceName,
-      pipelineStatus: 'MONITORING',
-      currentStage: 'monitoring'
+      pipelineStatus: 'SCOUT',
+      currentStage: 'SCOUT'
     }
   })
 
@@ -72,7 +72,7 @@ export async function runPipeline(storyData: StoryData): Promise<void> {
   const workflow = await prisma.nfWorkflow.create({
     data: {
       articleId: article.id,
-      status: 'MONITORING'
+      status: 'SCOUT'
     }
   })
 
