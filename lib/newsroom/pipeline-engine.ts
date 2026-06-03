@@ -238,8 +238,9 @@ export async function runPipelineJob(job: any, slotNumber: number) {
 
     } catch (error: any) {
       // Log but DO NOT crash — mark stage failed and continue to next
-      // EXCEPT for WRITE and CHIEF — those are critical, fail the job
-      const criticalStages = ['WRITE', 'CHIEF']
+      // EXCEPT for WRITE — that's critical, fail the job
+      // REVIEW and CHIEF can fail gracefully (we save articles even if they fail)
+      const criticalStages = ['WRITE']
       
       console.error(`[Pipeline] Stage ${stage.name} failed:`, {
         jobId: job.id,
