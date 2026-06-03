@@ -21,7 +21,7 @@ TASK 1 — MONITOR:
 - Detect fake news signals (sensational language, unverified claims)
 - Identify category: POLITICS|BUSINESS|TECH|SPORTS|CRIME|HEALTH|INTERNATIONAL|OTHER
 - Assign priority: URGENT|HIGH|STANDARD|LOW
-- Block if score below 4 or fake news detected
+- Block ONLY if score below 2 (severe low quality) OR obvious fake news detected (be lenient - only block if very suspicious)
 
 TASK 2 — RESEARCH (only if not blocked):
 - Extract 5 Ws: WHO, WHAT, WHEN, WHERE, WHY
