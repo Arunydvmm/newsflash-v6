@@ -42,7 +42,6 @@ Return JSON only — no markdown, no explanation:
     "fakeNewsSignals": [],
     "category": "",
     "priority": "URGENT|HIGH|STANDARD|LOW",
-    "recommendation": "PROCEED|BLOCK",
     "blockReason": ""
   },
   "research": {
@@ -58,9 +57,7 @@ Return JSON only — no markdown, no explanation:
     "informationGaps": [],
     "researchScore": 0.0
   },
-  "confidence": 0.0-1.0,
-  "recommendation": "PROCEED|BLOCK",
-  "blockReason": ""
+  "confidence": 0.0-1.0
 }
 `
 
@@ -77,7 +74,7 @@ Return JSON only — no markdown, no explanation:
     modifiedContent: input.currentContent,
     stageReport: result.data.stageReport || result.data,
     confidence: result.data.confidence ?? 0.7,
-    recommendation: result.data.recommendation || 'PROCEED',
+    recommendation: result.data.monitor?.newsworthinessScore >= 2 ? 'PROCEED' : 'BLOCK', // Only BLOCK if score < 2
     blockReason: result.data.blockReason,
     providerUsed: result.providerUsed,
     modelUsed: result.modelUsed,

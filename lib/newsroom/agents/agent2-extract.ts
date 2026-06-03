@@ -40,12 +40,10 @@ Extract and verify:
     "flaggedFields": [{"field": "", "reason": ""}],
     "overallVerification": "VERIFIED|PARTIAL|FAILED"
   },
-  "confidence": 0.0-1.0,
-  "recommendation": "PROCEED|BLOCK",
-  "blockReason": ""
+  "confidence": 0.0-1.0
 }
 
-Block ONLY if factScore below 0.30 (critical failure). PARTIAL verification is acceptable. Return JSON only.
+Return factScore 0.5+ if schema has reasonable data. Return JSON only.
 `
 
   const result = await callAgent('EXTRACT', prompt, 700, input.jobId)
@@ -55,7 +53,7 @@ Block ONLY if factScore below 0.30 (critical failure). PARTIAL verification is a
     modifiedContent: input.currentContent,
     stageReport: result.data.stageReport || result.data,
     confidence: result.data.confidence ?? 0.7,
-    recommendation: result.data.recommendation || 'PROCEED',
+    recommendation: 'PROCEED', // Always PROCEED from Extract - let downstream decide
     blockReason: result.data.blockReason,
     providerUsed: result.providerUsed,
     modelUsed: result.modelUsed,

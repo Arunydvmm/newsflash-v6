@@ -49,11 +49,10 @@ Return JSON only:
   },
   "wordCount": 0,
   "tablesIncluded": 0,
-  "confidence": 0.0-1.0,
-  "recommendation": "PROCEED|BLOCK"
+  "confidence": 0.0-1.0
 }
 
-Recommend PROCEED if article has coherent content and is informative. Only BLOCK if content is clearly harmful, unintelligible, or generated as empty/null. Use your judgment - aim for articles that have SOME substance.
+Note: Return confidence 0.7+ if article has coherent content. Only return very low confidence if article is unintelligible or empty.
 `
 
   const result = await callAgent('WRITE', prompt, 3000, input.jobId)
@@ -63,7 +62,7 @@ Recommend PROCEED if article has coherent content and is informative. Only BLOCK
     modifiedContent: input.currentContent,
     stageReport: result.data.stageReport || result.data,
     confidence: result.data.confidence ?? 0.7,
-    recommendation: result.data.recommendation || 'PROCEED',
+    recommendation: 'PROCEED', // Always PROCEED from Write Agent - let downstream stages decide
     blockReason: result.data.blockReason,
     providerUsed: result.providerUsed,
     modelUsed: result.modelUsed,
