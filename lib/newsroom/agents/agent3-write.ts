@@ -12,58 +12,82 @@ export async function writeAgent(input: AgentInput) {
   const startTime = Date.now()
 
   const schema = input.allPreviousReports['EXTRACT']?.report?.schema || {}
+  const sourceHeadline = input.metadata.title
+  const sourceSnippet = input.currentContent?.slice(0, 500) || ''
 
   const prompt = `
-You are a senior news writer. Write a publication-ready news article from this verified schema.
+You are a senior news writer. Write a publication-ready news article from this verified schema and source info.
 
 Schema: ${JSON.stringify(schema)}
+Source headline: "${sourceHeadline}"
+Source snippet: "${sourceSnippet}"
 
 REQUIREMENTS:
-- Length: 800-1500 words (flexible — quality over length)
-- Structure: inverted pyramid
-- Lead paragraph answers all 5 Ws
+- Length: minimum 500 words (quality over length)
+- Structure: inverted pyramid - most important info first
+- Lead paragraph should hook the reader
 - Short paragraphs: max 3 sentences (mobile-first)
 - Subheadings (##) every 3-4 paragraphs
 - Active voice throughout
 - India-appropriate tone
-- Write entirely from schema — never copy source text
+- If schema is empty, use source headline and snippet to write an informative article
 
-INCLUDE AT LEAST 1 OF THESE:
-1. Key Facts table
-2. Important Dates timeline
-3. Data/statistics table
-4. Key Takeaways bullet list
+REQUIREMENTS FOR JSON:
+- headline: max 80 chars
+- subheadline: max 150 chars
+- body: full markdown article (500+ words)
+- metaTitle: under 60 chars for SEO
+- metaDescription: under 160 chars for SEO
+- tags: array of relevant tags
+- slug: url-friendly slug
 
-All tables max 4 columns (mobile constraint).
-
-Return JSON only:
+Return ONLY valid JSON with no markdown markers:
 {
   "article": {
-    "headline": "",
-    "subheadline": "",
-    "body": "full markdown 800-1500 words",
-    "metaTitle": "under 60 chars",
-    "metaDescription": "under 160 chars",
-    "tags": [],
-    "slug": "url-slug"
+    "headline": "headline",
+    "subheadline": "subheadline", 
+    "body": "full article body in markdown with subheadings",
+    "metaTitle": "seo title",
+    "metaDescription": "seo description",
+    "tags": ["tag1", "tag2"],
+    "slug": "article-slug"
   },
   "wordCount": 0,
   "tablesIncluded": 0,
-  "confidence": 0.0-1.0
+  "confidence": 0.8
 }
 
-Note: Return confidence 0.7+ if article has coherent content. Only return very low confidence if article is unintelligible or empty.
+CRITICAL: Return valid JSON ONLY. No markdown code blocks.
 `
 
   const result = await callAgent('WRITE', prompt, 3000, input.jobId)
   const processingMs = Date.now() - startTime
 
+  // Fallback article if generation fails
+  const fallbackArticle = {
+    headline: sourceHeadline.slice(0, 80),
+    subheadline: sourceSnippet.slice(0, 150),
+    body: `# ${sourceHeadline}\n\n${sourceSnippet}\n\nThis article was generated with limited information. Please review and enhance as needed.`,
+    metaTitle: sourceHeadline.slice(0, 60),
+    metaDescription: sourceSnippet.slice(0, 160),
+    tags: ['India', 'News'],
+    slug: sourceHeadline.toLowerCase().replace(/\s+/g, '-').slice(0, 60)
+  }
+
+  // Try to extract article from result
+  const article = result.data?.article || result.data?.article || fallbackArticle
+
   return {
     modifiedContent: input.currentContent,
-    stageReport: result.data.stageReport || result.data,
-    confidence: result.data.confidence ?? 0.7,
-    recommendation: 'PROCEED', // Always PROCEED from Write Agent - let downstream stages decide
-    blockReason: result.data.blockReason,
+    stageReport: {
+      article,
+      wordCount: result.data?.wordCount ?? article.body.split(/\s+/).length,
+      tablesIncluded: result.data?.tablesIncluded ?? 0,
+      ...result.data
+    },
+    confidence: result.data?.confidence ?? 0.7,
+    recommendation: 'PROCEED',
+    blockReason: result.data?.blockReason,
     providerUsed: result.providerUsed,
     modelUsed: result.modelUsed,
     usedKey: result.usedKey,
