@@ -5,6 +5,9 @@ import { addToQueue } from '@/lib/newsroom/pipeline-engine'
 
 const prisma = new PrismaClient()
 
+// Must match MAX_ARTICLES_PER_DAY in pipeline-engine.ts
+const MAX_ARTICLES_PER_DAY = 1
+
 export async function POST(req: NextRequest) {
   // Auth check
   const secret = req.headers.get('x-scheduler-secret')
@@ -24,11 +27,11 @@ export async function POST(req: NextRequest) {
   const completedToday = await prisma.nfPipelineJob.count({
     where: { status: 'COMPLETED', completedAt: { gte: todayStart } }
   })
-  if (completedToday >= 5) {
-    return NextResponse.json({ skipped: true, reason: `Daily limit reached (${completedToday}/5). Resets midnight IST.` })
+  if (completedToday >= MAX_ARTICLES_PER_DAY) {
+    return NextResponse.json({ skipped: true, reason: `Daily limit reached (${completedToday}/${MAX_ARTICLES_PER_DAY}). Resets midnight IST.` })
   }
 
-  const slotsRemaining = 5 - completedToday
+  const slotsRemaining = MAX_ARTICLES_PER_DAY - completedToday
 
   // Fetch all RSS articles
   const allArticles = await fetchAllRSSFeeds()
@@ -105,6 +108,6 @@ export async function POST(req: NextRequest) {
     added,
     completedToday,
     remaining: slotsRemaining - added,
-    message: `${added} articles queued. ${completedToday}/5 completed today.` 
+    message: `${added} articles queued. ${completedToday}/${MAX_ARTICLES_PER_DAY} completed today.` 
   })
 }
