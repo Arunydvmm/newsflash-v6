@@ -322,9 +322,13 @@ async function saveArticleFromJob(job: any, reports: Record<string, any>) {
   const reviewReport = reports['REVIEW']?.report
   const chiefReport = reports['CHIEF']?.report
 
+  console.log(`[Pipeline] Attempting to save article for job ${job.id}`)
+  console.log(`[Pipeline] Has writeReport:`, !!writeReport)
+  console.log(`[Pipeline] Has writeReport.article:`, !!writeReport?.article)
+
   // For testing: save article if we have Write stage content, even if Review/Chief failed
   if (!writeReport || !writeReport.article) {
-    console.log(`[Pipeline] Skipping save - no article content from Write stage`)
+    console.log(`[Pipeline] ❌ Skipping save - no article content from Write stage`)
     return
   }
 
@@ -335,31 +339,40 @@ async function saveArticleFromJob(job: any, reports: Record<string, any>) {
   const finalCategory = chiefReport?.finalCategory ?? 'General'
 
   // Don't save if Chief explicitly rejected
-  if (chiefReport?.decision === 'REJECT') return
+  if (chiefReport?.decision === 'REJECT') {
+    console.log(`[Pipeline] ❌ Skipping save - Chief rejected article`)
+    return
+  }
 
-  const article = await prisma.nfArticle.create({
-    data: {
-      title:           writeReport.article.headline ?? job.watchlist.headline,
-      slug:            writeReport.article.slug ?? job.watchlist.headline.toLowerCase().replace(/\s+/g, '-').slice(0, 60),
-      content:         writeReport.article.body ?? '',
-      excerpt:         writeReport.article.subheadline ?? '',
-      metaTitle:       writeReport.article.metaTitle ?? '',
-      metaDescription: writeReport.article.metaDescription ?? '',
-      tags:            finalTags,
-      category:        finalCategory,
-      sourceUrl:       job.watchlist.sourceUrl,
-      sourceName:      job.watchlist.sourceName,
-      pipelineStatus:  'DRAFT_READY', // Always save to drafts for testing
-      contentOrigin:   'AI_GENERATED',
-      editorialGrade:  editorialGrade,
-      overallScore:    overallScore
-    }
-  })
+  try {
+    console.log(`[Pipeline] Creating article with title: ${writeReport.article.headline ?? job.watchlist.headline}`)
+    
+    const article = await prisma.nfArticle.create({
+      data: {
+        title:           writeReport.article.headline ?? job.watchlist.headline,
+        slug:            writeReport.article.slug ?? job.watchlist.headline.toLowerCase().replace(/\s+/g, '-').slice(0, 60),
+        content:         writeReport.article.body ?? '',
+        excerpt:         writeReport.article.subheadline ?? '',
+        metaTitle:       writeReport.article.metaTitle ?? '',
+        metaDescription: writeReport.article.metaDescription ?? '',
+        tags:            finalTags,
+        category:        finalCategory,
+        sourceUrl:       job.watchlist.sourceUrl,
+        sourceName:      job.watchlist.sourceName,
+        pipelineStatus:  'DRAFT_READY', // Always save to drafts for testing
+        contentOrigin:   'AI_GENERATED',
+        editorialGrade:  editorialGrade,
+        overallScore:    overallScore
+      }
+    })
 
-  await prisma.nfPipelineJob.update({
-    where: { id: job.id },
-    data: { articleId: article.id }
-  })
+    await prisma.nfPipelineJob.update({
+      where: { id: job.id },
+      data: { articleId: article.id }
+    })
 
-  console.log(`[Pipeline] Article saved to drafts: ${article.id}`)
+    console.log(`[Pipeline] ✅ Article saved to drafts: ${article.id}`)
+  } catch (err: any) {
+    console.error(`[Pipeline] ❌ Failed to save article:`, err.message)
+  }
 }
