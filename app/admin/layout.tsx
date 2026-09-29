@@ -22,6 +22,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
 
+  // Login page must render without the admin sidebar
+  if (pathname === '/admin' || pathname === '/admin/login') return <>{children}</>
+
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     router.push('/admin')
