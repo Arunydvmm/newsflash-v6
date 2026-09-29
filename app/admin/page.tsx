@@ -83,7 +83,7 @@ export default function AdminLoginPage() {
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: '#000000', overflow: 'hidden' }}>
       <MatrixRain />
-
+      
       {/* Scanline overlay */}
       <div
         style={{
@@ -129,4 +129,186 @@ export default function AdminLoginPage() {
       >
         {/* Boot sequence */}
         {!showLogin && (
-          <div style={{ color: '#00FF41', fontSize: '14px', textAlign:
+          <div style={{ color: '#00FF41', fontSize: '14px', textAlign: 'left', maxWidth: '600px' }}>
+            {bootSequence.map((line, index) => (
+              <div key={index} style={{ marginBottom: '8px' }}>
+                <TerminalText text={line} speed={30} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Login form */}
+        {showLogin && (
+          <div
+            style={{
+              background: 'rgba(0, 0, 0, 0.9)',
+              border: '1px solid #00FF41',
+              padding: '32px',
+              borderRadius: '4px',
+              maxWidth: '500px',
+              width: '100%',
+              boxShadow: '0 0 20px rgba(0, 255, 65, 0.3)'
+            }}
+          >
+            {/* Logo with glitch effect */}
+            <div
+              className={styles.glitch}
+              style={{
+                color: '#C62828',
+                fontSize: '24px',
+                fontWeight: 'bold',
+                marginBottom: '32px',
+                textAlign: 'center'
+              }}
+            >
+              NEWSFLASH
+            </div>
+
+            {!authenticating && !authSuccess ? (
+              <form onSubmit={handleLogin}>
+                {authStatus && (
+                  <div style={{ color: '#C62828', fontSize: '13px', marginBottom: '20px' }}>
+                    {authStatus}
+                  </div>
+                )}
+
+                {/* Username */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ color: '#00FF41', fontSize: '12px', display: 'block', marginBottom: '8px' }}>
+                    &gt; USER_ID:
+                  </label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      background: '#000000',
+                      border: 'none',
+                      borderBottom: '1px solid #00FF41',
+                      color: '#00FF41',
+                      padding: '8px 0',
+                      fontSize: '14px',
+                      fontFamily: 'Courier New, monospace',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                {/* Password */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ color: '#00FF41', fontSize: '12px', display: 'block', marginBottom: '8px' }}>
+                    &gt; PASS_KEY:
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    style={{
+                      width: '100%',
+                      background: '#000000',
+                      border: 'none',
+                      borderBottom: '1px solid #00FF41',
+                      color: '#00FF41',
+                      padding: '8px 0',
+                      fontSize: '14px',
+                      fontFamily: 'Courier New, monospace',
+                      outline: 'none',
+                      letterSpacing: '4px'
+                    }}
+                  />
+                </div>
+
+                {/* Role selector */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ color: '#00FF41', fontSize: '12px', display: 'block', marginBottom: '8px' }}>
+                    &gt; CLEARANCE_LEVEL:
+                  </label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    style={{
+                      width: '100%',
+                      background: '#000000',
+                      border: 'none',
+                      borderBottom: '1px solid #00FF41',
+                      color: '#00FF41',
+                      padding: '8px 0',
+                      fontSize: '14px',
+                      fontFamily: 'Courier New, monospace',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="ADMIN">[ADMIN]</option>
+                    <option value="EDITOR">[EDITOR]</option>
+                    <option value="WRITER">[WRITER]</option>
+                  </select>
+                </div>
+
+                {/* Remember checkbox */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ color: '#00FF41', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    &gt; KEEP_SESSION_ALIVE:
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      style={{ accentColor: '#00FF41' }}
+                    />
+                    [{remember ? 'YES' : 'NO'}]
+                  </label>
+                </div>
+
+                {/* Submit button */}
+                <button
+                  type="submit"
+                  style={{
+                    width: '100%',
+                    background: '#000000',
+                    border: '1px solid #00FF41',
+                    color: '#00FF41',
+                    padding: '12px',
+                    fontSize: '14px',
+                    fontFamily: 'Courier New, monospace',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#00FF41'
+                    e.currentTarget.style.color = '#000000'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#000000'
+                    e.currentTarget.style.color = '#00FF41'
+                  }}
+                >
+                  &gt; AUTHENTICATE
+                </button>
+              </form>
+            ) : (
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    color: authSuccess ? '#00FF41' : '#C62828',
+                    fontSize: '14px',
+                    marginBottom: '16px'
+                  }}
+                >
+                  <TerminalText text={authStatus} speed={30} />
+                </div>
+                {authSuccess && (
+                  <div style={{ color: '#00FF41', fontSize: '12px' }}>
+                    Redirecting to dashboard...
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
