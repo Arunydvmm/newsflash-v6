@@ -9,7 +9,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   // ── Super Admin panel (/admin/*)
-  if (pathname.startsWith('/admin/')) {
+  if (pathname.startsWith('/admin/') && pathname !== '/admin/login') {
     const token = req.cookies.get(AUTH_COOKIE)?.value
     if (!token) return NextResponse.redirect(new URL('/admin', req.url))
     try {
