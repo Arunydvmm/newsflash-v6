@@ -17,17 +17,17 @@ export async function POST(req: NextRequest) {
   admin.lastLogin = new Date()
   await admin.save()
 
-  const token = signToken({
-    adminId: String(admin._id),
-    username: admin.username,
+  const token = signToken({ 
+    adminId: String(admin._id), 
+    username: admin.username, 
     role: admin.role,
     type: 'admin'
   })
   const res = NextResponse.json({ success: true, username: admin.username, role: admin.role })
-
+  
   // Adjust cookie maxAge based on remember preference
   const maxAge = remember ? 60 * 60 * 24 * 30 : 60 * 60 * 24 * 7 // 30 days if remember, else 7 days
-
+  
   res.cookies.set(AUTH_COOKIE, token, {
     httpOnly: true,
     secure:   process.env.NODE_ENV === 'production',
